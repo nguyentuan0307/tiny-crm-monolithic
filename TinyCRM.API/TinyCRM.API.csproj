@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TinyCRM.Infrastructure\TinyCRM.Infrastructure.csproj" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>
