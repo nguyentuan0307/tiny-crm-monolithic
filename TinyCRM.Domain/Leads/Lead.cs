@@ -9,7 +9,7 @@ namespace TinyCRM.Domain.Leads
     {
         public Lead()
         {
-            Deals = new HashSet<Deal>();
+            Deal = new Deal();
         }
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
@@ -18,7 +18,8 @@ namespace TinyCRM.Domain.Leads
         public StatusLead StatusLead { get; set; }
         public SourceLead SourceLead { get; set; }
         public DateTime DateQuanlified { get; set; }
+        public ReasonDisqualification? ReasonDisqualification { get; set; }
         public decimal EstimatedRevenue { get; set; }
-        public ICollection<Deal> Deals { get; set; }
+        public Deal Deal { get; set; }
     }
 }

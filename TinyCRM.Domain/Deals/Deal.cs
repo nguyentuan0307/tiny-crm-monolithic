@@ -16,8 +16,6 @@ namespace TinyCRM.Domain.Deals
         public string? Description { get; set; }
         public StatusDeal StatusDeal { get; set; }
         public decimal ActualRevenue { get; set; }
-        public Guid AccountId { get; set; }
-        public Account? Account { get; set; }
         public Guid LeadId { get; set; }
         public Lead? Lead { get; set; }
         public ICollection<ProductDeal> ProductDeals { get; set; }

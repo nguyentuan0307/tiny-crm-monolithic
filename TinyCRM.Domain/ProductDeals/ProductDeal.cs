@@ -6,9 +6,9 @@ namespace TinyCRM.Domain.ProductDeals
 {
     public class ProductDeal : AuditEntity<Guid>
     {
-        public Guid IdDeal { get; set; }
+        public Guid DealId { get; set; }
         public Deal? Deal { get; set; }
-        public Guid IdProduct { get; set; }
+        public string ProductId { get; set; } = null!;
         public Product? Product { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
