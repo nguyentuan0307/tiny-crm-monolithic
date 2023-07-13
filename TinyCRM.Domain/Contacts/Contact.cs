@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TinyCRM.Domain.Accounts;
+using TinyCRM.Domain.Base;
 
 namespace TinyCRM.Domain.Contacts
 {
-    internal class Contact
+    public class Contact : AuditEntity<Guid>
     {
+        public string Name { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Phone { get; set; } = null!;
+        public Guid AccountId { get; set; }
+        public Account? Account { get; set; }
     }
 }

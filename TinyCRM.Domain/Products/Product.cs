@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TinyCRM.Domain.Base;
+using TinyCRM.Domain.Enums;
+using TinyCRM.Domain.ProductDeals;
 
 namespace TinyCRM.Domain.Products
 {
-    internal class Product
+    public class Product : AuditEntity<string>
     {
+        public Product()
+        {
+            ProductDeals = new HashSet<ProductDeal>();
+        }
+        public string Name { get; set; } = null!;
+        public TypeProduct TypeProduct { get; set; }
+        public decimal Price { get; set; }
+        public bool Status { get; set; }
+        public ICollection<ProductDeal> ProductDeals { get; set; }
     }
 }
