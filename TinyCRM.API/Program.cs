@@ -5,6 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDatabase(builder.Configuration);
 
+builder.Services.AddRepositories();
+builder.Services.AddServices();
+
+builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -21,14 +26,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/error", (context) =>
-{
-    throw new NotFoundHttpException("");
-});
 
 app.Run();

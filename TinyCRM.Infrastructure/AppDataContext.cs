@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyCRM.Domain.Accounts;
-using TinyCRM.Domain.Contacts;
-using TinyCRM.Domain.Deals;
-using TinyCRM.Domain.Leads;
-using TinyCRM.Domain.ProductDeals;
-using TinyCRM.Domain.Products;
+using TinyCRM.Domain.Entities.Accounts;
+using TinyCRM.Domain.Entities.Contacts;
+using TinyCRM.Domain.Entities.Deals;
+using TinyCRM.Domain.Entities.Leads;
+using TinyCRM.Domain.Entities.ProductDeals;
+using TinyCRM.Domain.Entities.Products;
 namespace TinyCRM.Infrastructure
 {
     public class AppDataContext : DbContext

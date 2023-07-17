@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyCRM.Domain.ProductDeals;
+using TinyCRM.Domain.Entities.ProductDeals;
 
 namespace TinyCRM.Infrastructure.EntityTypeConfiguration
 {

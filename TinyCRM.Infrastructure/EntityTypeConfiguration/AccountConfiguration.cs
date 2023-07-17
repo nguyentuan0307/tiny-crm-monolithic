@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TinyCRM.Domain.Accounts;
+using TinyCRM.Domain.Entities.Accounts;
 
 namespace TinyCRM.Infrastructure.EntityTypeConfiguration
 {
@@ -18,6 +13,24 @@ namespace TinyCRM.Infrastructure.EntityTypeConfiguration
             builder.Property(p => p.Phone).IsRequired().HasMaxLength(20);
             builder.Property(p => p.Address).HasMaxLength(512);
             builder.Property(p => p.TotalSale).HasColumnType("decimal(18,2)");
+
+            var accounts = new List<Account>();
+
+            for (int i = 1; i <= 10; i++)
+            {
+                accounts.Add(new Account()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"Account {i}",
+                    Email = $"account{i}@gmail.com",
+                    Address = $"Address - {i}",
+                    Phone = i.ToString(),
+                    TotalSale = 0,
+                    CreatedDate = DateTime.Now,
+                });
+            }
+
+            builder.HasData(accounts);
         }
     }
 }

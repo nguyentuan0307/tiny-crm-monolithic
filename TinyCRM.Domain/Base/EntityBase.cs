@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TinyCRM.Domain.Base
 {
@@ -13,27 +9,6 @@ namespace TinyCRM.Domain.Base
         TKey Id { get; set; }
     }
 
-    public interface IDeleteEntity
-    {
-        bool IsDeleted { get; set; }
-    }
-
-    public interface IDeleteEntity<TKey> : IDeleteEntity, IEntityBase<TKey>
-    {
-    }
-
-    public interface IAuditEntity
-    {
-        DateTime CreatedDate { get; set; }
-        string CreatedBy { get; set; }
-        DateTime? UpdatedDate { get; set; }
-        string UpdatedBy { get; set; }
-    }
-    public interface IAuditEntity<TKey> : IAuditEntity, IDeleteEntity<TKey>
-    {
-    }
-
-
     public abstract class EntityBase<TKey> : IEntityBase<TKey>
     {
         [Key]
@@ -41,16 +16,19 @@ namespace TinyCRM.Domain.Base
         public virtual TKey Id { get; set; }
     }
 
-    public abstract class DeleteEntity<TKey> : EntityBase<TKey>, IDeleteEntity<TKey>
+    public interface IAuditEntity
     {
-        public bool IsDeleted { get; set; }
+        DateTime CreatedDate { get; set; }
+        string? CreatedBy { get; set; }
+        DateTime? UpdatedDate { get; set; }
+        string? UpdatedBy { get; set; }
     }
 
-    public abstract class AuditEntity<TKey> : DeleteEntity<TKey>, IAuditEntity<TKey>
+    public abstract class AuditEntity<TKey> : EntityBase<TKey>, IAuditEntity
     {
         public DateTime CreatedDate { get; set; }
-        public string CreatedBy { get; set; }
+        public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
-        public string UpdatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
     }
 }

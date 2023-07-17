@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TinyCRM.Domain.Contacts;
+using TinyCRM.Domain.Entities.Contacts;
 
 namespace TinyCRM.Infrastructure.EntityTypeConfiguration
 {
