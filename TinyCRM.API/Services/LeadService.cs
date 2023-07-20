@@ -178,5 +178,29 @@ namespace TinyCRM.API.Services
             return await _leadRepository.GetAsync(l => l.Id == id)
                 ?? throw new NotFoundHttpException("Lead is not found");
         }
+
+        public async Task<LeadStatisticDTO> GetStatisticLeadAsync()
+        {
+            var statisticLeads = await _leadRepository.List().Select(x => new
+            {
+                x.StatusLead,
+                x.EstimatedRevenue
+            }).ToListAsync();
+
+            if (statisticLeads.Count == 0)
+            {
+                return new LeadStatisticDTO();
+            }
+
+            var leadStatisticDTO = new LeadStatisticDTO
+            {
+                OpenLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Open).Count(),
+                ProspectLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Prospect).Count(),
+                QualifiedLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Quanlified).Count(),
+                DisqualifiedLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Disqualified).Count(),
+                AvgEstimatedRevenue = statisticLeads.Average(x => x.EstimatedRevenue)
+            };
+            return leadStatisticDTO;
+        }
     }
 }

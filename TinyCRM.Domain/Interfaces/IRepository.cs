@@ -13,8 +13,9 @@ namespace TinyCRM.Domain.Interfaces
         Task AddRangeAsync(List<T> enetities);
         void Remove(T entity);
         void Update(T entity);
-        Task<T?> GetAsync(Expression<Func<T, bool>> expression);
-        IQueryable<T> List(Expression<Func<T, bool>>? expression=null);
+        Task<T?> GetAsync(Expression<Func<T, bool>> expression, string? includeTables = default);
+        IQueryable<T> List(Expression<Func<T, bool>>? expression = null);
         Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
+        Task<int> CountAsync(Expression<Func<T, bool>> expression);
     }
 }

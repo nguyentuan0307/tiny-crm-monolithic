@@ -7,6 +7,10 @@ using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Interfaces;
 using System.Linq.Dynamic.Core;
+using TinyCRM.API.Models.Contact;
+using TinyCRM.API.Models.Deal;
+using TinyCRM.API.Models.Lead;
+using TinyCRM.Domain.Entities.Leads;
 
 namespace TinyCRM.API.Services
 {
@@ -91,9 +95,9 @@ namespace TinyCRM.API.Services
             return _mapper.Map<AccountDTO>(existingAccount);
         }
 
-        public async Task<Account> GetExistingAccount(Guid id)
+        public async Task<Account> GetExistingAccount(Guid id, string? includeTables = default)
         {
-            return await _accountRepository.GetAsync(p => p.Id == id)
+            return await _accountRepository.GetAsync(p => p.Id == id, includeTables)
                 ?? throw new NotFoundHttpException("Account is not found");
         }
         private async Task CheckValidate(string email, string phone, Guid guid = default)
@@ -108,6 +112,28 @@ namespace TinyCRM.API.Services
             {
                 throw new BadRequestHttpException("Phone is already exist");
             }
+        }
+
+        public async Task<List<ContactDTO>> GetContactsByAccountIdAsync(Guid id)
+        {
+            string includeTables = nameof(Account.Contacts);
+            var account = await GetExistingAccount(id, includeTables);
+            return _mapper.Map<List<ContactDTO>>(account.Contacts);
+        }
+
+        public async Task<List<DealDTO>> GetDealsByAccountIdAsync(Guid id)
+        {
+            string includeTables = $"{nameof(Account.Leads)}.{nameof(Lead.Deal)}";
+            var account = await GetExistingAccount(id, includeTables);
+            var dealAccounts = account.Leads.Where(p => p.Deal != null).Select(x => x.Deal);
+            return _mapper.Map<List<DealDTO>>(dealAccounts);
+        }
+
+        public async Task<List<LeadDTO>> GetLeadsByAccountIdAsync(Guid id)
+        {
+            string includeTables = nameof(Account.Leads);
+            var account = await GetExistingAccount(id, includeTables);
+            return _mapper.Map<List<LeadDTO>>(account.Leads);
         }
     }
 }

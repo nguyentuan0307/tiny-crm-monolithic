@@ -10,6 +10,7 @@ namespace TinyCRM.API.Services.IServices
         Task DisqualifyLeadAsync(Guid id, DisqualifyDTO disqualifyDTO);
         public Task<LeadDTO> GetLeadByIdAsync(Guid id);
         public Task<IList<LeadDTO>> GetLeadsAsync(LeadSearchDTO search);
+        Task<LeadStatisticDTO> GetStatisticLeadAsync();
         Task<DealDTO> QualifyLeadAsync(Guid id);
         public Task<LeadDTO> UpdateLeadAsync(Guid id, LeadUpdateDTO leadDTO);
     }

@@ -51,9 +51,9 @@ namespace TinyCRM.API.Services
             deal.Lead.Account.TotalSale += productDeal.TotalAmount;
         }
 
-        private async Task<Deal> FindDealAsync(Guid dealId)
+        private async Task<Deal> FindDealAsync(Guid dealId, string? includeTables = default)
         {
-            return await _dealRepository.GetAsync(p => p.Id == dealId) ??
+            return await _dealRepository.GetAsync(p => p.Id == dealId, includeTables) ??
                 throw new NotFoundHttpException("Deal is not found");
         }
 
@@ -82,15 +82,16 @@ namespace TinyCRM.API.Services
             deal.Lead.Account.TotalSale -= productDeal.TotalAmount;
         }
 
-        private async Task<ProductDeal> FindProductDealAsync(Guid productDealId)
+        private async Task<ProductDeal> FindProductDealAsync(Guid productDealId, string? includeTables = default)
         {
-            return await _productDealRepository.GetAsync(p => p.Id == productDealId) ??
+            return await _productDealRepository.GetAsync(p => p.Id == productDealId, includeTables) ??
                 throw new NotFoundHttpException("ProductDeal is not found");
         }
 
         public async Task<ProductDealDTO> GetProductDealByIdAsync(Guid id, Guid productDealId)
         {
-            var productDeal = await FindProductDealAsync(productDealId);
+            string includeTables = $"{nameof(ProductDeal.Product)}";
+            var productDeal = await FindProductDealAsync(productDealId, includeTables);
 
             if (id != productDeal.DealId)
                 throw new BadRequestHttpException("DealId is not match");

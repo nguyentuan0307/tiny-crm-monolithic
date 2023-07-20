@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
 
@@ -21,7 +22,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDTO search)
         {
             var productDTOs = await _productService.GetProductsAsync(search);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Products");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Products: {JsonSerializer.Serialize(productDTOs)}");
             return Ok(productDTOs);
         }
 
@@ -30,7 +31,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> GetProductByIdAsync(Guid id)
         {
             var productDTO = await _productService.GetProductByIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product: {JsonSerializer.Serialize(productDTO)}");
             return Ok(productDTO);
         }
 
@@ -38,7 +39,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDTO ProductDTO)
         {
             var productNewDTO = await _productService.CreateProductAsync(ProductDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product: {JsonSerializer.Serialize(productNewDTO)}");
             return CreatedAtAction(nameof(GetProductByIdAsync), new { id = productNewDTO.Id }, productNewDTO);
         }
 
@@ -46,7 +47,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDTO ProductDTO)
         {
             var productUpdateDTO = await _productService.UpdateProductAsync(id, ProductDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Product");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Product: {JsonSerializer.Serialize(productUpdateDTO)}");
             return Ok(productUpdateDTO);
         }
 
@@ -54,7 +55,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
             await _productService.DeleteProductAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Product");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Product: {id}");
             return Ok("Successfully Deleted Product");
         }
     }

@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using TinyCRM.Domain.Base;
 using TinyCRM.Domain.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TinyCRM.Infrastructure
 {
@@ -49,9 +50,19 @@ namespace TinyCRM.Infrastructure
             DbSet.Update(entity);
         }
 
-        public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression)
+        public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression, string? includeTables = default)
         {
-            return DbSet.FirstOrDefaultAsync(expression);
+            IQueryable<TEntity> query = DbSet;
+            if (!string.IsNullOrEmpty(includeTables))
+            {
+                string[] includeProperties = includeTables.Split(',');
+
+                foreach (var includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+            return query.FirstOrDefaultAsync(expression);
         }
 
         public IQueryable<TEntity> List(Expression<Func<TEntity, bool>>? expression = null)
@@ -66,6 +77,11 @@ namespace TinyCRM.Infrastructure
         public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression)
         {
             return DbSet.AnyAsync(expression);
+        }
+
+        public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)
+        {
+            return DbSet.CountAsync(expression);
         }
     }
 }

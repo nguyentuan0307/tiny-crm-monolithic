@@ -23,7 +23,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDTO search)
         {
             var leadDTOs = await _leadServicce.GetLeadsAsync(search);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDTOs)}");
             return Ok(leadDTOs);
         }
 
@@ -32,7 +32,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> GetLeadByIdAsync(Guid id)
         {
             var leadDTO = await _leadServicce.GetLeadByIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead: {JsonSerializer.Serialize(leadDTO)}");
             return Ok(leadDTO);
         }
 
@@ -40,7 +40,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> CreateLeadAsync([FromBody] LeadCreateDTO leadDTO)
         {
             var leadCreateDTO = await _leadServicce.CreateLeadAsync(leadDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Lead");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Lead: {JsonSerializer.Serialize(leadCreateDTO)}");
             return CreatedAtAction(nameof(GetLeadByIdAsync), new { id = leadCreateDTO.Id }, leadCreateDTO);
         }
 
@@ -48,7 +48,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> UpdateLeadAsync(Guid id, [FromBody] LeadUpdateDTO leadDTO)
         {
             var leadUpdateDTO = await _leadServicce.UpdateLeadAsync(id, leadDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Lead");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Lead: {JsonSerializer.Serialize(leadUpdateDTO)}");
             return Ok(leadUpdateDTO);
         }
 
@@ -56,7 +56,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> DeleteLeadAsync(Guid id)
         {
             await _leadServicce.DeleteLeadAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Lead");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Lead: {id}");
             return Ok("Successfully Deleted Lead");
         }
 
@@ -64,7 +64,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> QualifyLeadAsync(Guid id)
         {
             var dealDTO = await _leadServicce.QualifyLeadAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Qualified Lead");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Qualified Lead: {JsonSerializer.Serialize(dealDTO)}");
             return CreatedAtRoute(new { id = dealDTO.Id, controller = "deal", action = nameof(DealController.GetDealByIdAsync) }, dealDTO);
         }
 
@@ -72,8 +72,16 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> DisqualifyLeadAsync(Guid id, [FromBody] DisqualifyDTO disqualifyDTO)
         {
             await _leadServicce.DisqualifyLeadAsync(id, disqualifyDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Disqualified Lead");
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Disqualified Lead: {id}");
             return Ok("Successfully Disqualify Lead");
+        }
+
+        [HttpGet("statistic")]
+        public async Task<IActionResult> GetStatisticLeadAsync()
+        {
+            var leadStatisticDTO = await _leadServicce.GetStatisticLeadAsync();
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead Statistic: {JsonSerializer.Serialize(leadStatisticDTO)}");
+            return Ok(leadStatisticDTO);
         }
     }
 }

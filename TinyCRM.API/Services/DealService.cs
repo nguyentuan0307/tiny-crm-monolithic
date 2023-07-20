@@ -29,15 +29,16 @@ namespace TinyCRM.API.Services
             await _unitOfWork.SaveChangeAsync();
         }
 
-        private async Task<Deal> FindDealAsync(Guid id)
+        private async Task<Deal> FindDealAsync(Guid id, string? includeTables = default)
         {
-            return await _dealRepository.GetAsync(p => p.Id == id)
+            return await _dealRepository.GetAsync(p => p.Id == id, includeTables)
                     ?? throw new NotFoundHttpException("Deal is not found");
         }
 
         public async Task<DealDTO> GetDealByIdAsync(Guid id)
         {
-            var deal = await FindDealAsync(id);
+            string includeTables = "Lead,ProductDeals,ProductDeals.Product";
+            var deal = await FindDealAsync(id, includeTables);
             return _mapper.Map<DealDTO>(deal);
         }
 
@@ -86,6 +87,30 @@ namespace TinyCRM.API.Services
             _dealRepository.Update(existingDeal);
             await _unitOfWork.SaveChangeAsync();
             return _mapper.Map<DealDTO>(existingDeal);
+        }
+
+        public async Task<DealStatisticDTO> GetStatisticDealAsync()
+        {
+            var statistic = await _dealRepository.List().Select(x => new
+            {
+                x.StatusDeal,
+                x.ActualRevenue
+            }).ToListAsync();
+
+            if (statistic.Count == 0)
+            {
+                return new DealStatisticDTO();
+            }
+
+            var dealStatisticDTO = new DealStatisticDTO
+            {
+                OpenDeals = statistic.Where(x => x.StatusDeal == Domain.Enums.StatusDeal.Open).Count(),
+                WonDeals = statistic.Where(x => x.StatusDeal == Domain.Enums.StatusDeal.Won).Count(),
+                LostDeals = statistic.Where(x => x.StatusDeal == Domain.Enums.StatusDeal.Lost).Count(),
+                TotalRevenue = statistic.Sum(x => x.ActualRevenue),
+                AvgRevenue = statistic.Average(x => x.ActualRevenue)
+            };
+            return dealStatisticDTO;
         }
     }
 }
