@@ -18,7 +18,7 @@ namespace TinyCRM.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetContactsAsync([FromQuery] ContactSearchDTO search)
         {
-            List<ContactDTO> contactDTOs = await _contactService.GetContactsAsync(search);
+            var contactDTOs = await _contactService.GetContactsAsync(search);
             return Ok(contactDTOs);
         }
 
@@ -26,21 +26,21 @@ namespace TinyCRM.API.Controllers
         [ActionName(nameof(GetContactByIdAsync))]
         public async Task<IActionResult> GetContactByIdAsync(Guid id)
         {
-            ContactDTO contactDTO = await _contactService.GetContactByIdAsync(id);
+            var contactDTO = await _contactService.GetContactByIdAsync(id);
             return Ok(contactDTO);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateContactAsync(ContactCreateDTO contactDTO)
+        public async Task<IActionResult> CreateContactAsync([FromBody] ContactCreateDTO contactDTO)
         {
-            ContactDTO contactNewDTO = await _contactService.CreateContactAsync(contactDTO);
+            var contactNewDTO = await _contactService.CreateContactAsync(contactDTO);
             return CreatedAtAction(nameof(GetContactByIdAsync), new { id = contactNewDTO.Id }, contactNewDTO);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateContactAsync(Guid id, ContactUpdateDTO contactDTO)
+        public async Task<IActionResult> UpdateContactAsync(Guid id, [FromBody] ContactUpdateDTO contactDTO)
         {
-            ContactDTO contactUpdateDTO = await _contactService.UpdateContactAsync(id, contactDTO);
+            var contactUpdateDTO = await _contactService.UpdateContactAsync(id, contactDTO);
             return Ok(contactUpdateDTO);
         }
 

@@ -18,34 +18,34 @@ namespace TinyCRM.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDTO search)
         {
-            List<ProductDTO> productDTOs = await _productService.GetProductsAsync(search);
+            var productDTOs = await _productService.GetProductsAsync(search);
             return Ok(productDTOs);
         }
 
         [HttpGet("{id}")]
         [ActionName(nameof(GetProductByIdAsync))]
-        public async Task<IActionResult> GetProductByIdAsync(string id)
+        public async Task<IActionResult> GetProductByIdAsync(Guid id)
         {
-            ProductDTO productDTO = await _productService.GetProductByIdAsync(id);
+            var productDTO = await _productService.GetProductByIdAsync(id);
             return Ok(productDTO);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProductAsync(ProductCreateDTO ProductDTO)
+        public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDTO ProductDTO)
         {
-            ProductDTO productNewDTO = await _productService.CreateProductAsync(ProductDTO);
+            var productNewDTO = await _productService.CreateProductAsync(ProductDTO);
             return CreatedAtAction(nameof(GetProductByIdAsync), new { id = productNewDTO.Id }, productNewDTO);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(string id, ProductUpdateDTO ProductDTO)
+        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDTO ProductDTO)
         {
-            ProductDTO productUpdateDTO = await _productService.UpdateProductAsync(id, ProductDTO);
+            var productUpdateDTO = await _productService.UpdateProductAsync(id, ProductDTO);
             return Ok(productUpdateDTO);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProductAsync(string id)
+        public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
             await _productService.DeleteProductAsync(id);
             return Ok("Successfully Deleted Product");

@@ -1,14 +1,8 @@
 ﻿using TinyCRM.API.Middleware;
-
+using TinyCRM.API.Exceptions;
+using TinyCRM.API.Model;
 namespace TinyCRM.API.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using System;
-    using System.Linq.Expressions;
-    using System.Threading.Tasks;
-    using TinyCRM.API.Exceptions;
-    using TinyCRM.API.Model;
-
     public class HttpExceptionMiddleware
     {
         private readonly RequestDelegate _next;

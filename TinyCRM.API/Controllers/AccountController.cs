@@ -18,7 +18,7 @@ namespace TinyCRM.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDTO search)
         {
-            List<AccountDTO> accountDTOs = await _accountService.GetAccountsAsync(search);
+            var accountDTOs = await _accountService.GetAccountsAsync(search);
             return Ok(accountDTOs);
         }
 
@@ -26,21 +26,21 @@ namespace TinyCRM.API.Controllers
         [ActionName(nameof(GetAccountByIdAsync))]
         public async Task<IActionResult> GetAccountByIdAsync(Guid id)
         {
-            AccountDTO accountDTO = await _accountService.GetAccountByIdAsync(id);
+            var accountDTO = await _accountService.GetAccountByIdAsync(id);
             return Ok(accountDTO);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAccountAsync(AccountCreateDTO accountDTO)
+        public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDTO accountDTO)
         {
-            AccountDTO accountNewDTO = await _accountService.CreateAccountAsync(accountDTO);
+            var accountNewDTO = await _accountService.CreateAccountAsync(accountDTO);
             return CreatedAtAction(nameof(GetAccountByIdAsync), new { id = accountNewDTO.Id }, accountNewDTO);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccountAsync(Guid id, AccountUpdateDTO accountDTO)
+        public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDTO accountDTO)
         {
-            AccountDTO accountUpdateDTO = await _accountService.UpdateAccountAsync(id, accountDTO);
+            var accountUpdateDTO = await _accountService.UpdateAccountAsync(id, accountDTO);
             return Ok(accountUpdateDTO);
         }
 

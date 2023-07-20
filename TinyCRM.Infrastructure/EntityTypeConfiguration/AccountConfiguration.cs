@@ -14,23 +14,8 @@ namespace TinyCRM.Infrastructure.EntityTypeConfiguration
             builder.Property(p => p.Address).HasMaxLength(512);
             builder.Property(p => p.TotalSale).HasColumnType("decimal(18,2)");
 
-            var accounts = new List<Account>();
-
-            for (int i = 1; i <= 10; i++)
-            {
-                accounts.Add(new Account()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = $"Account {i}",
-                    Email = $"account{i}@gmail.com",
-                    Address = $"Address - {i}",
-                    Phone = i.ToString(),
-                    TotalSale = 0,
-                    CreatedDate = DateTime.Now,
-                });
-            }
-
-            builder.HasData(accounts);
+            builder.HasIndex(p => p.Email).IsUnique();
+            builder.HasIndex(p => p.Phone).IsUnique();
         }
     }
 }

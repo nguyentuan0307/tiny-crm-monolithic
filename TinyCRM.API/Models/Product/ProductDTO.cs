@@ -1,11 +1,14 @@
-﻿using TinyCRM.Domain.Enums;
+﻿using System.Text.Json.Serialization;
+using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Models.Product
 {
     public class ProductDTO
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
+        public string Code { get; set; } = null!;
         public string Name { get; set; } = null!;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public TypeProduct TypeProduct { get; set; }
         public decimal Price { get; set; }
         public bool Status { get; set; }

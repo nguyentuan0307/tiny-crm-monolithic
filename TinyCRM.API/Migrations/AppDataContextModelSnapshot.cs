@@ -64,109 +64,7 @@ namespace TinyCRM.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Accounts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("010d0dd0-09c4-47cc-86e2-edcb23632e81"),
-                            Address = "Address - 1",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4752),
-                            Email = "account1@gmail.com",
-                            Name = "Account 1",
-                            Phone = "1",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("3dac8fb8-9107-47b4-bb40-c8f202ffa729"),
-                            Address = "Address - 2",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4768),
-                            Email = "account2@gmail.com",
-                            Name = "Account 2",
-                            Phone = "2",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("0a034c7e-032a-4a20-b717-25c5414f6ffc"),
-                            Address = "Address - 3",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4774),
-                            Email = "account3@gmail.com",
-                            Name = "Account 3",
-                            Phone = "3",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("c03445ba-0d11-4231-a790-cde72d446924"),
-                            Address = "Address - 4",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4792),
-                            Email = "account4@gmail.com",
-                            Name = "Account 4",
-                            Phone = "4",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("0b2db0fb-df41-4c47-971c-ca5b4b6e0eb7"),
-                            Address = "Address - 5",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4797),
-                            Email = "account5@gmail.com",
-                            Name = "Account 5",
-                            Phone = "5",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("05424e00-595c-4920-b4c3-ac33e588fd12"),
-                            Address = "Address - 6",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4803),
-                            Email = "account6@gmail.com",
-                            Name = "Account 6",
-                            Phone = "6",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("d904216b-8edb-4b76-83e6-a1cfc55d5148"),
-                            Address = "Address - 7",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4808),
-                            Email = "account7@gmail.com",
-                            Name = "Account 7",
-                            Phone = "7",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("45ef8fa4-a5ea-4c42-85a8-e1260a88c1b1"),
-                            Address = "Address - 8",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4812),
-                            Email = "account8@gmail.com",
-                            Name = "Account 8",
-                            Phone = "8",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("5ecc86cc-b757-4f43-8e91-894ddb477d96"),
-                            Address = "Address - 9",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4842),
-                            Email = "account9@gmail.com",
-                            Name = "Account 9",
-                            Phone = "9",
-                            TotalSale = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("cfdfb404-274c-48cd-bb07-3157ce54057c"),
-                            Address = "Address - 10",
-                            CreatedDate = new DateTime(2023, 7, 14, 14, 35, 0, 715, DateTimeKind.Local).AddTicks(4850),
-                            Email = "account10@gmail.com",
-                            Name = "Account 10",
-                            Phone = "10",
-                            TotalSale = 0m
-                        });
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Contacts.Contact", b =>
@@ -209,7 +107,7 @@ namespace TinyCRM.API.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contacts", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Deals.Deal", b =>
@@ -253,7 +151,7 @@ namespace TinyCRM.API.Migrations
                     b.HasIndex("LeadId")
                         .IsUnique();
 
-                    b.ToTable("Deals");
+                    b.ToTable("Deals", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Leads.Lead", b =>
@@ -277,6 +175,9 @@ namespace TinyCRM.API.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("DescriptionDisqualification")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("EstimatedRevenue")
                         .HasColumnType("decimal(18,2)");
@@ -305,7 +206,7 @@ namespace TinyCRM.API.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("Leads");
+                    b.ToTable("Leads", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.ProductDeals.ProductDeal", b =>
@@ -326,9 +227,8 @@ namespace TinyCRM.API.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -348,14 +248,19 @@ namespace TinyCRM.API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductDeals");
+                    b.ToTable("ProductDeals", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Products.Product", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -385,7 +290,7 @@ namespace TinyCRM.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Contacts.Contact", b =>
@@ -454,8 +359,7 @@ namespace TinyCRM.API.Migrations
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Leads.Lead", b =>
                 {
-                    b.Navigation("Deal")
-                        .IsRequired();
+                    b.Navigation("Deal");
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Products.Product", b =>

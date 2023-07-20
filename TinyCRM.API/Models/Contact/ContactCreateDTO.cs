@@ -1,10 +1,17 @@
-﻿namespace TinyCRM.API.Models.Contact
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TinyCRM.API.Models.Contact
 {
     public class ContactCreateDTO
     {
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = null!;
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; } = null!;
+        [Required(ErrorMessage = "Phone Number Required!")]
+        [RegularExpression(@"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$", ErrorMessage = "Entered phone format is not valid.")]
+        public string Phone { get; set; } = null!;
+        [Required(ErrorMessage = "Account is required")]
         public Guid AccountId { get; set; }
     }
 }

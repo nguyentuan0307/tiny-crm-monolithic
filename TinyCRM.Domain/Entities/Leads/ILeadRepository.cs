@@ -7,7 +7,7 @@ using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.Domain.Entities.Leads
 {
-    internal interface ILeadRepository : IRepository<Lead>
+    public interface ILeadRepository : IRepository<Lead>
     {
     }
 }

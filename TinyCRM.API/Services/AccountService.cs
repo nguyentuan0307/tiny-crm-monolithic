@@ -6,6 +6,9 @@ using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Interfaces;
+using System.Linq.Dynamic.Core;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using TinyCRM.Domain.Entities.Leads;
 
 namespace TinyCRM.API.Services
 {
@@ -24,57 +27,92 @@ namespace TinyCRM.API.Services
 
         public async Task<AccountDTO> CreateAccountAsync(AccountCreateDTO accountDTO)
         {
+            await CheckValidate(accountDTO.Email, accountDTO.Phone);
             var account = _mapper.Map<Account>(accountDTO);
             await _accountRepository.AddAsync(account);
             await _unitOfWork.SaveChangeAsync();
-            await Console.Out.WriteLineAsync($"{account.Id}");
             return _mapper.Map<AccountDTO>(account);
         }
 
         public async Task DeleteAccountAsync(Guid id)
         {
             Expression<Func<Account, bool>> expression = p => p.Id == id;
-            var account = await _accountRepository.GetAsync(expression) ?? throw new NotFoundHttpException("Account is not found");
+            var account = await _accountRepository.GetAsync(expression)
+                ?? throw new NotFoundHttpException("Account is not found");
+
             _accountRepository.Remove(account);
             await _unitOfWork.SaveChangeAsync();
         }
 
         public async Task<AccountDTO> GetAccountByIdAsync(Guid id)
         {
-            Expression<Func<Account, bool>> expression = p => p.Id == id;
-            var account = await _accountRepository.GetAsync(expression) ?? throw new NotFoundHttpException("Account is not found");
+            var account = await GetExistingAccount(id)
+                ?? throw new NotFoundHttpException("Account is not found");
+
             return _mapper.Map<AccountDTO>(account);
         }
-        public async Task<List<AccountDTO>> GetAccountsAsync(AccountSearchDTO search)
-        {
-            Expression<Func<Account, bool>> expression = p => string.IsNullOrEmpty(search.Filter) || p.Name.Contains(search.Filter);
-            var query = _accountRepository.List(expression)
-                .Skip(search.SkipCount)
-                .Take(search.MaxResultCount);
 
-            List<Account> accounts = await query.ToListAsync();
-            List<AccountDTO> accountDTOs = _mapper.Map<List<AccountDTO>>(accounts);
+        public async Task<IList<AccountDTO>> GetAccountsAsync(AccountSearchDTO search)
+        {
+            var query = _accountRepository.List(GetExpression(search));
+
+            var accounts = await ApplySortingAndPagination(query, search).ToListAsync();
+            var accountDTOs = _mapper.Map<IList<AccountDTO>>(accounts);
 
             return accountDTOs;
         }
 
+        private static Expression<Func<Account, bool>> GetExpression(AccountSearchDTO search)
+        {
+            Expression<Func<Account, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
+                || p.Name.Contains(search.KeyWord)
+                || p.Email.Contains(search.KeyWord);
+
+            return expression;
+        }
+
+        private static IQueryable<Account> ApplySortingAndPagination(IQueryable<Account> query, AccountSearchDTO search)
+        {
+            string sortOrder = search.IsAsc ? "ascending" : "descending";
+
+            query = string.IsNullOrEmpty(search.KeySort)
+                ? query.OrderBy("Id " + sortOrder)
+                : query.OrderBy(search.KeySort + " " + sortOrder);
+
+            query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
+            return query;
+        }
+
         public async Task<AccountDTO> UpdateAccountAsync(Guid id, AccountUpdateDTO accountDTO)
         {
-            if (id != accountDTO.Id)
-            {
-                throw new BadRequestHttpException("ID provided does not match the ID in the Account");
-            }
 
-            Account existingAccount = await _accountRepository.GetAsync(p => p.Id == id) ?? throw new NotFoundHttpException("Account not found");
+            var existingAccount = await GetExistingAccount(id);
+            await CheckValidate(accountDTO.Email, accountDTO.Phone, existingAccount.Id);
 
-            existingAccount.Name = accountDTO.Name;
-            existingAccount.Email = accountDTO.Email;
-            existingAccount.Phone = accountDTO.Phone;
-            existingAccount.Address = accountDTO.Address;
-
+            _mapper.Map(accountDTO, existingAccount);
             _accountRepository.Update(existingAccount);
             await _unitOfWork.SaveChangeAsync();
+
             return _mapper.Map<AccountDTO>(existingAccount);
+        }
+
+        public async Task<Account> GetExistingAccount(Guid id)
+        {
+            return await _accountRepository.GetAsync(p => p.Id == id)
+                ?? throw new NotFoundHttpException("Account is not found");
+        }
+        private async Task CheckValidate(string email, string phone, Guid guid = default)
+        {
+            var accounts = await _accountRepository.List(p => p.Email == email
+            || p.Phone == phone).ToListAsync();
+            if (accounts.Any(a => a.Email == email && a.Id != guid))
+            {
+                throw new BadHttpRequestException("Email is already exist");
+            }
+            if (accounts.Any(a => a.Phone == email))
+            {
+                throw new BadHttpRequestException("Phone is already exist");
+            }
         }
     }
 }

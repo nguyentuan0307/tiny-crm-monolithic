@@ -15,6 +15,9 @@ namespace TinyCRM.Infrastructure.EntityTypeConfiguration
                 .WithMany(c => c.Contacts)
                 .HasForeignKey(a => a.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(p => p.Email).IsUnique();
+            builder.HasIndex(p => p.Phone).IsUnique();
         }
     }
 }

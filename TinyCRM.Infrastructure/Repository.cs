@@ -40,7 +40,7 @@ namespace TinyCRM.Infrastructure
             DbSet.Remove(entity);
         }
 
-        public void Update(TEntity entity)
+        public virtual void Update(TEntity entity)
         {
             if (entity is IAuditEntity auditEntity)
             {
@@ -49,14 +49,23 @@ namespace TinyCRM.Infrastructure
             DbSet.Update(entity);
         }
 
-        public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression)
+        public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression)
         {
             return DbSet.FirstOrDefaultAsync(expression);
         }
 
-        public IQueryable<TEntity> List(Expression<Func<TEntity, bool>> expression)
+        public IQueryable<TEntity> List(Expression<Func<TEntity, bool>>? expression = null)
         {
+            if (expression == null)
+            {
+                return DbSet;
+            }
             return DbSet.Where(expression);
+        }
+
+        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression)
+        {
+            return DbSet.AnyAsync(expression);
         }
     }
 }

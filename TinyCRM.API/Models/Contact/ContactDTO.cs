@@ -7,6 +7,5 @@
         public string Email { get; set; }
         public string Phone { get; set; }
         public Guid AccountId { get; set; }
-        public string AccountName { get; set; }
     }
 }

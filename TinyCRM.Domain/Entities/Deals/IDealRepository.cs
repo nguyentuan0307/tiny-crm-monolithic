@@ -7,7 +7,8 @@ using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.Domain.Entities.Deals
 {
-    internal interface IDealRepository : IRepository<Deal>
+    public interface IDealRepository : IRepository<Deal>
     {
+        public bool IsExistingDeal(Guid leadId);
     }
 }

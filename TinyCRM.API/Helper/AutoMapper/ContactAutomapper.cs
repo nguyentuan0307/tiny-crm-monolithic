@@ -8,7 +8,7 @@ namespace TinyCRM.API.Helper.AutoMapper
     {
         public ContactAutomapper()
         {
-            CreateMap<Contact, ContactDTO>();
+            CreateMap<Contact, ContactDTO>().ReverseMap();
             CreateMap<ContactCreateDTO, Contact>();
             CreateMap<ContactUpdateDTO, Contact>();
         }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
@@ -24,53 +25,79 @@ namespace TinyCRM.API.Services
 
         public async Task<ProductDTO> CreateProductAsync(ProductCreateDTO productDTO)
         {
+            await CheckValidate(productDTO.Code);
             var product = _mapper.Map<Product>(productDTO);
+
             await _productRepository.AddAsync(product);
             await _unitOfWork.SaveChangeAsync();
-            await Console.Out.WriteLineAsync($"{product.Id}");
             return _mapper.Map<ProductDTO>(product);
         }
 
-        public async Task DeleteProductAsync(string id)
+        private async Task CheckValidate(string code, Guid id = default)
         {
-            Expression<Func<Product, bool>> expression = p => p.Id == id;
-            var product = await _productRepository.GetAsync(expression) ?? throw new NotFoundHttpException("Product is not found");
+            var product = await _productRepository.GetAsync(p => p.Code == code);
+            if (product != null && product.Id != id)
+            {
+                throw new BadRequestHttpException("Product code is existed");
+            }
+        }
+
+        public async Task DeleteProductAsync(Guid id)
+        {
+            var product = await GetProductAsync(id);
             _productRepository.Remove(product);
             await _unitOfWork.SaveChangeAsync();
         }
 
-        public async Task<ProductDTO> GetProductByIdAsync(string id)
+        private async Task<Product> GetProductAsync(Guid id)
         {
-            Expression<Func<Product, bool>> expression = p => p.Id == id;
-            var product = await _productRepository.GetAsync(expression) ?? throw new NotFoundHttpException("Product is not found");
+            return await _productRepository.GetAsync(p => p.Id == id)
+                ?? throw new NotFoundHttpException("Product is not found");
+        }
+
+        public async Task<ProductDTO> GetProductByIdAsync(Guid id)
+        {
+            var product = await GetProductAsync(id);
+
             return _mapper.Map<ProductDTO>(product);
         }
-        public async Task<List<ProductDTO>> GetProductsAsync(ProductSearchDTO search)
+        public async Task<IList<ProductDTO>> GetProductsAsync(ProductSearchDTO search)
         {
-            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(search.Filter) || p.Name.Contains(search.Filter);
-            var query = _productRepository.List(expression)
-                .Skip(search.SkipCount)
-                .Take(search.MaxResultCount);
+            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord) || p.Name.Contains(search.KeyWord);
+            var query = _productRepository.List(GetExpression(search));
 
-            List<Product> products = await query.ToListAsync();
-            List<ProductDTO> productDTOs = _mapper.Map<List<ProductDTO>>(products);
+            var products = await ApplySortingAndPagination(query, search).ToListAsync();
+            var productDTOs = _mapper.Map<IList<ProductDTO>>(products);
 
             return productDTOs;
         }
 
-        public async Task<ProductDTO> UpdateProductAsync(string id, ProductUpdateDTO productDTO)
+        private static IQueryable<Product> ApplySortingAndPagination(IQueryable<Product> query, ProductSearchDTO search)
         {
-            if (id != productDTO.Id)
-            {
-                throw new BadRequestHttpException("ID provided does not match the ID in the Product");
-            }
+            string sortOrder = search.IsAsc ? "ascending" : "descending";
+            query = string.IsNullOrEmpty(search.KeySort)
+                    ? query.OrderBy("Id " + sortOrder)
+                    : query.OrderBy(search.KeySort + " " + sortOrder);
 
-            Product existingProduct = await _productRepository.GetAsync(p => p.Id == id) ?? throw new NotFoundHttpException("Product not found");
+            query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
+            return query;
+        }
 
-            existingProduct.Name = productDTO.Name;
-            existingProduct.Price = productDTO.Price;
-            existingProduct.TypeProduct = productDTO.TypeProduct;
-            existingProduct.Status = productDTO.Status;
+        private static Expression<Func<Product, bool>> GetExpression(ProductSearchDTO search)
+        {
+            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
+            || p.Code.Contains(search.KeyWord)
+            || p.Name.Contains(search.KeyWord);
+            return expression;
+        }
+
+        public async Task<ProductDTO> UpdateProductAsync(Guid id, ProductUpdateDTO productDTO)
+        {
+            await CheckValidate(productDTO.Code, id);
+
+            var existingProduct = await GetProductAsync(id);
+
+            _mapper.Map(productDTO, existingProduct);
             _productRepository.Update(existingProduct);
             await _unitOfWork.SaveChangeAsync();
             return _mapper.Map<ProductDTO>(existingProduct);

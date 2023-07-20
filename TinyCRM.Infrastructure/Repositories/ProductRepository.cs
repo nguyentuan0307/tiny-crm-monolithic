@@ -2,7 +2,7 @@
 
 namespace TinyCRM.Infrastructure.Repositories
 {
-    publics class ProductRepository : Repository<Product>, IProductRepository
+    public class ProductRepository : Repository<Product>, IProductRepository
     {
         public ProductRepository(DbFactory dbFactory) : base(dbFactory) { }
     }

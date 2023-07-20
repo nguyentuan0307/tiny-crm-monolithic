@@ -8,7 +8,7 @@ namespace TinyCRM.API.Helper.AccountMapper
     {
         public AccountAutoMapper()
         {
-            CreateMap<Account, AccountDTO>();
+            CreateMap<Account, AccountDTO>().ReverseMap();
             CreateMap<AccountCreateDTO, Account>();
             CreateMap<AccountUpdateDTO, Account>();
         }

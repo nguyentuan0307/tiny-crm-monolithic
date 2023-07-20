@@ -7,7 +7,7 @@ namespace TinyCRM.API.Services.IServices
         Task<ContactDTO> CreateContactAsync(ContactCreateDTO contactDTO);
         Task DeleteContactAsync(Guid id);
         Task<ContactDTO> GetContactByIdAsync(Guid id);
-        Task<List<ContactDTO>> GetContactsAsync(ContactSearchDTO search);
+        Task<IList<ContactDTO>> GetContactsAsync(ContactSearchDTO search);
         Task<ContactDTO> UpdateContactAsync(Guid id, ContactUpdateDTO contactDTO);
     }
 }
