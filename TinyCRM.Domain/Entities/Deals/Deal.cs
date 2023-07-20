@@ -11,6 +11,7 @@ namespace TinyCRM.Domain.Entities.Deals
         {
             ProductDeals = new HashSet<ProductDeal>();
         }
+
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
         public StatusDeal StatusDeal { get; set; }

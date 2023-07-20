@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.API.Models.Deal;
+using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
-using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Controllers
 {
@@ -13,6 +12,7 @@ namespace TinyCRM.API.Controllers
     {
         private readonly ILeadService _leadServicce;
         private readonly ILogger<LeadController> _logger;
+
         public LeadController(ILeadService leadService, ILogger<LeadController> logger)
         {
             _leadServicce = leadService;
@@ -20,6 +20,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
+        [SortFilterAttributeQuery(Filters = "Title")]
         public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDTO search)
         {
             var leadDTOs = await _leadServicce.GetLeadsAsync(search);

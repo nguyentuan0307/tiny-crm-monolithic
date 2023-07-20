@@ -1,16 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Account;
-using TinyCRM.API.Services.IServices;
-using TinyCRM.Domain.Entities.Accounts;
-using TinyCRM.Domain.Interfaces;
-using System.Linq.Dynamic.Core;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.Lead;
+using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Leads;
+using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
 {
@@ -72,11 +72,10 @@ namespace TinyCRM.API.Services
 
         private static IQueryable<Account> ApplySortingAndPagination(IQueryable<Account> query, AccountSearchDTO search)
         {
-            string sortOrder = search.IsAsc ? "ascending" : "descending";
-
-            query = string.IsNullOrEmpty(search.KeySort)
-                ? query.OrderBy("Id " + sortOrder)
-                : query.OrderBy(search.KeySort + " " + sortOrder);
+            if (!string.IsNullOrWhiteSpace(search.Sorting))
+            {
+                query = query.OrderBy(search.Sorting);
+            }
 
             query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
             return query;
@@ -84,7 +83,6 @@ namespace TinyCRM.API.Services
 
         public async Task<AccountDTO> UpdateAccountAsync(Guid id, AccountUpdateDTO accountDTO)
         {
-
             var existingAccount = await GetExistingAccount(id);
             await CheckValidate(accountDTO.Email, accountDTO.Phone, existingAccount.Id);
 
@@ -100,6 +98,7 @@ namespace TinyCRM.API.Services
             return await _accountRepository.GetAsync(p => p.Id == id, includeTables)
                 ?? throw new NotFoundHttpException("Account is not found");
         }
+
         private async Task CheckValidate(string email, string phone, Guid guid = default)
         {
             var accounts = await _accountRepository.List(p => p.Email == email

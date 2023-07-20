@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Account;
-using TinyCRM.API.Models.Contact;
-using TinyCRM.API.Models.Deal;
-using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
 
 namespace TinyCRM.API.Controllers
@@ -22,12 +20,12 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
+        [SortFilterAttributeQuery(Filters = "Name,Email")]
         public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDTO search)
         {
             var accountDTOs = await _accountService.GetAccountsAsync(search);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDTOs)}");
             return Ok(accountDTOs);
-
         }
 
         [HttpGet("{id}")]

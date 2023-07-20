@@ -5,6 +5,7 @@ using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
+
 namespace TinyCRM.Infrastructure
 {
     public class AppDataContext : DbContext
@@ -16,7 +17,9 @@ namespace TinyCRM.Infrastructure
         public DbSet<Deal> Deals { get; set; }
         public DbSet<ProductDeal> ProductDeals { get; set; }
 
-        public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
+        public AppDataContext(DbContextOptions<AppDataContext> options) : base(options)
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

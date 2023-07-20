@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using TinyCRM.API.Models.ProductDeal;
-using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.ProductDeals;
 
 namespace TinyCRM.API.Helper.AutoMapper

@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using TinyCRM.Domain.Entities.Accounts;
-using TinyCRM.Domain.Entities.Deals;
+﻿using TinyCRM.Domain.Entities.Accounts;
 
 namespace TinyCRM.Infrastructure.Repositories
 {

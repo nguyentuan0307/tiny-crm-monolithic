@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
@@ -58,6 +58,7 @@ namespace TinyCRM.API.Services
             var contact = await FindContactAsync(id);
             return _mapper.Map<ContactDTO>(contact);
         }
+
         public async Task<IList<ContactDTO>> GetContactsAsync(ContactSearchDTO search)
         {
             var query = _contactRepository.List(GetExpression(search));
@@ -78,11 +79,10 @@ namespace TinyCRM.API.Services
 
         private static IQueryable<Contact> ApplySortingAndPagination(IQueryable<Contact> query, ContactSearchDTO search)
         {
-            string sortOrder = search.IsAsc ? "ascending" : "descending";
-
-            query = string.IsNullOrEmpty(search.KeySort)
-                    ? query.OrderBy("Id " + sortOrder)
-                    : query.OrderBy(search.KeySort + " " + sortOrder);
+            if (!string.IsNullOrWhiteSpace(search.Sorting))
+            {
+                query = query.OrderBy(search.Sorting);
+            }
 
             query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
             return query;

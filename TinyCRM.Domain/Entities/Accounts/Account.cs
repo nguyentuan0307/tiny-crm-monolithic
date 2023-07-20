@@ -11,6 +11,7 @@ namespace TinyCRM.Domain.Entities.Accounts
             Contacts = new HashSet<Contact>();
             Leads = new HashSet<Lead>();
         }
+
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Phone { get; set; } = null!;

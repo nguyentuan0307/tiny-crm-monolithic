@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.API.Services.IServices;
@@ -13,6 +14,7 @@ namespace TinyCRM.API.Controllers
         private readonly IDealService _dealService;
         private readonly IProductDealService _productDealService;
         private readonly ILogger<DealController> _logger;
+
         public DealController(IDealService dealService, IProductDealService productDealService, ILogger<DealController> logger)
         {
             _dealService = dealService;
@@ -21,6 +23,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
+        [SortFilterAttributeQuery(Filters = "Title")]
         public async Task<IActionResult> GetDealsAsync([FromQuery] DealSearchDTO search)
         {
             var dealDTO = await _dealService.GetDealsAsync(search);
@@ -52,7 +55,6 @@ namespace TinyCRM.API.Controllers
             _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Deal: {id}");
             return Ok("Successfully Deleted Deal");
         }
-
 
         [HttpGet("{id}/productdeals")]
         public async Task<IActionResult> GetProductDealsByDealIdAsync(Guid id)

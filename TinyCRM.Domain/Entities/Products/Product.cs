@@ -10,6 +10,7 @@ namespace TinyCRM.Domain.Entities.Products
         {
             ProductDeals = new HashSet<ProductDeal>();
         }
+
         public string Code { get; set; } = null!;
         public string Name { get; set; } = null!;
         public TypeProduct TypeProduct { get; set; }

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.Lead;
@@ -30,6 +30,7 @@ namespace TinyCRM.API.Services
             _dealRepository = dealRepository;
             _accountRepository = accountRepository;
         }
+
         public async Task<LeadDTO> CreateLeadAsync(LeadCreateDTO leadDTO)
         {
             if (!await IsExistAccount(leadDTO.AccountId))
@@ -97,10 +98,10 @@ namespace TinyCRM.API.Services
 
         private static IQueryable<Lead> ApplySortingAndPagination(IQueryable<Lead> query, LeadSearchDTO search)
         {
-            string sortOrder = search.IsAsc ? "ascending" : "descending";
-            query = string.IsNullOrEmpty(search.KeySort)
-                    ? query.OrderBy("Id " + sortOrder)
-                    : query.OrderBy(search.KeySort + " " + sortOrder);
+            if (!string.IsNullOrWhiteSpace(search.Sorting))
+            {
+                query = query.OrderBy(search.Sorting);
+            }
 
             query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
             return query;
@@ -108,7 +109,6 @@ namespace TinyCRM.API.Services
 
         public async Task<DealDTO> QualifyLeadAsync(Guid id)
         {
-
             var existingLead = await GetSatisfiedLead(id);
 
             existingLead.StatusLead = StatusLead.Quanlified;

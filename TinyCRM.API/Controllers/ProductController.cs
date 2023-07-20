@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
 
@@ -19,6 +20,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
+        [SortFilterAttributeQuery(Filters = "Code,Name")]
         public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDTO search)
         {
             var productDTOs = await _productService.GetProductsAsync(search);

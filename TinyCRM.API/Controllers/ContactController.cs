@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
 
@@ -11,6 +12,7 @@ namespace TinyCRM.API.Controllers
     {
         private readonly IContactService _contactService;
         private readonly ILogger<ContactController> _logger;
+
         public ContactController(IContactService contactService, ILogger<ContactController> logger)
         {
             _contactService = contactService;
@@ -18,6 +20,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
+        [SortFilterAttributeQuery(Filters = "Name,Email")]
         public async Task<IActionResult> GetContactsAsync([FromQuery] ContactSearchDTO search)
         {
             var contactDTOs = await _contactService.GetContactsAsync(search);

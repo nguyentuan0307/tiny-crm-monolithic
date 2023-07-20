@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Services.IServices;
@@ -22,6 +22,7 @@ namespace TinyCRM.API.Services
             _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
+
         public async Task DeleteDealAsync(Guid id)
         {
             var deal = await FindDealAsync(id);
@@ -62,10 +63,10 @@ namespace TinyCRM.API.Services
 
         private static IQueryable<Deal> ApplySortingAndPagination(IQueryable<Deal> query, DealSearchDTO search)
         {
-            string sortOrder = search.IsAsc ? "ascending" : "descending";
-            query = string.IsNullOrEmpty(search.KeySort)
-                    ? query.OrderBy("Id " + sortOrder)
-                    : query.OrderBy(search.KeySort + " " + sortOrder);
+            if (!string.IsNullOrWhiteSpace(search.Sorting))
+            {
+                query = query.OrderBy(search.Sorting);
+            }
 
             query = query.Include(p => p.ProductDeals)
                            .ThenInclude(p => p.Product).Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);

@@ -1,9 +1,8 @@
-﻿using TinyCRM.API.Middleware;
-using TinyCRM.API.Exceptions;
-using TinyCRM.API.Model;
-using System.Text;
-using Microsoft.Extensions.Logging;
+﻿using System.Text;
 using System.Text.RegularExpressions;
+using TinyCRM.API.Exceptions;
+using TinyCRM.API.Middleware;
+using TinyCRM.API.Model;
 
 namespace TinyCRM.API.Middleware
 {
@@ -11,6 +10,7 @@ namespace TinyCRM.API.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<HttpExceptionMiddleware> _logger;
+
         public HttpExceptionMiddleware(RequestDelegate next, ILogger<HttpExceptionMiddleware> logger)
         {
             _next = next;
@@ -40,7 +40,6 @@ namespace TinyCRM.API.Middleware
                 logBuilder.AppendLine($"Request Body: {requestBody}");
                 logBuilder.AppendLine($"Request Scheme: {context.Request.Scheme}");
                 logBuilder.AppendLine($"Request Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}"))}");
-
 
                 if (ex is HttpException)
                 {
@@ -83,6 +82,7 @@ namespace TinyCRM.API.Middleware
                 Message = message
             });
         }
+
         private async Task<string> GetRequestBodyAsync(HttpContext context)
         {
             context.Request.Body.Seek(0, SeekOrigin.Begin);
@@ -93,6 +93,7 @@ namespace TinyCRM.API.Middleware
         }
     }
 }
+
 public static class HttpExceptionMiddlewareExtensions
 {
     public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder)

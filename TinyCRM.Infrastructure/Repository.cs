@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using TinyCRM.Domain.Base;
 using TinyCRM.Domain.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TinyCRM.Infrastructure
 {
@@ -37,7 +36,6 @@ namespace TinyCRM.Infrastructure
 
         public void Remove(TEntity entity)
         {
-
             DbSet.Remove(entity);
         }
 

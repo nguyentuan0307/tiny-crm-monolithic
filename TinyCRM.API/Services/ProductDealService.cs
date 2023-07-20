@@ -6,6 +6,7 @@ using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
+using TinyCRM.Domain.Enums;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -35,6 +36,9 @@ namespace TinyCRM.API.Services
 
             var deal = await FindDealAsync(productDealDTO.DealId);
             await IsExistProduct(productDealDTO.ProductId);
+
+            if (deal.StatusDeal != StatusDeal.Open)
+                throw new BadRequestHttpException("Deal is Won/Lose");
 
             var productDeal = _mapper.Map<ProductDeal>(productDealDTO);
 
@@ -66,6 +70,8 @@ namespace TinyCRM.API.Services
         public async Task DeleteProductDealAsync(Guid id, Guid productDealId)
         {
             var deal = await FindDealAsync(id);
+            if (deal.StatusDeal != StatusDeal.Open)
+                throw new BadRequestHttpException("Deal is Won/Lose");
             var productDeal = await FindProductDealAsync(productDealId);
 
             if (id != productDeal.DealId)
@@ -114,6 +120,9 @@ namespace TinyCRM.API.Services
 
             var deal = await FindDealAsync(productDeal.DealId);
             await IsExistProduct(productDealDTO.ProductId);
+
+            if (deal.StatusDeal != StatusDeal.Open)
+                throw new BadRequestHttpException("Deal is Won/Lose");
 
             _mapper.Map(productDealDTO, productDeal);
             _productDealRepository.Update(productDeal);

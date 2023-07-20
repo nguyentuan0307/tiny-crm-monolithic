@@ -9,6 +9,7 @@ namespace TinyCRM.API.Models.Lead
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(ReasonDisqualification))]
         public ReasonDisqualification ReasonDisqualification { get; set; }
+
         public string? DescriptionDisqualification { get; set; }
     }
 }
