@@ -7,8 +7,6 @@ using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Interfaces;
 using System.Linq.Dynamic.Core;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using TinyCRM.Domain.Entities.Leads;
 
 namespace TinyCRM.API.Services
 {
@@ -36,9 +34,7 @@ namespace TinyCRM.API.Services
 
         public async Task DeleteAccountAsync(Guid id)
         {
-            Expression<Func<Account, bool>> expression = p => p.Id == id;
-            var account = await _accountRepository.GetAsync(expression)
-                ?? throw new NotFoundHttpException("Account is not found");
+            var account = await GetExistingAccount(id);
 
             _accountRepository.Remove(account);
             await _unitOfWork.SaveChangeAsync();
@@ -46,8 +42,7 @@ namespace TinyCRM.API.Services
 
         public async Task<AccountDTO> GetAccountByIdAsync(Guid id)
         {
-            var account = await GetExistingAccount(id)
-                ?? throw new NotFoundHttpException("Account is not found");
+            var account = await GetExistingAccount(id);
 
             return _mapper.Map<AccountDTO>(account);
         }
@@ -107,11 +102,11 @@ namespace TinyCRM.API.Services
             || p.Phone == phone).ToListAsync();
             if (accounts.Any(a => a.Email == email && a.Id != guid))
             {
-                throw new BadHttpRequestException("Email is already exist");
+                throw new BadRequestHttpException("Email is already exist");
             }
             if (accounts.Any(a => a.Phone == email))
             {
-                throw new BadHttpRequestException("Phone is already exist");
+                throw new BadRequestHttpException("Phone is already exist");
             }
         }
     }

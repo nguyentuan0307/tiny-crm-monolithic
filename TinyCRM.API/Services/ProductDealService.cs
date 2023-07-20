@@ -57,12 +57,6 @@ namespace TinyCRM.API.Services
                 throw new NotFoundHttpException("Deal is not found");
         }
 
-        private async Task IsExistDeal(Guid dealId)
-        {
-            if (!await _dealRepository.AnyAsync(p => p.Id == dealId))
-                throw new NotFoundHttpException("Deal is not found");
-        }
-
         private async Task IsExistProduct(Guid productId)
         {
             if (!await _productRepository.AnyAsync(p => p.Id == productId))

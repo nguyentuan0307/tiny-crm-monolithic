@@ -1,4 +1,3 @@
-using TinyCRM.API.Exceptions;
 using TinyCRM.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,5 +32,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Logger.LogInformation("Started running the application at {DateTime}", DateTime.Now);
 
 app.Run();

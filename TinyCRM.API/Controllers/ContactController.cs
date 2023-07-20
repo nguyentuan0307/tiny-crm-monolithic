@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
 
@@ -9,16 +10,18 @@ namespace TinyCRM.API.Controllers
     public class ContactController : Controller
     {
         private readonly IContactService _contactService;
-
-        public ContactController(IContactService contactService)
+        private readonly ILogger<ContactController> _logger;
+        public ContactController(IContactService contactService, ILogger<ContactController> logger)
         {
             _contactService = contactService;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetContactsAsync([FromQuery] ContactSearchDTO search)
         {
             var contactDTOs = await _contactService.GetContactsAsync(search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts");
             return Ok(contactDTOs);
         }
 
@@ -27,6 +30,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> GetContactByIdAsync(Guid id)
         {
             var contactDTO = await _contactService.GetContactByIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contact");
             return Ok(contactDTO);
         }
 
@@ -34,6 +38,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> CreateContactAsync([FromBody] ContactCreateDTO contactDTO)
         {
             var contactNewDTO = await _contactService.CreateContactAsync(contactDTO);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Contact");
             return CreatedAtAction(nameof(GetContactByIdAsync), new { id = contactNewDTO.Id }, contactNewDTO);
         }
 
@@ -41,6 +46,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> UpdateContactAsync(Guid id, [FromBody] ContactUpdateDTO contactDTO)
         {
             var contactUpdateDTO = await _contactService.UpdateContactAsync(id, contactDTO);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Contact");
             return Ok(contactUpdateDTO);
         }
 
@@ -48,6 +54,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> DeleteContactAsync(Guid id)
         {
             await _contactService.DeleteContactAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Contact");
             return Ok("Successfully Deleted Contact");
         }
     }

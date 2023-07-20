@@ -105,11 +105,11 @@ namespace TinyCRM.API.Services
             || p.Phone == phone).ToListAsync();
             if (accounts.Any(a => a.Email == email && a.Id != guid))
             {
-                throw new BadHttpRequestException("Email is already exist");
+                throw new BadRequestHttpException("Email is already exist");
             }
             if (accounts.Any(a => a.Phone == email))
             {
-                throw new BadHttpRequestException("Phone is already exist");
+                throw new BadRequestHttpException("Phone is already exist");
             }
         }
 

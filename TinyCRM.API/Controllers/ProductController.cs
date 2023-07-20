@@ -9,16 +9,19 @@ namespace TinyCRM.API.Controllers
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ILogger _logger;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, ILogger logger)
         {
             _productService = productService;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDTO search)
         {
             var productDTOs = await _productService.GetProductsAsync(search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Products");
             return Ok(productDTOs);
         }
 
@@ -27,6 +30,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> GetProductByIdAsync(Guid id)
         {
             var productDTO = await _productService.GetProductByIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product");
             return Ok(productDTO);
         }
 
@@ -34,6 +38,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDTO ProductDTO)
         {
             var productNewDTO = await _productService.CreateProductAsync(ProductDTO);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product");
             return CreatedAtAction(nameof(GetProductByIdAsync), new { id = productNewDTO.Id }, productNewDTO);
         }
 
@@ -41,6 +46,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDTO ProductDTO)
         {
             var productUpdateDTO = await _productService.UpdateProductAsync(id, ProductDTO);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Product");
             return Ok(productUpdateDTO);
         }
 
@@ -48,6 +54,7 @@ namespace TinyCRM.API.Controllers
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
             await _productService.DeleteProductAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Product");
             return Ok("Successfully Deleted Product");
         }
     }

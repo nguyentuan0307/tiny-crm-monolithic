@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Entities.Deals;
