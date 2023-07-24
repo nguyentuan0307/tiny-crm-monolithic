@@ -7,6 +7,6 @@ namespace TinyCRM.API.Models.Deal
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(EnumDealFilterSort))]
-        public EnumDealFilterSort SortFilter { get; set; } = EnumDealFilterSort.Id;
+        public EnumDealFilterSort? SortFilter { get; set; }
     }
 }

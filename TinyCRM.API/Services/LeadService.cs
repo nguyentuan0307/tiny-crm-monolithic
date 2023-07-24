@@ -61,7 +61,7 @@ namespace TinyCRM.API.Services
         {
             var existingLead = await FindLeadAsync(id);
 
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
+            if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
@@ -89,11 +89,12 @@ namespace TinyCRM.API.Services
             return leadDtOs;
         }
 
-        private string ConvertSort(LeadSearchDto search)
+        private static string ConvertSort(LeadSearchDto search)
         {
+            if (search.SortFilter == null) return string.Empty;
+
             var sort = search.SortFilter.ToString() switch
             {
-                "Id" => "Id",
                 "Title" => "Title",
                 "AccountName" => "Account.Name",
                 _ => "Id"

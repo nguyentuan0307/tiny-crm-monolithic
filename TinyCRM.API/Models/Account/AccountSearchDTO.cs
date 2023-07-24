@@ -7,6 +7,6 @@ namespace TinyCRM.API.Models.Account
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(EnumAccountFilterSort))]
-        public EnumAccountFilterSort SortFilter { get; set; } = EnumAccountFilterSort.Id;
+        public EnumAccountFilterSort? SortFilter { get; set; }
     }
 }

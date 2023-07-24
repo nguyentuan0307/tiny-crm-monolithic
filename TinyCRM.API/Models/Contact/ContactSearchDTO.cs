@@ -7,6 +7,6 @@ namespace TinyCRM.API.Models.Contact
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(EnumContactFilterSort))]
-        public EnumContactFilterSort SortFilter { get; set; } = EnumContactFilterSort.Id;
+        public EnumContactFilterSort? SortFilter { get; set; }
     }
 }
