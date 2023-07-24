@@ -1,7 +1,17 @@
+using Serilog;
 using TinyCRM.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
+            .CreateLogger();
+
+builder.Services.AddLogging(loggingBuilder =>
+{
+    loggingBuilder.AddSerilog(dispose: true);
+});
 builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddRepositories();

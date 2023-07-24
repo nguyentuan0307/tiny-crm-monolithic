@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Product;
@@ -64,24 +63,13 @@ namespace TinyCRM.API.Services
 
         public async Task<IList<ProductDTO>> GetProductsAsync(ProductSearchDTO search)
         {
-            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord) || p.Name.Contains(search.KeyWord);
-            var query = _productRepository.List(GetExpression(search));
+            var includeTables = string.Empty;
+            var query = _productRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
 
-            var products = await ApplySortingAndPagination(query, search).ToListAsync();
+            var products = await query.ToListAsync();
             var productDTOs = _mapper.Map<IList<ProductDTO>>(products);
 
             return productDTOs;
-        }
-
-        private static IQueryable<Product> ApplySortingAndPagination(IQueryable<Product> query, ProductSearchDTO search)
-        {
-            if (!string.IsNullOrWhiteSpace(search.Sorting))
-            {
-                query = query.OrderBy(search.Sorting);
-            }
-
-            query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
-            return query;
         }
 
         private static Expression<Func<Product, bool>> GetExpression(ProductSearchDTO search)

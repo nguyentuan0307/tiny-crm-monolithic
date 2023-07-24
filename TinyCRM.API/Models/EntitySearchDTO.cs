@@ -15,6 +15,5 @@ namespace TinyCRM.API.Models
 
         [StringLength(100, ErrorMessage = "KeySort cannot exceed 100 characters.")]
         public string? Sorting { get; set; }
-
     }
 }

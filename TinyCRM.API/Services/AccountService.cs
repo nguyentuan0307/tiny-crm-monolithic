@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Account;
@@ -53,32 +52,22 @@ namespace TinyCRM.API.Services
 
         public async Task<IList<AccountDTO>> GetAccountsAsync(AccountSearchDTO search)
         {
-            var query = _accountRepository.List(GetExpression(search));
+            var includeTables = string.Empty;
+            var query = _accountRepository.List(GetExpression(search.KeyWord), includeTables, search.Sorting, search.PageIndex, search.PageSize);
 
-            var accounts = await ApplySortingAndPagination(query, search).ToListAsync();
+            var accounts = await query.ToListAsync();
             var accountDTOs = _mapper.Map<IList<AccountDTO>>(accounts);
 
             return accountDTOs;
         }
 
-        private static Expression<Func<Account, bool>> GetExpression(AccountSearchDTO search)
+        private static Expression<Func<Account, bool>> GetExpression(string? keyWord)
         {
-            Expression<Func<Account, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
-                || p.Name.Contains(search.KeyWord)
-                || p.Email.Contains(search.KeyWord);
+            Expression<Func<Account, bool>> expression = p => string.IsNullOrEmpty(keyWord)
+                || p.Name.Contains(keyWord)
+                || p.Email.Contains(keyWord);
 
             return expression;
-        }
-
-        private static IQueryable<Account> ApplySortingAndPagination(IQueryable<Account> query, AccountSearchDTO search)
-        {
-            if (!string.IsNullOrWhiteSpace(search.Sorting))
-            {
-                query = query.OrderBy(search.Sorting);
-            }
-
-            query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
-            return query;
         }
 
         public async Task<AccountDTO> UpdateAccountAsync(Guid id, AccountUpdateDTO accountDTO)
@@ -111,28 +100,6 @@ namespace TinyCRM.API.Services
             {
                 throw new BadRequestHttpException("Phone is already exist");
             }
-        }
-
-        public async Task<List<ContactDTO>> GetContactsByAccountIdAsync(Guid id)
-        {
-            string includeTables = nameof(Account.Contacts);
-            var account = await GetExistingAccount(id, includeTables);
-            return _mapper.Map<List<ContactDTO>>(account.Contacts);
-        }
-
-        public async Task<List<DealDTO>> GetDealsByAccountIdAsync(Guid id)
-        {
-            string includeTables = $"{nameof(Account.Leads)}.{nameof(Lead.Deal)}";
-            var account = await GetExistingAccount(id, includeTables);
-            var dealAccounts = account.Leads.Where(p => p.Deal != null).Select(x => x.Deal);
-            return _mapper.Map<List<DealDTO>>(dealAccounts);
-        }
-
-        public async Task<List<LeadDTO>> GetLeadsByAccountIdAsync(Guid id)
-        {
-            string includeTables = nameof(Account.Leads);
-            var account = await GetExistingAccount(id, includeTables);
-            return _mapper.Map<List<LeadDTO>>(account.Leads);
         }
     }
 }

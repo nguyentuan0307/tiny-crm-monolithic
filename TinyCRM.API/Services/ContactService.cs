@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Contact;
@@ -61,9 +60,10 @@ namespace TinyCRM.API.Services
 
         public async Task<IList<ContactDTO>> GetContactsAsync(ContactSearchDTO search)
         {
-            var query = _contactRepository.List(GetExpression(search));
+            var includeTables = "Account";
+            var query = _contactRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
 
-            var contacts = await ApplySortingAndPagination(query, search).ToListAsync();
+            var contacts = await query.ToListAsync();
             var contactDTOs = _mapper.Map<IList<ContactDTO>>(contacts);
 
             return contactDTOs;
@@ -75,17 +75,6 @@ namespace TinyCRM.API.Services
             || p.Name.Contains(search.KeyWord)
             || p.Email.Contains(search.KeyWord);
             return expression;
-        }
-
-        private static IQueryable<Contact> ApplySortingAndPagination(IQueryable<Contact> query, ContactSearchDTO search)
-        {
-            if (!string.IsNullOrWhiteSpace(search.Sorting))
-            {
-                query = query.OrderBy(search.Sorting);
-            }
-
-            query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
-            return query;
         }
 
         public async Task<ContactDTO> UpdateContactAsync(Guid id, ContactUpdateDTO contactDTO)
@@ -117,6 +106,16 @@ namespace TinyCRM.API.Services
         {
             return await _contactRepository.GetAsync(p => p.Id == id)
                 ?? throw new NotFoundHttpException("Contact is not found");
+        }
+
+        public async Task<IList<ContactDTO>> GetContactsByAccountIdAsync(Guid accountId)
+        {
+            if (!await _accountRepository.AnyAsync(p => p.Id == accountId))
+            {
+                throw new BadRequestHttpException("Account is not exist");
+            }
+            var contacts = await _contactRepository.List(p => p.AccountId == accountId).ToListAsync();
+            return _mapper.Map<IList<ContactDTO>>(contacts);
         }
     }
 }

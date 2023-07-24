@@ -12,9 +12,10 @@ namespace TinyCRM.Domain.Interfaces
 
         void Update(T entity);
 
-        Task<T?> GetAsync(Expression<Func<T, bool>> expression, string? stringInclude = default);
+        Task<T?> GetAsync(Expression<Func<T, bool>> expression, string? stringInclude = null);
 
-        IQueryable<T> List(Expression<Func<T, bool>>? expression = null);
+        IQueryable<T> List(Expression<Func<T, bool>>? expression = null, string? includeTables = null,
+            string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue);
 
         Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
 

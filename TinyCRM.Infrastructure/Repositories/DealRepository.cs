@@ -8,7 +8,7 @@ namespace TinyCRM.Infrastructure.Repositories
         {
         }
 
-        public bool IsExistingDeal(Guid leadId)
+        public bool IsExistingLead(Guid leadId)
         {
             return DbSet.Any(d => d.LeadId == leadId);
         }

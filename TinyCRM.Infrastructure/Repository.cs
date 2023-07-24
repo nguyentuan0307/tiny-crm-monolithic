@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 using TinyCRM.Domain.Base;
 using TinyCRM.Domain.Interfaces;
 
@@ -48,7 +49,7 @@ namespace TinyCRM.Infrastructure
             DbSet.Update(entity);
         }
 
-        public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression, string? includeTables = default)
+        public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression, string? includeTables = null)
         {
             IQueryable<TEntity> query = DbSet;
             if (!string.IsNullOrEmpty(includeTables))
@@ -63,13 +64,29 @@ namespace TinyCRM.Infrastructure
             return query.FirstOrDefaultAsync(expression);
         }
 
-        public IQueryable<TEntity> List(Expression<Func<TEntity, bool>>? expression = null)
+        public IQueryable<TEntity> List(Expression<Func<TEntity, bool>>? expression = null, string? includeTables = null,
+            string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue)
         {
-            if (expression == null)
+            IQueryable<TEntity> query = DbSet;
+            if (!string.IsNullOrEmpty(includeTables))
             {
-                return DbSet;
+                string[] includeProperties = includeTables.Split(',');
+
+                foreach (var includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
             }
-            return DbSet.Where(expression);
+            if (expression != null)
+            {
+                query = query.Where(expression);
+            }
+            if (!string.IsNullOrWhiteSpace(sorting))
+            {
+                query = query.OrderBy(sorting);
+            }
+            query = query.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+            return query;
         }
 
         public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression)

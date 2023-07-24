@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Interfaces;
 
@@ -13,12 +13,14 @@ namespace TinyCRM.API.Services
     public class DealService : IDealService
     {
         private readonly IDealRepository _dealRepository;
+        private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public DealService(IDealRepository dealRepository, IMapper mapper, IUnitOfWork unitOfWork)
+        public DealService(IDealRepository dealRepository, IMapper mapper, IUnitOfWork unitOfWork, IAccountRepository accountRepository)
         {
             _dealRepository = dealRepository;
+            _accountRepository = accountRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
@@ -38,16 +40,17 @@ namespace TinyCRM.API.Services
 
         public async Task<DealDTO> GetDealByIdAsync(Guid id)
         {
-            string includeTables = "Lead,ProductDeals,ProductDeals.Product";
+            var includeTables = "Lead,ProductDeals.Product";
             var deal = await FindDealAsync(id, includeTables);
             return _mapper.Map<DealDTO>(deal);
         }
 
         public async Task<IList<DealDTO>> GetDealsAsync(DealSearchDTO search)
         {
-            var query = _dealRepository.List(GetExpression(search));
+            var includeTables = "Lead,ProductDeals.Product";
+            var query = _dealRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
 
-            var leads = await ApplySortingAndPagination(query, search).ToListAsync();
+            var leads = await query.ToListAsync();
             var leadDTOs = _mapper.Map<IList<DealDTO>>(leads);
 
             return leadDTOs;
@@ -59,18 +62,6 @@ namespace TinyCRM.API.Services
             || p.Title.Contains(search.KeyWord)
             || p.Lead.Account.Name.Contains(search.KeyWord);
             return expression;
-        }
-
-        private static IQueryable<Deal> ApplySortingAndPagination(IQueryable<Deal> query, DealSearchDTO search)
-        {
-            if (!string.IsNullOrWhiteSpace(search.Sorting))
-            {
-                query = query.OrderBy(search.Sorting);
-            }
-
-            query = query.Include(p => p.ProductDeals)
-                           .ThenInclude(p => p.Product).Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
-            return query;
         }
 
         public async Task<DealDTO> UpdateDealAsync(Guid id, DealUpdateDTO dealDTO)
@@ -112,6 +103,17 @@ namespace TinyCRM.API.Services
                 AvgRevenue = statistic.Average(x => x.ActualRevenue)
             };
             return dealStatisticDTO;
+        }
+
+        public async Task<IList<DealDTO>> GetDealsByAccountIdAsync(Guid accountId)
+        {
+            if (!await _accountRepository.AnyAsync(a => a.Id == accountId))
+            {
+                throw new BadRequestHttpException("Account is not found");
+            }
+            var dealAccounts = await _dealRepository.List(p => p.Lead.AccountId == accountId, "Lead").ToListAsync();
+
+            return _mapper.Map<IList<DealDTO>>(dealAccounts);
         }
     }
 }

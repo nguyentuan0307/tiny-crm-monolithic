@@ -9,6 +9,7 @@ namespace TinyCRM.API.Models.Lead
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
         public Guid AccountId { get; set; }
+        public string? AccountName { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public StatusLead StatusLead { get; set; }

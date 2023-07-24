@@ -8,7 +8,9 @@ namespace TinyCRM.API.Helper.AutoMapper
     {
         public LeadAutoMapper()
         {
-            CreateMap<Lead, LeadDTO>().ReverseMap();
+            CreateMap<Lead, LeadDTO>()
+                .ForMember(dest => dest.AccountName, opt => opt.MapFrom(src => src.Account.Name))
+                .ReverseMap();
             CreateMap<LeadCreateDTO, Lead>();
             CreateMap<LeadUpdateDTO, Lead>();
             CreateMap<DisqualifyDTO, Lead>();

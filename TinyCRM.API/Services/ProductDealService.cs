@@ -33,8 +33,8 @@ namespace TinyCRM.API.Services
         {
             if (id != productDealDTO.DealId)
                 throw new BadRequestHttpException("DealId is not match");
-
-            var deal = await FindDealAsync(productDealDTO.DealId);
+            var includeTables = "Lead.Account";
+            var deal = await FindDealAsync(productDealDTO.DealId, includeTables);
             await IsExistProduct(productDealDTO.ProductId);
 
             if (deal.StatusDeal != StatusDeal.Open)
@@ -106,8 +106,8 @@ namespace TinyCRM.API.Services
 
         public async Task<IList<ProductDealDTO>> GetProductDealsByDealIdAsync(Guid id)
         {
-            var productDeals = await _productDealRepository.List(p => p.DealId == id)
-                .Include(p => p.Product).ToListAsync();
+            var includeTables = "Product";
+            var productDeals = await _productDealRepository.List(p => p.DealId == id, includeTables).ToListAsync();
             return _mapper.Map<IList<ProductDealDTO>>(productDeals);
         }
 

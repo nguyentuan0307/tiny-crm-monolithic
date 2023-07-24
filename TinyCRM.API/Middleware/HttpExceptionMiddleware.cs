@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Serilog;
+using System.Text;
 using System.Text.RegularExpressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Middleware;
@@ -26,29 +27,31 @@ namespace TinyCRM.API.Middleware
             }
             catch (Exception ex)
             {
-                var logBuilder = new StringBuilder();
+                Log.Logger.Error(ex, "An exception occurred while processing the request");
 
-                logBuilder.AppendLine($"DateTime: {DateTime.Now}");
-                logBuilder.AppendLine("An exception occurred:");
-                logBuilder.AppendLine($"Exception: {ex.GetType().Name}");
-                logBuilder.AppendLine($"Message: {ex.Message}");
+                //var logBuilder = new StringBuilder();
 
-                logBuilder.AppendLine($"Request Path: {context.Request.Path}");
-                logBuilder.AppendLine($"Request Method: {context.Request.Method}");
-                logBuilder.AppendLine($"Request Query: {context.Request.QueryString}");
-                var requestBody = await GetRequestBodyAsync(context);
-                logBuilder.AppendLine($"Request Body: {requestBody}");
-                logBuilder.AppendLine($"Request Scheme: {context.Request.Scheme}");
-                logBuilder.AppendLine($"Request Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}"))}");
+                //logBuilder.AppendLine($"DateTime: {DateTime.Now}");
+                //logBuilder.AppendLine("An exception occurred:");
+                //logBuilder.AppendLine($"Exception: {ex.GetType().Name}");
+                //logBuilder.AppendLine($"Message: {ex.Message}");
 
-                if (ex is HttpException)
-                {
-                    _logger.LogWarning(logBuilder.ToString());
-                }
-                else
-                {
-                    _logger.LogError(logBuilder.ToString());
-                }
+                //logBuilder.AppendLine($"Request Path: {context.Request.Path}");
+                //logBuilder.AppendLine($"Request Method: {context.Request.Method}");
+                //logBuilder.AppendLine($"Request Query: {context.Request.QueryString}");
+                //var requestBody = await GetRequestBodyAsync(context);
+                //logBuilder.AppendLine($"Request Body: {requestBody}");
+                //logBuilder.AppendLine($"Request Scheme: {context.Request.Scheme}");
+                //logBuilder.AppendLine($"Request Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}"))}");
+
+                //if (ex is HttpException)
+                //{
+                //    _logger.LogWarning(logBuilder.ToString());
+                //}
+                //else
+                //{
+                //    _logger.LogError(logBuilder.ToString());
+                //}
 
                 await HandleExceptionAsync(context, ex);
             }
