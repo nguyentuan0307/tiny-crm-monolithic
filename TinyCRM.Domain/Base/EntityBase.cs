@@ -12,7 +12,7 @@ namespace TinyCRM.Domain.Base
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public virtual TKey Id { get; set; }
+        public virtual TKey Id { get; set; } = default!;
     }
 
     public interface IAuditEntity

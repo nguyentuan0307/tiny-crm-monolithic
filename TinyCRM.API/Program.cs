@@ -1,5 +1,6 @@
 using Serilog;
 using TinyCRM.API.Extensions;
+using TinyCRM.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,13 +27,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseExceptionMiddleware();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+var environment = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+app.UseCustomerExceptionHandler(environment);
 
 app.UseHttpsRedirection();
 
