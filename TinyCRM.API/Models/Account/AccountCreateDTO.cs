@@ -2,7 +2,7 @@
 
 namespace TinyCRM.API.Models.Account
 {
-    public class AccountCreateDTO
+    public class AccountCreateDto
     {
         [Required(ErrorMessage = "Name is required")]
         public string Name { get; set; } = null!;

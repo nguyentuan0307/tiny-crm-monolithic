@@ -4,13 +4,13 @@ using TinyCRM.Domain.Entities.Contacts;
 
 namespace TinyCRM.API.Helper.AutoMapper
 {
-    public class ContactAutomapper : Profile
+    public class ContactAutoMapper : Profile
     {
-        public ContactAutomapper()
+        public ContactAutoMapper()
         {
-            CreateMap<Contact, ContactDTO>().ReverseMap();
-            CreateMap<ContactCreateDTO, Contact>();
-            CreateMap<ContactUpdateDTO, Contact>();
+            CreateMap<Contact, ContactDto>().ReverseMap();
+            CreateMap<ContactCreateDto, Contact>();
+            CreateMap<ContactUpdateDto, Contact>();
         }
     }
 }

@@ -5,21 +5,22 @@ namespace TinyCRM.API.Services.IServices
 {
     public interface ILeadService
     {
-        public Task<LeadDTO> CreateLeadAsync(LeadCreateDTO leadDTO);
+        public Task<LeadDto> CreateLeadAsync(LeadCreateDto leadDto);
 
         public Task DeleteLeadAsync(Guid id);
 
-        public Task DisqualifyLeadAsync(Guid id, DisqualifyDTO disqualifyDTO);
+        public Task DisqualifyLeadAsync(Guid id, DisqualifyDto disqualifyDto);
 
-        public Task<LeadDTO> GetLeadByIdAsync(Guid id);
+        public Task<LeadDto> GetLeadByIdAsync(Guid id);
 
-        public Task<IList<LeadDTO>> GetLeadsAsync(LeadSearchDTO search);
-        public Task<IList<LeadDTO>> GetLeadsByAccountIdAsync(Guid accountId);
+        public Task<IList<LeadDto>> GetLeadsAsync(LeadSearchDto search);
 
-        public Task<LeadStatisticDTO> GetStatisticLeadAsync();
+        public Task<IList<LeadDto>> GetLeadsByAccountIdAsync(Guid accountId);
 
-        public Task<DealDTO> QualifyLeadAsync(Guid id);
+        public Task<LeadStatisticDto> GetStatisticLeadAsync();
 
-        public Task<LeadDTO> UpdateLeadAsync(Guid id, LeadUpdateDTO leadDTO);
+        public Task<DealDto> QualifyLeadAsync(Guid id);
+
+        public Task<LeadDto> UpdateLeadAsync(Guid id, LeadUpdateDto leadDto);
     }
 }

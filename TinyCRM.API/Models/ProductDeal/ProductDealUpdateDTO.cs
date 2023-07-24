@@ -2,7 +2,7 @@
 
 namespace TinyCRM.API.Models.ProductDeal
 {
-    public class ProductDealUpdateDTO
+    public class ProductDealUpdateDto
     {
         [Required(ErrorMessage = "DealId is Required")]
         public Guid DealId { get; set; }

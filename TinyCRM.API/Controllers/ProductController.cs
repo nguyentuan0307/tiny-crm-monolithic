@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
 
@@ -11,7 +10,7 @@ namespace TinyCRM.API.Controllers
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
-        private readonly ILogger _logger;
+        private readonly ILogger<ProductController> _logger;
 
         public ProductController(IProductService productService, ILogger<ProductController> logger)
         {
@@ -20,39 +19,39 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDTO search)
+        public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDto search)
         {
-            var productDTOs = await _productService.GetProductsAsync(search);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Products: {JsonSerializer.Serialize(productDTOs)}");
-            return Ok(productDTOs);
+            var productDtOs = await _productService.GetProductsAsync(search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Products: {JsonSerializer.Serialize(productDtOs)}");
+            return Ok(productDtOs);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ActionName(nameof(GetProductByIdAsync))]
         public async Task<IActionResult> GetProductByIdAsync(Guid id)
         {
-            var productDTO = await _productService.GetProductByIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product: {JsonSerializer.Serialize(productDTO)}");
-            return Ok(productDTO);
+            var productDto = await _productService.GetProductByIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product: {JsonSerializer.Serialize(productDto)}");
+            return Ok(productDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDTO ProductDTO)
+        public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDto productDto)
         {
-            var productNewDTO = await _productService.CreateProductAsync(ProductDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product: {JsonSerializer.Serialize(productNewDTO)}");
-            return CreatedAtAction(nameof(GetProductByIdAsync), new { id = productNewDTO.Id }, productNewDTO);
+            var productNewDto = await _productService.CreateProductAsync(productDto);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product: {JsonSerializer.Serialize(productNewDto)}");
+            return CreatedAtAction(nameof(GetProductByIdAsync), new { id = productNewDto.Id }, productNewDto);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDTO ProductDTO)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDto productDto)
         {
-            var productUpdateDTO = await _productService.UpdateProductAsync(id, ProductDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Product: {JsonSerializer.Serialize(productUpdateDTO)}");
-            return Ok(productUpdateDTO);
+            var productUpdateDto = await _productService.UpdateProductAsync(id, productDto);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Product: {JsonSerializer.Serialize(productUpdateDto)}");
+            return Ok(productUpdateDto);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
             await _productService.DeleteProductAsync(id);

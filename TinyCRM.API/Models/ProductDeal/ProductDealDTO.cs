@@ -1,6 +1,6 @@
 ﻿namespace TinyCRM.API.Models.ProductDeal
 {
-    public class ProductDealDTO
+    public class ProductDealDto
     {
         public Guid Id { get; set; }
         public Guid DealId { get; set; }

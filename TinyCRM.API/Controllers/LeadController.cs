@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
 
@@ -10,68 +9,68 @@ namespace TinyCRM.API.Controllers
     [Route("api/[controller]")]
     public class LeadController : Controller
     {
-        private readonly ILeadService _leadServicce;
+        private readonly ILeadService _leadService;
         private readonly ILogger<LeadController> _logger;
 
         public LeadController(ILeadService leadService, ILogger<LeadController> logger)
         {
-            _leadServicce = leadService;
+            _leadService = leadService;
             _logger = logger;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDTO search)
+        public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDto search)
         {
-            var leadDTOs = await _leadServicce.GetLeadsAsync(search);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDTOs)}");
-            return Ok(leadDTOs);
+            var leadDtOs = await _leadService.GetLeadsAsync(search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
+            return Ok(leadDtOs);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ActionName(nameof(GetLeadByIdAsync))]
         public async Task<IActionResult> GetLeadByIdAsync(Guid id)
         {
-            var leadDTO = await _leadServicce.GetLeadByIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead: {JsonSerializer.Serialize(leadDTO)}");
-            return Ok(leadDTO);
+            var leadDto = await _leadService.GetLeadByIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead: {JsonSerializer.Serialize(leadDto)}");
+            return Ok(leadDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateLeadAsync([FromBody] LeadCreateDTO leadDTO)
+        public async Task<IActionResult> CreateLeadAsync([FromBody] LeadCreateDto leadDto)
         {
-            var leadCreateDTO = await _leadServicce.CreateLeadAsync(leadDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Lead: {JsonSerializer.Serialize(leadCreateDTO)}");
-            return CreatedAtAction(nameof(GetLeadByIdAsync), new { id = leadCreateDTO.Id }, leadCreateDTO);
+            var leadCreateDto = await _leadService.CreateLeadAsync(leadDto);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Lead: {JsonSerializer.Serialize(leadCreateDto)}");
+            return CreatedAtAction(nameof(GetLeadByIdAsync), new { id = leadCreateDto.Id }, leadCreateDto);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLeadAsync(Guid id, [FromBody] LeadUpdateDTO leadDTO)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateLeadAsync(Guid id, [FromBody] LeadUpdateDto leadDto)
         {
-            var leadUpdateDTO = await _leadServicce.UpdateLeadAsync(id, leadDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Lead: {JsonSerializer.Serialize(leadUpdateDTO)}");
-            return Ok(leadUpdateDTO);
+            var leadUpdateDto = await _leadService.UpdateLeadAsync(id, leadDto);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Lead: {JsonSerializer.Serialize(leadUpdateDto)}");
+            return Ok(leadUpdateDto);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteLeadAsync(Guid id)
         {
-            await _leadServicce.DeleteLeadAsync(id);
+            await _leadService.DeleteLeadAsync(id);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Lead: {id}");
             return Ok("Successfully Deleted Lead");
         }
 
-        [HttpPost("{id}/qualify")]
+        [HttpPost("{id:guid}/qualify")]
         public async Task<IActionResult> QualifyLeadAsync(Guid id)
         {
-            var dealDTO = await _leadServicce.QualifyLeadAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Qualified Lead: {JsonSerializer.Serialize(dealDTO)}");
-            return CreatedAtRoute(new { id = dealDTO.Id, controller = "deal", action = nameof(DealController.GetDealByIdAsync) }, dealDTO);
+            var dealDto = await _leadService.QualifyLeadAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Qualified Lead: {JsonSerializer.Serialize(dealDto)}");
+            return CreatedAtRoute(new { id = dealDto.Id, controller = "deal", action = nameof(DealController.GetDealByIdAsync) }, dealDto);
         }
 
-        [HttpPost("{id}/disqualify")]
-        public async Task<IActionResult> DisqualifyLeadAsync(Guid id, [FromBody] DisqualifyDTO disqualifyDTO)
+        [HttpPost("{id:guid}/disqualify")]
+        public async Task<IActionResult> DisqualifyLeadAsync(Guid id, [FromBody] DisqualifyDto disqualifyDto)
         {
-            await _leadServicce.DisqualifyLeadAsync(id, disqualifyDTO);
+            await _leadService.DisqualifyLeadAsync(id, disqualifyDto);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Disqualified Lead: {id}");
             return Ok("Successfully Disqualify Lead");
         }
@@ -79,9 +78,9 @@ namespace TinyCRM.API.Controllers
         [HttpGet("statistic")]
         public async Task<IActionResult> GetStatisticLeadAsync()
         {
-            var leadStatisticDTO = await _leadServicce.GetStatisticLeadAsync();
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead Statistic: {JsonSerializer.Serialize(leadStatisticDTO)}");
-            return Ok(leadStatisticDTO);
+            var leadStatisticDto = await _leadService.GetStatisticLeadAsync();
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead Statistic: {JsonSerializer.Serialize(leadStatisticDto)}");
+            return Ok(leadStatisticDto);
         }
     }
 }

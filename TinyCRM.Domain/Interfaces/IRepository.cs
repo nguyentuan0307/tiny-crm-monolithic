@@ -6,7 +6,7 @@ namespace TinyCRM.Domain.Interfaces
     {
         Task AddAsync(T entity);
 
-        Task AddRangeAsync(List<T> enetities);
+        Task AddRangeAsync(List<T> entities);
 
         void Remove(T entity);
 

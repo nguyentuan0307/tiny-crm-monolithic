@@ -25,15 +25,15 @@ namespace TinyCRM.API.Services
             _accountRepository = accountRepository;
         }
 
-        public async Task<ContactDTO> CreateContactAsync(ContactCreateDTO contactDTO)
+        public async Task<ContactDto> CreateContactAsync(ContactCreateDto contactDto)
         {
-            await CheckValidateAccount(contactDTO.AccountId);
-            await CheckValidate(contactDTO.Email, contactDTO.Phone);
+            await CheckValidateAccount(contactDto.AccountId);
+            await CheckValidate(contactDto.Email, contactDto.Phone);
 
-            var contact = _mapper.Map<Contact>(contactDTO);
+            var contact = _mapper.Map<Contact>(contactDto);
             await _contactRepository.AddAsync(contact);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<ContactDTO>(contact);
+            return _mapper.Map<ContactDto>(contact);
         }
 
         private async Task CheckValidateAccount(Guid accountId)
@@ -52,26 +52,26 @@ namespace TinyCRM.API.Services
             await _unitOfWork.SaveChangeAsync();
         }
 
-        public async Task<ContactDTO> GetContactByIdAsync(Guid id)
+        public async Task<ContactDto> GetContactByIdAsync(Guid id)
         {
             var contact = await FindContactAsync(id);
-            return _mapper.Map<ContactDTO>(contact);
+            return _mapper.Map<ContactDto>(contact);
         }
 
-        public async Task<IList<ContactDTO>> GetContactsAsync(ContactSearchDTO search)
+        public async Task<IList<ContactDto>> GetContactsAsync(ContactSearchDto search)
         {
-            var includeTables = "Account";
-            var expression = GetExpression(search);
+            const string includeTables = "Account";
+            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
             var query = _contactRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var contacts = await query.ToListAsync();
-            var contactDTOs = _mapper.Map<IList<ContactDTO>>(contacts);
+            var contactDtOs = _mapper.Map<IList<ContactDto>>(contacts);
 
-            return contactDTOs;
+            return contactDtOs;
         }
 
-        private static string ConvertSort(ContactSearchDTO search)
+        private static string ConvertSort(ContactSearchDto search)
         {
             var sort = search.SortFilter.ToString() switch
             {
@@ -86,23 +86,23 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Contact, bool>> GetExpression(ContactSearchDTO search)
+        private static Expression<Func<Contact, bool>> GetExpression(string? keyword)
         {
-            Expression<Func<Contact, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
-            || p.Name.Contains(search.KeyWord)
-            || p.Email.Contains(search.KeyWord);
+            Expression<Func<Contact, bool>> expression = p => string.IsNullOrEmpty(keyword)
+            || p.Name.Contains(keyword)
+            || p.Email.Contains(keyword);
             return expression;
         }
 
-        public async Task<ContactDTO> UpdateContactAsync(Guid id, ContactUpdateDTO contactDTO)
+        public async Task<ContactDto> UpdateContactAsync(Guid id, ContactUpdateDto contactDto)
         {
             var existingContact = await FindContactAsync(id);
-            await CheckValidate(contactDTO.Email, contactDTO.Phone, existingContact.Id);
-            _mapper.Map(contactDTO, existingContact);
+            await CheckValidate(contactDto.Email, contactDto.Phone, existingContact.Id);
+            _mapper.Map(contactDto, existingContact);
 
             _contactRepository.Update(existingContact);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<ContactDTO>(existingContact);
+            return _mapper.Map<ContactDto>(existingContact);
         }
 
         private async Task CheckValidate(string email, string phone, Guid guid = default)
@@ -125,14 +125,14 @@ namespace TinyCRM.API.Services
                 ?? throw new NotFoundHttpException("Contact is not found");
         }
 
-        public async Task<IList<ContactDTO>> GetContactsByAccountIdAsync(Guid accountId)
+        public async Task<IList<ContactDto>> GetContactsByAccountIdAsync(Guid accountId)
         {
             if (!await _accountRepository.AnyAsync(p => p.Id == accountId))
             {
                 throw new BadRequestHttpException("Account is not exist");
             }
             var contacts = await _contactRepository.List(p => p.AccountId == accountId).ToListAsync();
-            return _mapper.Map<IList<ContactDTO>>(contacts);
+            return _mapper.Map<IList<ContactDto>>(contacts);
         }
     }
 }

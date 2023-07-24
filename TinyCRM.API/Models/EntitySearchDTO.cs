@@ -2,7 +2,7 @@
 
 namespace TinyCRM.API.Models
 {
-    public abstract class EntitySearchDTO
+    public abstract class EntitySearchDto
     {
         [StringLength(100, ErrorMessage = "Keyword cannot exceed 100 characters.")]
         public string? KeyWord { get; set; } = string.Empty;

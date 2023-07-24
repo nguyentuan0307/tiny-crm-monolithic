@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace TinyCRM.API.Models.Deal
 {
-    public class DealSearchDTO : EntitySearchDTO
+    public class DealSearchDto : EntitySearchDto
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(EnumDealFilterSort))]

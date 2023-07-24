@@ -8,11 +8,11 @@ namespace TinyCRM.API.Helper.AutoMapper
     {
         public ProductDealAutoMapper()
         {
-            CreateMap<ProductDeal, ProductDealDTO>()
+            CreateMap<ProductDeal, ProductDealDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : string.Empty));
-            CreateMap<ProductDealUpdateDTO, ProductDeal>()
+            CreateMap<ProductDealUpdateDto, ProductDeal>()
                 .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.Price * src.Quantity));
-            CreateMap<ProductDealCreateDTO, ProductDeal>()
+            CreateMap<ProductDealCreateDto, ProductDeal>()
                 .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.Price * src.Quantity));
         }
     }

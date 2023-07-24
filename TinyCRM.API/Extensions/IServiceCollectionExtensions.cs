@@ -13,7 +13,7 @@ using TinyCRM.Infrastructure.Repositories;
 
 namespace TinyCRM.API.Extensions
 {
-    public static class IServiceCollectionExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
@@ -23,7 +23,8 @@ namespace TinyCRM.API.Extensions
             }
             );
 
-            services.AddScoped<Func<AppDataContext>>((provider) => () => provider.GetService<AppDataContext>());
+            services.AddScoped<Func<AppDataContext>>((provider) => () => provider.GetService<AppDataContext>()
+                                                                         ?? throw new InvalidOperationException());
             services.AddScoped<DbFactory>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

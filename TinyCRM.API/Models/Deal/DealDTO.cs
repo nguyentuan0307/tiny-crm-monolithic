@@ -4,7 +4,7 @@ using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Models.Deal
 {
-    public class DealDTO
+    public class DealDto
     {
         public Guid Id { get; set; }
 

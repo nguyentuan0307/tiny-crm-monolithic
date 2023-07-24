@@ -4,7 +4,7 @@ using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Models.Lead
 {
-    public class DisqualifyDTO
+    public class DisqualifyDto
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(ReasonDisqualification))]

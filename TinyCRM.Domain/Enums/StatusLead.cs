@@ -4,7 +4,7 @@
     {
         Prospect,
         Open,
-        Quanlified,
+        Qualified,
         Disqualified,
     }
 }

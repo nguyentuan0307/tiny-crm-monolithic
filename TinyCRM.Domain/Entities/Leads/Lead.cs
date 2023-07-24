@@ -13,7 +13,7 @@ namespace TinyCRM.Domain.Entities.Leads
         public Account Account { get; set; } = null!;
         public StatusLead StatusLead { get; set; }
         public SourceLead SourceLead { get; set; }
-        public DateTime DateQuanlified { get; set; }
+        public DateTime DateQualified { get; set; }
         public ReasonDisqualification? ReasonDisqualification { get; set; }
         public string? DescriptionDisqualification { get; set; }
         public decimal EstimatedRevenue { get; set; }

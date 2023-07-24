@@ -22,14 +22,14 @@ namespace TinyCRM.API.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ProductDTO> CreateProductAsync(ProductCreateDTO productDTO)
+        public async Task<ProductDto> CreateProductAsync(ProductCreateDto productDto)
         {
-            await CheckValidate(productDTO.Code);
-            var product = _mapper.Map<Product>(productDTO);
+            await CheckValidate(productDto.Code);
+            var product = _mapper.Map<Product>(productDto);
 
             await _productRepository.AddAsync(product);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<ProductDTO>(product);
+            return _mapper.Map<ProductDto>(product);
         }
 
         private async Task CheckValidate(string code, Guid id = default)
@@ -54,14 +54,14 @@ namespace TinyCRM.API.Services
                 ?? throw new NotFoundHttpException("Product is not found");
         }
 
-        public async Task<ProductDTO> GetProductByIdAsync(Guid id)
+        public async Task<ProductDto> GetProductByIdAsync(Guid id)
         {
             var product = await GetProductAsync(id);
 
-            return _mapper.Map<ProductDTO>(product);
+            return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<IList<ProductDTO>> GetProductsAsync(ProductSearchDTO search)
+        public async Task<IList<ProductDto>> GetProductsAsync(ProductSearchDto search)
         {
             var includeTables = string.Empty;
             var expression = GetExpression(search);
@@ -69,12 +69,12 @@ namespace TinyCRM.API.Services
             var query = _productRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var products = await query.ToListAsync();
-            var productDTOs = _mapper.Map<IList<ProductDTO>>(products);
+            var productDtOs = _mapper.Map<IList<ProductDto>>(products);
 
-            return productDTOs;
+            return productDtOs;
         }
 
-        private static string ConvertSort(ProductSearchDTO search)
+        private static string ConvertSort(ProductSearchDto search)
         {
             var sort = search.SortFilter.ToString() switch
             {
@@ -88,7 +88,7 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Product, bool>> GetExpression(ProductSearchDTO search)
+        private static Expression<Func<Product, bool>> GetExpression(ProductSearchDto search)
         {
             Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
             || p.Code.Contains(search.KeyWord)
@@ -96,16 +96,16 @@ namespace TinyCRM.API.Services
             return expression;
         }
 
-        public async Task<ProductDTO> UpdateProductAsync(Guid id, ProductUpdateDTO productDTO)
+        public async Task<ProductDto> UpdateProductAsync(Guid id, ProductUpdateDto productDto)
         {
-            await CheckValidate(productDTO.Code, id);
+            await CheckValidate(productDto.Code, id);
 
             var existingProduct = await GetProductAsync(id);
 
-            _mapper.Map(productDTO, existingProduct);
+            _mapper.Map(productDto, existingProduct);
             _productRepository.Update(existingProduct);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<ProductDTO>(existingProduct);
+            return _mapper.Map<ProductDto>(existingProduct);
         }
     }
 }

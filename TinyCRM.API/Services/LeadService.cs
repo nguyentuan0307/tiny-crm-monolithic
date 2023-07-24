@@ -30,19 +30,19 @@ namespace TinyCRM.API.Services
             _accountRepository = accountRepository;
         }
 
-        public async Task<LeadDTO> CreateLeadAsync(LeadCreateDTO leadDTO)
+        public async Task<LeadDto> CreateLeadAsync(LeadCreateDto leadDto)
         {
-            if (!await IsExistAccount(leadDTO.AccountId))
+            if (!await IsExistAccount(leadDto.AccountId))
             {
                 throw new NotFoundHttpException("Account is not found");
             }
 
-            var lead = _mapper.Map<Lead>(leadDTO);
+            var lead = _mapper.Map<Lead>(leadDto);
             lead.StatusLead = StatusLead.Prospect;
 
             await _leadRepository.AddAsync(lead);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<LeadDTO>(lead);
+            return _mapper.Map<LeadDto>(lead);
         }
 
         private async Task<bool> IsExistAccount(Guid accountId)
@@ -57,39 +57,39 @@ namespace TinyCRM.API.Services
             await _unitOfWork.SaveChangeAsync();
         }
 
-        public async Task DisqualifyLeadAsync(Guid id, DisqualifyDTO disqualifyDTO)
+        public async Task DisqualifyLeadAsync(Guid id, DisqualifyDto disqualifyDto)
         {
             var existingLead = await FindLeadAsync(id);
 
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Quanlified)
+            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
 
-            _mapper.Map(disqualifyDTO, existingLead);
+            _mapper.Map(disqualifyDto, existingLead);
             _leadRepository.Update(existingLead);
             await _unitOfWork.SaveChangeAsync();
         }
 
-        public async Task<LeadDTO> GetLeadByIdAsync(Guid id)
+        public async Task<LeadDto> GetLeadByIdAsync(Guid id)
         {
             var lead = await FindLeadAsync(id);
-            return _mapper.Map<LeadDTO>(lead);
+            return _mapper.Map<LeadDto>(lead);
         }
 
-        public async Task<IList<LeadDTO>> GetLeadsAsync(LeadSearchDTO search)
+        public async Task<IList<LeadDto>> GetLeadsAsync(LeadSearchDto search)
         {
-            var includeTables = "Account";
+            const string includeTables = "Account";
             var expression = GetExpression(search);
             var sorting = ConvertSort(search);
             var query = _leadRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var leads = await query.ToListAsync();
-            var leadDTOs = _mapper.Map<IList<LeadDTO>>(leads);
-            return leadDTOs;
+            var leadDtOs = _mapper.Map<IList<LeadDto>>(leads);
+            return leadDtOs;
         }
 
-        private string ConvertSort(LeadSearchDTO search)
+        private string ConvertSort(LeadSearchDto search)
         {
             var sort = search.SortFilter.ToString() switch
             {
@@ -102,7 +102,7 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Lead, bool>> GetExpression(LeadSearchDTO search)
+        private static Expression<Func<Lead, bool>> GetExpression(LeadSearchDto search)
         {
             Expression<Func<Lead, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
             || p.Title.Contains(search.KeyWord)
@@ -111,11 +111,11 @@ namespace TinyCRM.API.Services
             return expression;
         }
 
-        public async Task<DealDTO> QualifyLeadAsync(Guid id)
+        public async Task<DealDto> QualifyLeadAsync(Guid id)
         {
             var existingLead = await GetSatisfiedLead(id);
 
-            existingLead.StatusLead = StatusLead.Quanlified;
+            existingLead.StatusLead = StatusLead.Qualified;
             _leadRepository.Update(existingLead);
 
             var deal = new Deal
@@ -127,13 +127,13 @@ namespace TinyCRM.API.Services
 
             await _dealRepository.AddAsync(deal);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<DealDTO>(deal);
+            return _mapper.Map<DealDto>(deal);
         }
 
         private async Task<Lead> GetSatisfiedLead(Guid id)
         {
             var existingLead = await FindLeadAsync(id);
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Quanlified)
+            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
@@ -146,31 +146,31 @@ namespace TinyCRM.API.Services
             return existingLead;
         }
 
-        public async Task<LeadDTO> UpdateLeadAsync(Guid id, LeadUpdateDTO leadDTO)
+        public async Task<LeadDto> UpdateLeadAsync(Guid id, LeadUpdateDto leadDto)
         {
             var existingLead = await FindLeadAsync(id);
 
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Quanlified)
+            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
 
-            await CheckValidateLead(leadDTO);
+            await CheckValidateLead(leadDto);
 
-            _mapper.Map(leadDTO, existingLead);
+            _mapper.Map(leadDto, existingLead);
             _leadRepository.Update(existingLead);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<LeadDTO>(existingLead);
+            return _mapper.Map<LeadDto>(existingLead);
         }
 
-        private async Task CheckValidateLead(LeadUpdateDTO leadDTO)
+        private async Task CheckValidateLead(LeadUpdateDto leadDto)
         {
-            if (!await IsExistAccount(leadDTO.AccountId))
+            if (!await IsExistAccount(leadDto.AccountId))
             {
                 throw new NotFoundHttpException("Account is not found");
             }
 
-            if (leadDTO.StatusLead == StatusLead.Disqualified || leadDTO.StatusLead == StatusLead.Quanlified)
+            if (leadDto.StatusLead == StatusLead.Disqualified || leadDto.StatusLead == StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Couldn't Update StatusLead to disqualified or qualified");
             }
@@ -182,7 +182,7 @@ namespace TinyCRM.API.Services
                 ?? throw new NotFoundHttpException("Lead is not found");
         }
 
-        public async Task<LeadStatisticDTO> GetStatisticLeadAsync()
+        public async Task<LeadStatisticDto> GetStatisticLeadAsync()
         {
             var statisticLeads = await _leadRepository.List().Select(x => new
             {
@@ -192,28 +192,28 @@ namespace TinyCRM.API.Services
 
             if (statisticLeads.Count == 0)
             {
-                return new LeadStatisticDTO();
+                return new LeadStatisticDto();
             }
 
-            var leadStatisticDTO = new LeadStatisticDTO
+            var leadStatisticDto = new LeadStatisticDto
             {
-                OpenLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Open).Count(),
-                ProspectLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Prospect).Count(),
-                QualifiedLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Quanlified).Count(),
-                DisqualifiedLeads = statisticLeads.Where(x => x.StatusLead == StatusLead.Disqualified).Count(),
+                OpenLeads = statisticLeads.Count(x => x.StatusLead == StatusLead.Open),
+                ProspectLeads = statisticLeads.Count(x => x.StatusLead == StatusLead.Prospect),
+                QualifiedLeads = statisticLeads.Count(x => x.StatusLead == StatusLead.Qualified),
+                DisqualifiedLeads = statisticLeads.Count(x => x.StatusLead == StatusLead.Disqualified),
                 AvgEstimatedRevenue = statisticLeads.Average(x => x.EstimatedRevenue)
             };
-            return leadStatisticDTO;
+            return leadStatisticDto;
         }
 
-        public async Task<IList<LeadDTO>> GetLeadsByAccountIdAsync(Guid accountId)
+        public async Task<IList<LeadDto>> GetLeadsByAccountIdAsync(Guid accountId)
         {
             if (!await _accountRepository.AnyAsync(a => a.Id == accountId))
             {
                 throw new BadRequestHttpException("Account is not found");
             }
             var leads = await _leadRepository.List(l => l.AccountId == accountId).ToListAsync();
-            return _mapper.Map<IList<LeadDTO>>(leads);
+            return _mapper.Map<IList<LeadDto>>(leads);
         }
     }
 }

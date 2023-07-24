@@ -9,12 +9,9 @@ namespace TinyCRM.Infrastructure
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         private readonly DbFactory _dbFactory;
-        private DbSet<TEntity> _dbSet;
+        private DbSet<TEntity>? _dbSet;
 
-        protected DbSet<TEntity> DbSet
-        {
-            get => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
-        }
+        protected DbSet<TEntity> DbSet => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
 
         public Repository(DbFactory dbFactory)
         {
@@ -30,9 +27,9 @@ namespace TinyCRM.Infrastructure
             await DbSet.AddAsync(entity);
         }
 
-        public async Task AddRangeAsync(List<TEntity> enetities)
+        public async Task AddRangeAsync(List<TEntity> entities)
         {
-            await DbSet.AddRangeAsync(enetities);
+            await DbSet.AddRangeAsync(entities);
         }
 
         public void Remove(TEntity entity)

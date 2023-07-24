@@ -13,7 +13,7 @@ namespace TinyCRM.Infrastructure.EntityTypeConfiguration
             builder.Property(p => p.AccountId).IsRequired();
             builder.Property(p => p.StatusLead).IsRequired();
             builder.Property(p => p.SourceLead).IsRequired();
-            builder.Property(p => p.DateQuanlified).IsRequired();
+            builder.Property(p => p.DateQualified).IsRequired();
             builder.Property(p => p.EstimatedRevenue).HasColumnType("decimal(18,2)").IsRequired();
 
             builder.HasOne(a => a.Account)

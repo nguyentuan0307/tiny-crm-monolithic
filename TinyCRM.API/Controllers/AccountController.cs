@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.API.Exceptions;
-using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
 
@@ -27,39 +25,39 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDTO search)
+        public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDto search)
         {
-            var accountDTOs = await _accountService.GetAccountsAsync(search);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDTOs)}");
-            return Ok(accountDTOs);
+            var accountDtOs = await _accountService.GetAccountsAsync(search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDtOs)}");
+            return Ok(accountDtOs);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ActionName(nameof(GetAccountByIdAsync))]
         public async Task<IActionResult> GetAccountByIdAsync(Guid id)
         {
-            var accountDTO = await _accountService.GetAccountByIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDTO)}");
-            return Ok(accountDTO);
+            var accountDto = await _accountService.GetAccountByIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDto)}");
+            return Ok(accountDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDTO accountDTO)
+        public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDto accountDto)
         {
-            var accountNewDTO = await _accountService.CreateAccountAsync(accountDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDTO)}");
-            return CreatedAtAction(nameof(GetAccountByIdAsync), new { id = accountNewDTO.Id }, accountNewDTO);
+            var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDto)}");
+            return CreatedAtAction(nameof(GetAccountByIdAsync), new { id = accountNewDto.Id }, accountNewDto);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDTO accountDTO)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDto accountDto)
         {
-            var accountUpdateDTO = await _accountService.UpdateAccountAsync(id, accountDTO);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Account: {JsonSerializer.Serialize(accountUpdateDTO)}");
-            return Ok(accountUpdateDTO);
+            var accountUpdateDto = await _accountService.UpdateAccountAsync(id, accountDto);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Account: {JsonSerializer.Serialize(accountUpdateDto)}");
+            return Ok(accountUpdateDto);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteAccountAsync(Guid id)
         {
             await _accountService.DeleteAccountAsync(id);
@@ -67,28 +65,28 @@ namespace TinyCRM.API.Controllers
             return Ok("Successfully Deleted Account");
         }
 
-        [HttpGet("{id}/contacts")]
+        [HttpGet("{id:guid}/contacts")]
         public async Task<IActionResult> GetContactsByAccountIdAsync(Guid id)
         {
-            var contactDTOs = await _contactService.GetContactsByAccountIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDTOs)}");
-            return Ok(contactDTOs);
+            var contactDtOs = await _contactService.GetContactsByAccountIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
+            return Ok(contactDtOs);
         }
 
-        [HttpGet("{id}/leads")]
+        [HttpGet("{id:guid}/leads")]
         public async Task<IActionResult> GetLeadsByAccountIdAsync(Guid id)
         {
-            var leadDTOs = await _leadService.GetLeadsByAccountIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDTOs)}");
-            return Ok(leadDTOs);
+            var leadDtOs = await _leadService.GetLeadsByAccountIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
+            return Ok(leadDtOs);
         }
 
-        [HttpGet("{id}/deals")]
+        [HttpGet("{id:guid}/deals")]
         public async Task<IActionResult> GetDealsByAccountIdAsync(Guid id)
         {
-            var dealDTOs = await _dealService.GetDealsByAccountIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Deals: {JsonSerializer.Serialize(dealDTOs)}");
-            return Ok(dealDTOs);
+            var dealDtOs = await _dealService.GetDealsByAccountIdAsync(id);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Deals: {JsonSerializer.Serialize(dealDtOs)}");
+            return Ok(dealDtOs);
         }
     }
 }

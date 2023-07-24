@@ -6,6 +6,7 @@ using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Deals;
+using TinyCRM.Domain.Enums;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -38,27 +39,27 @@ namespace TinyCRM.API.Services
                     ?? throw new NotFoundHttpException("Deal is not found");
         }
 
-        public async Task<DealDTO> GetDealByIdAsync(Guid id)
+        public async Task<DealDto> GetDealByIdAsync(Guid id)
         {
-            var includeTables = "Lead,ProductDeals.Product";
+            const string includeTables = "Lead,ProductDeals.Product";
             var deal = await FindDealAsync(id, includeTables);
-            return _mapper.Map<DealDTO>(deal);
+            return _mapper.Map<DealDto>(deal);
         }
 
-        public async Task<IList<DealDTO>> GetDealsAsync(DealSearchDTO search)
+        public async Task<IList<DealDto>> GetDealsAsync(DealSearchDto search)
         {
-            var includeTables = "Lead,ProductDeals.Product";
-            var expression = GetExpression(search);
+            const string includeTables = "Lead,ProductDeals.Product";
+            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
             var query = _dealRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var leads = await query.ToListAsync();
-            var leadDTOs = _mapper.Map<IList<DealDTO>>(leads);
+            var leadDtOs = _mapper.Map<IList<DealDto>>(leads);
 
-            return leadDTOs;
+            return leadDtOs;
         }
 
-        private static string ConvertSort(DealSearchDTO search)
+        private static string ConvertSort(DealSearchDto search)
         {
             var sort = search.SortFilter.ToString() switch
             {
@@ -70,32 +71,32 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Deal, bool>>? GetExpression(DealSearchDTO search)
+        private static Expression<Func<Deal, bool>> GetExpression(string? keyWord)
         {
-            Expression<Func<Deal, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
-            || p.Title.Contains(search.KeyWord)
-            || p.Lead.Account.Name.Contains(search.KeyWord);
+            Expression<Func<Deal, bool>> expression = p => string.IsNullOrEmpty(keyWord)
+            || p.Title.Contains(keyWord)
+            || p.Lead.Account.Name.Contains(keyWord);
             return expression;
         }
 
-        public async Task<DealDTO> UpdateDealAsync(Guid id, DealUpdateDTO dealDTO)
+        public async Task<DealDto> UpdateDealAsync(Guid id, DealUpdateDto dealDto)
         {
             var existingDeal = await FindDealAsync(id);
 
-            if (existingDeal.StatusDeal == Domain.Enums.StatusDeal.Won || existingDeal.StatusDeal == Domain.Enums.StatusDeal.Lost)
+            if (existingDeal.StatusDeal is StatusDeal.Won or StatusDeal.Lost)
             {
                 throw new BadRequestHttpException("Deal is Win/Lose Status");
             }
 
             existingDeal.ActualRevenue = existingDeal.ProductDeals.Sum(p => p.TotalAmount);
-            _mapper.Map(dealDTO, existingDeal);
+            _mapper.Map(dealDto, existingDeal);
 
             _dealRepository.Update(existingDeal);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<DealDTO>(existingDeal);
+            return _mapper.Map<DealDto>(existingDeal);
         }
 
-        public async Task<DealStatisticDTO> GetStatisticDealAsync()
+        public async Task<DealStatisticDto> GetStatisticDealAsync()
         {
             var statistic = await _dealRepository.List().Select(x => new
             {
@@ -105,21 +106,21 @@ namespace TinyCRM.API.Services
 
             if (statistic.Count == 0)
             {
-                return new DealStatisticDTO();
+                return new DealStatisticDto();
             }
 
-            var dealStatisticDTO = new DealStatisticDTO
+            var dealStatisticDto = new DealStatisticDto
             {
-                OpenDeals = statistic.Where(x => x.StatusDeal == Domain.Enums.StatusDeal.Open).Count(),
-                WonDeals = statistic.Where(x => x.StatusDeal == Domain.Enums.StatusDeal.Won).Count(),
-                LostDeals = statistic.Where(x => x.StatusDeal == Domain.Enums.StatusDeal.Lost).Count(),
+                OpenDeals = statistic.Count(x => x.StatusDeal == StatusDeal.Open),
+                WonDeals = statistic.Count(x => x.StatusDeal == StatusDeal.Won),
+                LostDeals = statistic.Count(x => x.StatusDeal == StatusDeal.Lost),
                 TotalRevenue = statistic.Sum(x => x.ActualRevenue),
                 AvgRevenue = statistic.Average(x => x.ActualRevenue)
             };
-            return dealStatisticDTO;
+            return dealStatisticDto;
         }
 
-        public async Task<IList<DealDTO>> GetDealsByAccountIdAsync(Guid accountId)
+        public async Task<IList<DealDto>> GetDealsByAccountIdAsync(Guid accountId)
         {
             if (!await _accountRepository.AnyAsync(a => a.Id == accountId))
             {
@@ -127,7 +128,7 @@ namespace TinyCRM.API.Services
             }
             var dealAccounts = await _dealRepository.List(p => p.Lead.AccountId == accountId, "Lead").ToListAsync();
 
-            return _mapper.Map<IList<DealDTO>>(dealAccounts);
+            return _mapper.Map<IList<DealDto>>(dealAccounts);
         }
     }
 }

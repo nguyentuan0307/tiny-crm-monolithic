@@ -4,14 +4,14 @@ namespace TinyCRM.API.Services.IServices
 {
     public interface IProductService
     {
-        public Task<ProductDTO> CreateProductAsync(ProductCreateDTO productDTO);
+        public Task<ProductDto> CreateProductAsync(ProductCreateDto productDto);
 
         public Task DeleteProductAsync(Guid id);
 
-        public Task<ProductDTO> GetProductByIdAsync(Guid id);
+        public Task<ProductDto> GetProductByIdAsync(Guid id);
 
-        public Task<IList<ProductDTO>> GetProductsAsync(ProductSearchDTO search);
+        public Task<IList<ProductDto>> GetProductsAsync(ProductSearchDto search);
 
-        public Task<ProductDTO> UpdateProductAsync(Guid id, ProductUpdateDTO productDTO);
+        public Task<ProductDto> UpdateProductAsync(Guid id, ProductUpdateDto productDto);
     }
 }

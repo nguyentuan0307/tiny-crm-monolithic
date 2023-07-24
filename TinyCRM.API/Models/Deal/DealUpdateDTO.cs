@@ -2,7 +2,7 @@
 
 namespace TinyCRM.API.Models.Deal
 {
-    public class DealUpdateDTO
+    public class DealUpdateDto
     {
         [Required(ErrorMessage = "Title is required")]
         public string Title { get; set; } = null!;

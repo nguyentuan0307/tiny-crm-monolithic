@@ -169,7 +169,7 @@ namespace TinyCRM.API.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateQuanlified")
+                    b.Property<DateTime>("DateQualified")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")

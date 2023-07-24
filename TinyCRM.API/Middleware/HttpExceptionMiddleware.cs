@@ -1,9 +1,6 @@
-﻿using Serilog;
-using System.Text;
-using System.Text.RegularExpressions;
-using TinyCRM.API.Exceptions;
+﻿using TinyCRM.API.Exceptions;
 using TinyCRM.API.Middleware;
-using TinyCRM.API.Model;
+using TinyCRM.API.Models;
 
 namespace TinyCRM.API.Middleware
 {
@@ -27,7 +24,7 @@ namespace TinyCRM.API.Middleware
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "An exception occurred while processing the request");
+                _logger.LogError(ex, "An exception occurred while processing the request");
 
                 //var logBuilder = new StringBuilder();
 
@@ -86,14 +83,14 @@ namespace TinyCRM.API.Middleware
             });
         }
 
-        private async Task<string> GetRequestBodyAsync(HttpContext context)
-        {
-            context.Request.Body.Seek(0, SeekOrigin.Begin);
-            using var reader = new StreamReader(context.Request.Body);
-            var requestBody = await reader.ReadToEndAsync();
+        //private async Task<string> GetRequestBodyAsync(HttpContext context)
+        //{
+        //    context.Request.Body.Seek(0, SeekOrigin.Begin);
+        //    using var reader = new StreamReader(context.Request.Body);
+        //    var requestBody = await reader.ReadToEndAsync();
 
-            return "{" + new Regex(@"(\n |\r |\n|{|})+").Replace(requestBody, "") + " }";
-        }
+        //    return "{" + new Regex(@"(\n |\r |\n|{|})+").Replace(requestBody, "") + " }";
+        //}
     }
 }
 

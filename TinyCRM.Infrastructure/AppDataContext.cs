@@ -10,12 +10,12 @@ namespace TinyCRM.Infrastructure
 {
     public class AppDataContext : DbContext
     {
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<Contact> Contacts { get; set; }
-        public DbSet<Lead> Leads { get; set; }
-        public DbSet<Deal> Deals { get; set; }
-        public DbSet<ProductDeal> ProductDeals { get; set; }
+        public DbSet<Product> Products { get; set; } = null!;
+        public DbSet<Account> Accounts { get; set; } = null!;
+        public DbSet<Contact> Contacts { get; set; } = null!;
+        public DbSet<Lead> Leads { get; set; } = null!;
+        public DbSet<Deal> Deals { get; set; } = null!;
+        public DbSet<ProductDeal> ProductDeals { get; set; } = null!;
 
         public AppDataContext(DbContextOptions<AppDataContext> options) : base(options)
         {

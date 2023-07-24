@@ -4,7 +4,7 @@ using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Models.Lead
 {
-    public class LeadUpdateDTO
+    public class LeadUpdateDto
     {
         public string Title { get; set; } = null!;
         public string? Description { get; set; }

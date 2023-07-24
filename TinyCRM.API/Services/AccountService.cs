@@ -3,11 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Account;
-using TinyCRM.API.Models.Contact;
-using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
-using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -25,13 +22,13 @@ namespace TinyCRM.API.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<AccountDTO> CreateAccountAsync(AccountCreateDTO accountDTO)
+        public async Task<AccountDto> CreateAccountAsync(AccountCreateDto accountDto)
         {
-            await CheckValidate(accountDTO.Email, accountDTO.Phone);
-            var account = _mapper.Map<Account>(accountDTO);
+            await CheckValidate(accountDto.Email, accountDto.Phone);
+            var account = _mapper.Map<Account>(accountDto);
             await _accountRepository.AddAsync(account);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<AccountDTO>(account);
+            return _mapper.Map<AccountDto>(account);
         }
 
         public async Task DeleteAccountAsync(Guid id)
@@ -42,14 +39,14 @@ namespace TinyCRM.API.Services
             await _unitOfWork.SaveChangeAsync();
         }
 
-        public async Task<AccountDTO> GetAccountByIdAsync(Guid id)
+        public async Task<AccountDto> GetAccountByIdAsync(Guid id)
         {
             var account = await GetExistingAccount(id);
 
-            return _mapper.Map<AccountDTO>(account);
+            return _mapper.Map<AccountDto>(account);
         }
 
-        public async Task<IList<AccountDTO>> GetAccountsAsync(AccountSearchDTO search)
+        public async Task<IList<AccountDto>> GetAccountsAsync(AccountSearchDto search)
         {
             var includeTables = string.Empty;
             var expression = GetExpression(search.KeyWord);
@@ -58,12 +55,12 @@ namespace TinyCRM.API.Services
             var query = _accountRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var accounts = await query.ToListAsync();
-            var accountDTOs = _mapper.Map<IList<AccountDTO>>(accounts);
+            var accountDtOs = _mapper.Map<IList<AccountDto>>(accounts);
 
-            return accountDTOs;
+            return accountDtOs;
         }
 
-        private static string ConvertSort(AccountSearchDTO search)
+        private static string ConvertSort(AccountSearchDto search)
         {
             var sort = search.SortFilter.ToString() switch
             {
@@ -87,16 +84,16 @@ namespace TinyCRM.API.Services
             return expression;
         }
 
-        public async Task<AccountDTO> UpdateAccountAsync(Guid id, AccountUpdateDTO accountDTO)
+        public async Task<AccountDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto)
         {
             var existingAccount = await GetExistingAccount(id);
-            await CheckValidate(accountDTO.Email, accountDTO.Phone, existingAccount.Id);
+            await CheckValidate(accountDto.Email, accountDto.Phone, existingAccount.Id);
 
-            _mapper.Map(accountDTO, existingAccount);
+            _mapper.Map(accountDto, existingAccount);
             _accountRepository.Update(existingAccount);
             await _unitOfWork.SaveChangeAsync();
 
-            return _mapper.Map<AccountDTO>(existingAccount);
+            return _mapper.Map<AccountDto>(existingAccount);
         }
 
         public async Task<Account> GetExistingAccount(Guid id, string? includeTables = default)

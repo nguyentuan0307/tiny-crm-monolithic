@@ -8,9 +8,9 @@ namespace TinyCRM.API.Helper.AutoMapper
     {
         public ProductAutoMapper()
         {
-            CreateMap<Product, ProductDTO>().ReverseMap();
-            CreateMap<ProductCreateDTO, Product>();
-            CreateMap<ProductUpdateDTO, Product>();
+            CreateMap<Product, ProductDto>().ReverseMap();
+            CreateMap<ProductCreateDto, Product>();
+            CreateMap<ProductUpdateDto, Product>();
         }
     }
 }

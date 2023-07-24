@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
-using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Deals;
@@ -31,24 +30,24 @@ namespace TinyCRM.API.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ProductDealDTO> CreateProductDealAsync(Guid productDealId, ProductDealCreateDTO productDealDTO)
+        public async Task<ProductDealDto> CreateProductDealAsync(Guid productDealId, ProductDealCreateDto productDealDto)
         {
-            if (productDealId != productDealDTO.DealId)
+            if (productDealId != productDealDto.DealId)
                 throw new BadRequestHttpException("DealId is not match");
-            var includeTables = "Lead.Account";
-            var deal = await FindDealAsync(productDealDTO.DealId, includeTables);
-            await IsExistProduct(productDealDTO.ProductId);
+            const string includeTables = "Lead.Account";
+            var deal = await FindDealAsync(productDealDto.DealId, includeTables);
+            await IsExistProduct(productDealDto.ProductId);
 
             if (deal.StatusDeal != StatusDeal.Open)
                 throw new BadRequestHttpException("Deal is Won/Lose");
 
-            var productDeal = _mapper.Map<ProductDeal>(productDealDTO);
+            var productDeal = _mapper.Map<ProductDeal>(productDealDto);
 
             await _productDealRepository.AddAsync(productDeal);
             UpdateRelateCreate(deal, productDeal);
             await _unitOfWork.SaveChangeAsync();
 
-            return _mapper.Map<ProductDealDTO>(productDeal);
+            return _mapper.Map<ProductDealDto>(productDeal);
         }
 
         private static void UpdateRelateCreate(Deal deal, ProductDeal productDeal)
@@ -96,36 +95,36 @@ namespace TinyCRM.API.Services
                 throw new NotFoundHttpException("ProductDeal is not found");
         }
 
-        public async Task<ProductDealDTO> GetProductDealByIdAsync(Guid dealId, Guid productDealId)
+        public async Task<ProductDealDto> GetProductDealByIdAsync(Guid dealId, Guid productDealId)
         {
-            string includeTables = $"{nameof(ProductDeal.Product)}";
+            const string includeTables = $"{nameof(ProductDeal.Product)}";
             var productDeal = await FindProductDealAsync(productDealId, includeTables);
 
             if (dealId != productDeal.DealId)
                 throw new BadRequestHttpException("DealId is not match");
-            return _mapper.Map<ProductDealDTO>(productDeal);
+            return _mapper.Map<ProductDealDto>(productDeal);
         }
 
-        public async Task<IList<ProductDealDTO>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDTO search)
+        public async Task<IList<ProductDealDto>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDto search)
         {
-            var includeTables = "Product";
-            var expression = GetExpression(dealId, search);
+            const string includeTables = "Product";
+            var expression = GetExpression(dealId, search.KeyWord);
             var sorting = ConvertSort(search);
             var query = _productDealRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
             var productDeals = await query.ToListAsync();
-            return _mapper.Map<IList<ProductDealDTO>>(productDeals);
+            return _mapper.Map<IList<ProductDealDto>>(productDeals);
         }
 
-        private static Expression<Func<ProductDeal, bool>>? GetExpression(Guid dealId, ProductDealSearchDTO search)
+        private static Expression<Func<ProductDeal, bool>> GetExpression(Guid dealId, string? keyWord)
         {
             Expression<Func<ProductDeal, bool>> expression = p => p.DealId == dealId
-            && (string.IsNullOrEmpty(search.KeyWord)
-                || p.Product.Name.Contains(search.KeyWord)
-                || p.Product.Code.Contains(search.KeyWord));
+            && (string.IsNullOrEmpty(keyWord)
+                || p.Product.Name.Contains(keyWord)
+                || p.Product.Code.Contains(keyWord));
             return expression;
         }
 
-        private static string ConvertSort(ProductDealSearchDTO search)
+        private static string ConvertSort(ProductDealSearchDto search)
         {
             var sort = search.SortFilter.ToString() switch
             {
@@ -141,7 +140,7 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        public async Task<ProductDealDTO> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDTO productDealDTO)
+        public async Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDto productDealDto)
         {
             var productDeal = await FindProductDealAsync(productDealId);
             var totalAmountOld = productDeal.TotalAmount;
@@ -149,16 +148,16 @@ namespace TinyCRM.API.Services
                 throw new BadRequestHttpException("DealId is not match");
 
             var deal = await FindDealAsync(productDeal.DealId);
-            await IsExistProduct(productDealDTO.ProductId);
+            await IsExistProduct(productDealDto.ProductId);
 
             if (deal.StatusDeal != StatusDeal.Open)
                 throw new BadRequestHttpException("Deal is Won/Lose");
 
-            _mapper.Map(productDealDTO, productDeal);
+            _mapper.Map(productDealDto, productDeal);
             _productDealRepository.Update(productDeal);
             UpdateRelateUpdate(deal, totalAmountOld, productDeal.TotalAmount);
             await _unitOfWork.SaveChangeAsync();
-            return _mapper.Map<ProductDealDTO>(productDeal);
+            return _mapper.Map<ProductDealDto>(productDeal);
         }
 
         private static void UpdateRelateUpdate(Deal deal, decimal totalAmountOld, decimal totalAmountNew)

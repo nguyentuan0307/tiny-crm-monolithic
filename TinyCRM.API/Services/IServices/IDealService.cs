@@ -6,14 +6,14 @@ namespace TinyCRM.API.Services.IServices
     {
         public Task DeleteDealAsync(Guid id);
 
-        public Task<DealDTO> GetDealByIdAsync(Guid id);
+        public Task<DealDto> GetDealByIdAsync(Guid id);
 
-        public Task<IList<DealDTO>> GetDealsAsync(DealSearchDTO search);
+        public Task<IList<DealDto>> GetDealsAsync(DealSearchDto search);
 
-        public Task<DealStatisticDTO> GetStatisticDealAsync();
+        public Task<DealStatisticDto> GetStatisticDealAsync();
 
-        public Task<DealDTO> UpdateDealAsync(Guid id, DealUpdateDTO dealDTO);
+        public Task<DealDto> UpdateDealAsync(Guid id, DealUpdateDto dealDto);
 
-        public Task<IList<DealDTO>> GetDealsByAccountIdAsync(Guid accountId);
+        public Task<IList<DealDto>> GetDealsByAccountIdAsync(Guid accountId);
     }
 }

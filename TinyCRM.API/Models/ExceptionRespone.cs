@@ -1,4 +1,4 @@
-﻿namespace TinyCRM.API.Model
+﻿namespace TinyCRM.API.Models
 {
     public class ExceptionRespone
     {

@@ -4,10 +4,10 @@ using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Models.Product
 {
-    public class ProductUpdateDTO
+    public class ProductUpdateDto
     {
         [Required(ErrorMessage = "Code is required")]
-        public string Code { get; set; } = null;
+        public string Code { get; set; } = null!;
 
         [Required(ErrorMessage = "Name is required")]
         public string Name { get; set; } = null!;

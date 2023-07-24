@@ -8,8 +8,8 @@ namespace TinyCRM.API.Helper.AutoMapper
     {
         public DealAutoMapper()
         {
-            CreateMap<Deal, DealDTO>().ReverseMap();
-            CreateMap<DealUpdateDTO, Deal>();
+            CreateMap<Deal, DealDto>().ReverseMap();
+            CreateMap<DealUpdateDto, Deal>();
         }
     }
 }

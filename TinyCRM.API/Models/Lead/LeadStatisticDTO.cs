@@ -1,6 +1,6 @@
 ﻿namespace TinyCRM.API.Models.Lead
 {
-    public class LeadStatisticDTO
+    public class LeadStatisticDto
     {
         public int ProspectLeads { get; set; }
         public int OpenLeads { get; set; }
