@@ -13,14 +13,13 @@ namespace TinyCRM.API.Controllers
         private readonly IProductService _productService;
         private readonly ILogger _logger;
 
-        public ProductController(IProductService productService, ILogger logger)
+        public ProductController(IProductService productService, ILogger<ProductController> logger)
         {
             _productService = productService;
             _logger = logger;
         }
 
         [HttpGet]
-        [SortFilterAttributeQuery(Filters = "Code,Name")]
         public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDTO search)
         {
             var productDTOs = await _productService.GetProductsAsync(search);

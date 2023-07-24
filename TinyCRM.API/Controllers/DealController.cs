@@ -23,7 +23,6 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        [SortFilterAttributeQuery(Filters = "Title")]
         public async Task<IActionResult> GetDealsAsync([FromQuery] DealSearchDTO search)
         {
             var dealDTO = await _dealService.GetDealsAsync(search);
@@ -31,68 +30,68 @@ namespace TinyCRM.API.Controllers
             return Ok(dealDTO);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{dealid}")]
         [ActionName(nameof(GetDealByIdAsync))]
-        public async Task<IActionResult> GetDealByIdAsync(Guid id)
+        public async Task<IActionResult> GetDealByIdAsync(Guid dealId)
         {
-            var dealDTO = await _dealService.GetDealByIdAsync(id);
+            var dealDTO = await _dealService.GetDealByIdAsync(dealId);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Deal: {JsonSerializer.Serialize(dealDTO)}");
             return Ok(dealDTO);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDealAsync(Guid id, [FromBody] DealUpdateDTO dealDTO)
+        [HttpPut("{dealid}")]
+        public async Task<IActionResult> UpdateDealAsync(Guid dealId, [FromBody] DealUpdateDTO dealDTO)
         {
-            var dealUpdateDTO = await _dealService.UpdateDealAsync(id, dealDTO);
+            var dealUpdateDTO = await _dealService.UpdateDealAsync(dealId, dealDTO);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Deal: {JsonSerializer.Serialize(dealUpdateDTO)}");
             return Ok(dealUpdateDTO);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDealAsync(Guid id)
+        [HttpDelete("{dealid}")]
+        public async Task<IActionResult> DeleteDealAsync(Guid dealId)
         {
-            await _dealService.DeleteDealAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Deal: {id}");
+            await _dealService.DeleteDealAsync(dealId);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Deal: {dealId}");
             return Ok("Successfully Deleted Deal");
         }
 
-        [HttpGet("{id}/productdeals")]
-        public async Task<IActionResult> GetProductDealsByDealIdAsync(Guid id)
+        [HttpGet("{dealid}/productdeals")]
+        public async Task<IActionResult> GetProductDealsByDealIdAsync(Guid dealId, [FromQuery]ProductDealSearchDTO search)
         {
-            IList<ProductDealDTO> productDealDTO = await _productDealService.GetProductDealsByDealIdAsync(id);
+            var productDealDTO = await _productDealService.GetProductDealsByDealIdAsync(dealId, search);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product Deals: {JsonSerializer.Serialize(productDealDTO)}");
             return Ok(productDealDTO);
         }
 
-        [HttpGet("{id}/productdeals/{productDealId}")]
+        [HttpGet("{dealid}/productdeals/{productDealId}")]
         [ActionName(nameof(GetProductDealByIdAsync))]
-        public async Task<IActionResult> GetProductDealByIdAsync(Guid id, Guid productDealId)
+        public async Task<IActionResult> GetProductDealByIdAsync(Guid dealId, Guid productDealId)
         {
-            ProductDealDTO productDealDTO = await _productDealService.GetProductDealByIdAsync(id, productDealId);
+            var productDealDTO = await _productDealService.GetProductDealByIdAsync(dealId, productDealId);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product Deal: {JsonSerializer.Serialize(productDealDTO)}");
             return Ok(productDealDTO);
         }
 
-        [HttpPost("{id}/productdeals")]
-        public async Task<IActionResult> CreateProductDealAsync(Guid id, [FromBody] ProductDealCreateDTO productDealDTO)
+        [HttpPost("{dealid}/productdeals")]
+        public async Task<IActionResult> CreateProductDealAsync(Guid dealId, [FromBody] ProductDealCreateDTO productDealDTO)
         {
-            ProductDealDTO productDealCreateDTO = await _productDealService.CreateProductDealAsync(id, productDealDTO);
+            var productDealCreateDTO = await _productDealService.CreateProductDealAsync(dealId, productDealDTO);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product Deal: {JsonSerializer.Serialize(productDealCreateDTO)}");
             return CreatedAtAction(nameof(GetProductDealByIdAsync), new { id = productDealCreateDTO.DealId, productDealId = productDealCreateDTO.Id }, productDealCreateDTO);
         }
 
-        [HttpPut("{id}/productdeals/{productDealId}")]
-        public async Task<IActionResult> UpdateProductDealAsync(Guid id, Guid productDealId, [FromBody] ProductDealUpdateDTO productDealDTO)
+        [HttpPut("{dealid}/productdeals/{productDealId}")]
+        public async Task<IActionResult> UpdateProductDealAsync(Guid dealId, Guid productDealId, [FromBody] ProductDealUpdateDTO productDealDTO)
         {
-            ProductDealDTO productDealUpdateDTO = await _productDealService.UpdateProductDealAsync(id, productDealId, productDealDTO);
+            var productDealUpdateDTO = await _productDealService.UpdateProductDealAsync(dealId, productDealId, productDealDTO);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Product Deal: {JsonSerializer.Serialize(productDealUpdateDTO)}");
             return Ok(productDealUpdateDTO);
         }
 
-        [HttpDelete("{id}/productdeals/{productDealId}")]
-        public async Task<IActionResult> DeleteProductDealAsync(Guid id, Guid productDealId)
+        [HttpDelete("{dealid}/productdeals/{productDealId}")]
+        public async Task<IActionResult> DeleteProductDealAsync(Guid dealId, Guid productDealId)
         {
-            await _productDealService.DeleteProductDealAsync(id, productDealId);
+            await _productDealService.DeleteProductDealAsync(dealId, productDealId);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Product Deal: {productDealId}");
             return Ok("Successfully Deleted ProductDeal");
         }

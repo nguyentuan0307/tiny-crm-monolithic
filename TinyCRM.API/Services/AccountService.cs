@@ -5,7 +5,6 @@ using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Account;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Models.Deal;
-using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Leads;
@@ -53,12 +52,30 @@ namespace TinyCRM.API.Services
         public async Task<IList<AccountDTO>> GetAccountsAsync(AccountSearchDTO search)
         {
             var includeTables = string.Empty;
-            var query = _accountRepository.List(GetExpression(search.KeyWord), includeTables, search.Sorting, search.PageIndex, search.PageSize);
+            var expression = GetExpression(search.KeyWord);
+            var sorting = ConvertSort(search);
+
+            var query = _accountRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var accounts = await query.ToListAsync();
             var accountDTOs = _mapper.Map<IList<AccountDTO>>(accounts);
 
             return accountDTOs;
+        }
+
+        private static string ConvertSort(AccountSearchDTO search)
+        {
+            var sort = search.SortFilter.ToString() switch
+            {
+                "Id" => "Id",
+                "Name" => "Name",
+                "Email" => "Email",
+                "Phone" => "Phone",
+                "Address" => "Address",
+                _ => "Id"
+            };
+            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
+            return sort;
         }
 
         private static Expression<Func<Account, bool>> GetExpression(string? keyWord)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using TinyCRM.API.Exceptions;
 using TinyCRM.API.Helper.Filters;
 using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
@@ -26,7 +27,6 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        [SortFilterAttributeQuery(Filters = "Name,Email")]
         public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDTO search)
         {
             var accountDTOs = await _accountService.GetAccountsAsync(search);

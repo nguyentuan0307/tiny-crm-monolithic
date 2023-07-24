@@ -80,11 +80,26 @@ namespace TinyCRM.API.Services
         public async Task<IList<LeadDTO>> GetLeadsAsync(LeadSearchDTO search)
         {
             var includeTables = "Account";
-            var query = _leadRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
+            var expression = GetExpression(search);
+            var sorting = ConvertSort(search);
+            var query = _leadRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var leads = await query.ToListAsync();
             var leadDTOs = _mapper.Map<IList<LeadDTO>>(leads);
             return leadDTOs;
+        }
+
+        private string ConvertSort(LeadSearchDTO search)
+        {
+            var sort = search.SortFilter.ToString() switch
+            {
+                "Id" => "Id",
+                "Title" => "Title",
+                "AccountName" => "Account.Name",
+                _ => "Id"
+            };
+            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
+            return sort;
         }
 
         private static Expression<Func<Lead, bool>> GetExpression(LeadSearchDTO search)

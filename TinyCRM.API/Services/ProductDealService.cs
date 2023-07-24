@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
+using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Deals;
@@ -29,9 +31,9 @@ namespace TinyCRM.API.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ProductDealDTO> CreateProductDealAsync(Guid id, ProductDealCreateDTO productDealDTO)
+        public async Task<ProductDealDTO> CreateProductDealAsync(Guid productDealId, ProductDealCreateDTO productDealDTO)
         {
-            if (id != productDealDTO.DealId)
+            if (productDealId != productDealDTO.DealId)
                 throw new BadRequestHttpException("DealId is not match");
             var includeTables = "Lead.Account";
             var deal = await FindDealAsync(productDealDTO.DealId, includeTables);
@@ -67,14 +69,14 @@ namespace TinyCRM.API.Services
                 throw new NotFoundHttpException("Product is not found");
         }
 
-        public async Task DeleteProductDealAsync(Guid id, Guid productDealId)
+        public async Task DeleteProductDealAsync(Guid dealId, Guid productDealId)
         {
-            var deal = await FindDealAsync(id);
+            var deal = await FindDealAsync(dealId);
             if (deal.StatusDeal != StatusDeal.Open)
                 throw new BadRequestHttpException("Deal is Won/Lose");
             var productDeal = await FindProductDealAsync(productDealId);
 
-            if (id != productDeal.DealId)
+            if (dealId != productDeal.DealId)
                 throw new BadRequestHttpException("DealId is not match");
 
             _productDealRepository.Remove(productDeal);
@@ -94,28 +96,56 @@ namespace TinyCRM.API.Services
                 throw new NotFoundHttpException("ProductDeal is not found");
         }
 
-        public async Task<ProductDealDTO> GetProductDealByIdAsync(Guid id, Guid productDealId)
+        public async Task<ProductDealDTO> GetProductDealByIdAsync(Guid dealId, Guid productDealId)
         {
             string includeTables = $"{nameof(ProductDeal.Product)}";
             var productDeal = await FindProductDealAsync(productDealId, includeTables);
 
-            if (id != productDeal.DealId)
+            if (dealId != productDeal.DealId)
                 throw new BadRequestHttpException("DealId is not match");
             return _mapper.Map<ProductDealDTO>(productDeal);
         }
 
-        public async Task<IList<ProductDealDTO>> GetProductDealsByDealIdAsync(Guid id)
+        public async Task<IList<ProductDealDTO>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDTO search)
         {
             var includeTables = "Product";
-            var productDeals = await _productDealRepository.List(p => p.DealId == id, includeTables).ToListAsync();
+            var expression = GetExpression(dealId, search);
+            var sorting = ConvertSort(search);
+            var query = _productDealRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
+            var productDeals = await query.ToListAsync();
             return _mapper.Map<IList<ProductDealDTO>>(productDeals);
         }
 
-        public async Task<ProductDealDTO> UpdateProductDealAsync(Guid id, Guid productDealId, ProductDealUpdateDTO productDealDTO)
+        private static Expression<Func<ProductDeal, bool>>? GetExpression(Guid dealId, ProductDealSearchDTO search)
+        {
+            Expression<Func<ProductDeal, bool>> expression = p => p.DealId == dealId
+            && (string.IsNullOrEmpty(search.KeyWord)
+                || p.Product.Name.Contains(search.KeyWord)
+                || p.Product.Code.Contains(search.KeyWord));
+            return expression;
+        }
+
+        private static string ConvertSort(ProductDealSearchDTO search)
+        {
+            var sort = search.SortFilter.ToString() switch
+            {
+                "Id" => "Id",
+                "ProductCode" => "Product.Code",
+                "ProductName" => "Product.Name",
+                "PricePerUnit" => "Price",
+                "Quantity" => "Quantity",
+                "TotalAmount" => "TotalAmount",
+                _ => "Id"
+            };
+            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
+            return sort;
+        }
+
+        public async Task<ProductDealDTO> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDTO productDealDTO)
         {
             var productDeal = await FindProductDealAsync(productDealId);
             var totalAmountOld = productDeal.TotalAmount;
-            if (id != productDeal.DealId)
+            if (dealId != productDeal.DealId)
                 throw new BadRequestHttpException("DealId is not match");
 
             var deal = await FindDealAsync(productDeal.DealId);

@@ -61,12 +61,29 @@ namespace TinyCRM.API.Services
         public async Task<IList<ContactDTO>> GetContactsAsync(ContactSearchDTO search)
         {
             var includeTables = "Account";
-            var query = _contactRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
+            var expression = GetExpression(search);
+            var sorting = ConvertSort(search);
+            var query = _contactRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var contacts = await query.ToListAsync();
             var contactDTOs = _mapper.Map<IList<ContactDTO>>(contacts);
 
             return contactDTOs;
+        }
+
+        private static string ConvertSort(ContactSearchDTO search)
+        {
+            var sort = search.SortFilter.ToString() switch
+            {
+                "Id" => "Id",
+                "Name" => "Name",
+                "Email" => "Email",
+                "Phone" => "Phone",
+                "AccountName" => "Account.Name",
+                _ => "Id"
+            };
+            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
+            return sort;
         }
 
         private static Expression<Func<Contact, bool>> GetExpression(ContactSearchDTO search)

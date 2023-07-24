@@ -20,7 +20,6 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        [SortFilterAttributeQuery(Filters = "Name,Email")]
         public async Task<IActionResult> GetContactsAsync([FromQuery] ContactSearchDTO search)
         {
             var contactDTOs = await _contactService.GetContactsAsync(search);

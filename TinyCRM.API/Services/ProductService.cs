@@ -64,12 +64,28 @@ namespace TinyCRM.API.Services
         public async Task<IList<ProductDTO>> GetProductsAsync(ProductSearchDTO search)
         {
             var includeTables = string.Empty;
-            var query = _productRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
+            var expression = GetExpression(search);
+            var sorting = ConvertSort(search);
+            var query = _productRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var products = await query.ToListAsync();
             var productDTOs = _mapper.Map<IList<ProductDTO>>(products);
 
             return productDTOs;
+        }
+
+        private static string ConvertSort(ProductSearchDTO search)
+        {
+            var sort = search.SortFilter.ToString() switch
+            {
+                "Id" => "Id",
+                "Code" => "Code",
+                "Name" => "Name",
+                "Price" => "Price",
+                _ => "Code"
+            };
+            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
+            return sort;
         }
 
         private static Expression<Func<Product, bool>> GetExpression(ProductSearchDTO search)

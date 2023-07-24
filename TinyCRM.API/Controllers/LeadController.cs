@@ -20,7 +20,6 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        [SortFilterAttributeQuery(Filters = "Title")]
         public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDTO search)
         {
             var leadDTOs = await _leadServicce.GetLeadsAsync(search);

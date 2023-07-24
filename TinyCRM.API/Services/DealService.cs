@@ -48,12 +48,26 @@ namespace TinyCRM.API.Services
         public async Task<IList<DealDTO>> GetDealsAsync(DealSearchDTO search)
         {
             var includeTables = "Lead,ProductDeals.Product";
-            var query = _dealRepository.List(GetExpression(search), includeTables, search.Sorting, search.PageIndex, search.PageSize);
+            var expression = GetExpression(search);
+            var sorting = ConvertSort(search);
+            var query = _dealRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
             var leads = await query.ToListAsync();
             var leadDTOs = _mapper.Map<IList<DealDTO>>(leads);
 
             return leadDTOs;
+        }
+
+        private static string ConvertSort(DealSearchDTO search)
+        {
+            var sort = search.SortFilter.ToString() switch
+            {
+                "Id" => "Id",
+                "Title" => "Title",
+                _ => "Id"
+            };
+            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
+            return sort;
         }
 
         private static Expression<Func<Deal, bool>>? GetExpression(DealSearchDTO search)

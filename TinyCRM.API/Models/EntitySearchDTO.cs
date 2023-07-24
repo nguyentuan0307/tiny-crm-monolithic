@@ -13,7 +13,6 @@ namespace TinyCRM.API.Models
         [Range(1, int.MaxValue, ErrorMessage = "PageSize must be a positive number.")]
         public int PageSize { get; set; } = int.MaxValue;
 
-        [StringLength(100, ErrorMessage = "KeySort cannot exceed 100 characters.")]
-        public string? Sorting { get; set; }
+        public bool SortDirection { get; set; } = true;
     }
 }

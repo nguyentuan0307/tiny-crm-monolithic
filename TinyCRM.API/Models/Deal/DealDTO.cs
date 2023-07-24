@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.Domain.Enums;
 
 namespace TinyCRM.API.Models.Deal
@@ -21,6 +20,5 @@ namespace TinyCRM.API.Models.Deal
         public decimal ActualRevenue { get; set; }
 
         public Guid LeadId { get; set; }
-        public ICollection<ProductDealDTO> ProductDeals { get; set; } = null!;
     }
 }
