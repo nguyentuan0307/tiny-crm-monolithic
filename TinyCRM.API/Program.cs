@@ -1,6 +1,12 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using TinyCRM.API.Extensions;
 using TinyCRM.API.Middleware;
+using TinyCRM.Domain.Entities.Users;
+using TinyCRM.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +19,9 @@ builder.Services.AddLogging(loggingBuilder =>
 {
     loggingBuilder.AddSerilog(dispose: true);
 });
+
+builder.Services.AddAuthentication(builder.Configuration);
+
 builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddRepositories();
