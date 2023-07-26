@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/deals")]
     public class DealController : Controller
     {
         private readonly IDealService _dealService;
@@ -39,6 +41,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> UpdateDealAsync(Guid id, [FromBody] DealUpdateDto dealDto)
         {
             var dealUpdateDto = await _dealService.UpdateDealAsync(id, dealDto);
@@ -47,6 +50,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DeleteDealAsync(Guid id)
         {
             await _dealService.DeleteDealAsync(id);
@@ -72,6 +76,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost("{id:guid}/product-deals")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> CreateProductDealAsync(Guid id, [FromBody] ProductDealCreateDto productDealDto)
         {
             var productDealCreateDto = await _productDealService.CreateProductDealAsync(id, productDealDto);
@@ -80,6 +85,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPut("{id:guid}/product-deals/{productDealId}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> UpdateProductDealAsync(Guid id, Guid productDealId, [FromBody] ProductDealUpdateDto productDealDto)
         {
             var productDealUpdateDto = await _productDealService.UpdateProductDealAsync(id, productDealId, productDealDto);
@@ -88,6 +94,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpDelete("{id:guid}/product-deals/{productDealId}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DeleteProductDealAsync(Guid id, Guid productDealId)
         {
             await _productDealService.DeleteProductDealAsync(id, productDealId);

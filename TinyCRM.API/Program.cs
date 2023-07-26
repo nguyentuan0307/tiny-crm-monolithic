@@ -1,12 +1,6 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using TinyCRM.API.Extensions;
 using TinyCRM.API.Middleware;
-using TinyCRM.Domain.Entities.Users;
-using TinyCRM.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +15,9 @@ builder.Services.AddLogging(loggingBuilder =>
 });
 
 builder.Services.AddAuthentication(builder.Configuration);
+builder.Services.AddAuthorizations();
+
+builder.Services.ConfigureOptions(builder.Configuration);
 
 builder.Services.AddDatabase(builder.Configuration);
 
@@ -36,11 +33,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
 var environment = app.Services.GetRequiredService<IWebHostEnvironment>();
 
 app.UseCustomerExceptionHandler(environment);

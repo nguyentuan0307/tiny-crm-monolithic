@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
+using TinyCRM.API.Models;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
@@ -61,7 +62,7 @@ namespace TinyCRM.API.Services
         {
             var existingLead = await FindLeadAsync(id);
 
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
+            if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
@@ -89,11 +90,12 @@ namespace TinyCRM.API.Services
             return leadDtOs;
         }
 
-        private string ConvertSort(LeadSearchDto search)
+        private static string ConvertSort(LeadSearchDto search)
         {
+            if (search.SortFilter == null) return string.Empty;
+
             var sort = search.SortFilter.ToString() switch
             {
-                "Id" => "Id",
                 "Title" => "Title",
                 "AccountName" => "Account.Name",
                 _ => "Id"
@@ -102,7 +104,7 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Lead, bool>> GetExpression(LeadSearchDto search)
+        private static Expression<Func<Lead, bool>> GetExpression(EntitySearchDto search)
         {
             Expression<Func<Lead, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
             || p.Title.Contains(search.KeyWord)

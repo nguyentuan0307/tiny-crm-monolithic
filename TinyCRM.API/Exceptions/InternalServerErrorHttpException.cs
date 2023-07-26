@@ -2,7 +2,7 @@
 {
     public class InternalServerErrorHttpException : HttpException
     {
-        public InternalServerErrorHttpException(string message) : base(500, "Internal Server Error", message)
+        public InternalServerErrorHttpException(string message) : base(StatusCodes.Status500InternalServerError, "Internal Server Error", message)
         {
         }
     }

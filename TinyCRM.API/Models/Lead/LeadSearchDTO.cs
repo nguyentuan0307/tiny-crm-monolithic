@@ -7,6 +7,6 @@ namespace TinyCRM.API.Models.Lead
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(EnumLeadFilterSort))]
-        public EnumLeadFilterSort SortFilter { get; set; } = EnumLeadFilterSort.Id;
+        public EnumLeadFilterSort? SortFilter { get; set; }
     }
 }

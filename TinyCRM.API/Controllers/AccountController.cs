@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/accounts")]
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
@@ -42,6 +44,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDto accountDto)
         {
             var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
@@ -50,6 +53,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDto accountDto)
         {
             var accountUpdateDto = await _accountService.UpdateAccountAsync(id, accountDto);
@@ -58,6 +62,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DeleteAccountAsync(Guid id)
         {
             await _accountService.DeleteAccountAsync(id);

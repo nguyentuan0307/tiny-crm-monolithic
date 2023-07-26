@@ -64,7 +64,7 @@ namespace TinyCRM.API.Services
         public async Task<IList<ProductDto>> GetProductsAsync(ProductSearchDto search)
         {
             var includeTables = string.Empty;
-            var expression = GetExpression(search);
+            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
             var query = _productRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
@@ -76,9 +76,9 @@ namespace TinyCRM.API.Services
 
         private static string ConvertSort(ProductSearchDto search)
         {
+            if (search.SortFilter == null) return string.Empty;
             var sort = search.SortFilter.ToString() switch
             {
-                "Id" => "Id",
                 "Code" => "Code",
                 "Name" => "Name",
                 "Price" => "Price",
@@ -88,11 +88,11 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Product, bool>> GetExpression(ProductSearchDto search)
+        private static Expression<Func<Product, bool>> GetExpression(string? keyword)
         {
-            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
-            || p.Code.Contains(search.KeyWord)
-            || p.Name.Contains(search.KeyWord);
+            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(keyword)
+            || p.Code.Contains(keyword)
+            || p.Name.Contains(keyword);
             return expression;
         }
 

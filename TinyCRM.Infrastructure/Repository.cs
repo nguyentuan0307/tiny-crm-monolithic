@@ -49,15 +49,10 @@ namespace TinyCRM.Infrastructure
         public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression, string? includeTables = null)
         {
             IQueryable<TEntity> query = DbSet;
-            if (!string.IsNullOrEmpty(includeTables))
-            {
-                string[] includeProperties = includeTables.Split(',');
+            if (string.IsNullOrEmpty(includeTables)) return query.FirstOrDefaultAsync(expression);
+            var includeProperties = includeTables.Split(',');
 
-                foreach (var includeProperty in includeProperties)
-                {
-                    query = query.Include(includeProperty);
-                }
-            }
+            query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
             return query.FirstOrDefaultAsync(expression);
         }
 
@@ -67,12 +62,9 @@ namespace TinyCRM.Infrastructure
             IQueryable<TEntity> query = DbSet;
             if (!string.IsNullOrEmpty(includeTables))
             {
-                string[] includeProperties = includeTables.Split(',');
+                var includeProperties = includeTables.Split(',');
 
-                foreach (var includeProperty in includeProperties)
-                {
-                    query = query.Include(includeProperty);
-                }
+                query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
             }
             if (expression != null)
             {

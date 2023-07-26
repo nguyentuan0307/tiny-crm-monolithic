@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/contacts")]
     public class ContactController : Controller
     {
         private readonly IContactService _contactService;
@@ -36,6 +38,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> CreateContactAsync([FromBody] ContactCreateDto contactDto)
         {
             var contactNewDto = await _contactService.CreateContactAsync(contactDto);
@@ -44,6 +47,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> UpdateContactAsync(Guid id, [FromBody] ContactUpdateDto contactDto)
         {
             var contactUpdateDto = await _contactService.UpdateContactAsync(id, contactDto);
@@ -52,6 +56,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DeleteContactAsync(Guid id)
         {
             await _contactService.DeleteContactAsync(id);

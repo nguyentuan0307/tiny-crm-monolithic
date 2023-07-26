@@ -2,7 +2,7 @@
 {
     public class BadRequestHttpException : HttpException
     {
-        public BadRequestHttpException(string message) : base(400, "Bad Request", message)
+        public BadRequestHttpException(string message) : base(StatusCodes.Status400BadRequest, "Bad Request", message)
         {
         }
     }

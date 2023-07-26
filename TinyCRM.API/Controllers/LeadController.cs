@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/leads")]
     public class LeadController : Controller
     {
         private readonly ILeadService _leadService;
@@ -36,6 +38,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> CreateLeadAsync([FromBody] LeadCreateDto leadDto)
         {
             var leadCreateDto = await _leadService.CreateLeadAsync(leadDto);
@@ -44,6 +47,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> UpdateLeadAsync(Guid id, [FromBody] LeadUpdateDto leadDto)
         {
             var leadUpdateDto = await _leadService.UpdateLeadAsync(id, leadDto);
@@ -52,6 +56,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DeleteLeadAsync(Guid id)
         {
             await _leadService.DeleteLeadAsync(id);
@@ -60,6 +65,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost("{id:guid}/qualify")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> QualifyLeadAsync(Guid id)
         {
             var dealDto = await _leadService.QualifyLeadAsync(id);
@@ -68,6 +74,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost("{id:guid}/disqualify")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DisqualifyLeadAsync(Guid id, [FromBody] DisqualifyDto disqualifyDto)
         {
             await _leadService.DisqualifyLeadAsync(id, disqualifyDto);

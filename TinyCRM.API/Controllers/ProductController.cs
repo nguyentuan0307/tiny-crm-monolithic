@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/products")]
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
@@ -36,6 +38,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDto productDto)
         {
             var productNewDto = await _productService.CreateProductAsync(productDto);
@@ -44,6 +47,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDto productDto)
         {
             var productUpdateDto = await _productService.UpdateProductAsync(id, productDto);
@@ -52,6 +56,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
             await _productService.DeleteProductAsync(id);

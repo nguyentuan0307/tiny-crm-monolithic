@@ -61,9 +61,9 @@ namespace TinyCRM.API.Services
 
         private static string ConvertSort(DealSearchDto search)
         {
+            if (search.SortFilter == null) return string.Empty;
             var sort = search.SortFilter.ToString() switch
             {
-                "Id" => "Id",
                 "Title" => "Title",
                 _ => "Id"
             };
