@@ -5,6 +5,5 @@
         public static void UseCustomerAuthenticationHandler(this IApplicationBuilder app, IHostEnvironment env)
         {
         }
-
     }
 }

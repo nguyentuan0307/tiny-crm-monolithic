@@ -11,13 +11,14 @@ namespace TinyCRM.API.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
+
         public UserController(IUserService userService)
         {
             _userService = userService;
         }
 
         [HttpPost("Sign-Up")]
-        [AllowAnonymous]
+        [Authorize(Policy = Policy.AdminPolicy)]
         public async Task<IActionResult> SignUp(SignUpDto signUpDto)
         {
             if (signUpDto.Password != signUpDto.ConfirmPassword)
@@ -38,7 +39,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost("sign-Up-Admin")]
-        [Authorize(policy: Policy.AdminPolicy)]
+        [Authorize(policy: Policy.SuperAdminPolicy)]
         public async Task<IActionResult> SignUpAdmin(SignUpDto signUpDto)
         {
             if (signUpDto.Password != signUpDto.ConfirmPassword)
@@ -59,7 +60,7 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpPost("Sign-In")]
-        [Authorize(Policy = Policy.AdminPolicy)]
+        [AllowAnonymous]
         public async Task<IActionResult> SignIn(SignInDto signInDto)
         {
             var result = await _userService.SignInAsync(signInDto);
@@ -81,7 +82,6 @@ namespace TinyCRM.API.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetProfiles([FromQuery] ProfileUserSearchDto search)
         {
             var users = await _userService.GetProfileUsersAsync(search);

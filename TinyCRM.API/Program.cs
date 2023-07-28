@@ -27,9 +27,7 @@ builder.Services.AddServices();
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwagger();
 
 var app = builder.Build();
 
@@ -37,7 +35,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 var environment = app.Services.GetRequiredService<IWebHostEnvironment>();
-
+//app.Services.MigrateDatabase();
 app.UseCustomerExceptionHandler(environment);
 
 app.UseHttpsRedirection();
@@ -50,5 +48,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Logger.LogInformation("Started running the application at {DateTime}", DateTime.Now);
+
+await app.SeedDataAsync();
 
 app.Run();

@@ -20,12 +20,12 @@ namespace TinyCRM.Infrastructure
 
         public void Rollback()
         {
-            _transaction?.Rollback();
+            _transaction.Rollback();
         }
 
         public void Commit()
         {
-            _transaction?.Commit();
+            _transaction.Commit();
         }
 
         public Task<int> SaveChangeAsync()

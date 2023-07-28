@@ -19,6 +19,8 @@ namespace TinyCRM.Domain.Interfaces
 
         Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
 
+        Task<bool> AnyAsync();
+
         Task<int> CountAsync(Expression<Func<T, bool>> expression);
     }
 }

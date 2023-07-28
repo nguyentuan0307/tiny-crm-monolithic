@@ -12,7 +12,7 @@ namespace TinyCRM.Infrastructure.EntityTypeConfiguration
             builder.Property(p => p.Email).IsRequired().HasMaxLength(256);
             builder.Property(p => p.Phone).IsRequired().HasMaxLength(20);
             builder.Property(p => p.Address).HasMaxLength(512);
-            builder.Property(p => p.TotalSale).HasColumnType("decimal(18,2)");
+            builder.Property(p => p.TotalSales).HasColumnType("decimal(18,2)");
 
             builder.HasIndex(p => p.Email).IsUnique();
             builder.HasIndex(p => p.Phone).IsUnique();

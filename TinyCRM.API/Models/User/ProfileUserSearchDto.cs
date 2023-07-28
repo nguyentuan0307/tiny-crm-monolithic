@@ -8,6 +8,5 @@ namespace TinyCRM.API.Models.User
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [EnumDataType(typeof(EnumProfileUserFilterSort))]
         public EnumProfileUserFilterSort? SortFilter { get; set; }
-
     }
 }

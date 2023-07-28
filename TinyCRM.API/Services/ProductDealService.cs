@@ -53,7 +53,7 @@ namespace TinyCRM.API.Services
         private static void UpdateRelateCreate(Deal deal, ProductDeal productDeal)
         {
             deal.ActualRevenue += productDeal.TotalAmount;
-            deal.Lead.Account.TotalSale += productDeal.TotalAmount;
+            deal.Lead.Account.TotalSales += productDeal.TotalAmount;
         }
 
         private async Task<Deal> FindDealAsync(Guid dealId, string? includeTables = default)
@@ -86,7 +86,7 @@ namespace TinyCRM.API.Services
         private static void UpdateRelateDelete(Deal deal, ProductDeal productDeal)
         {
             deal.ActualRevenue -= productDeal.TotalAmount;
-            deal.Lead.Account.TotalSale -= productDeal.TotalAmount;
+            deal.Lead.Account.TotalSales -= productDeal.TotalAmount;
         }
 
         private async Task<ProductDeal> FindProductDealAsync(Guid productDealId, string? includeTables = default)
@@ -162,9 +162,9 @@ namespace TinyCRM.API.Services
 
         private static void UpdateRelateUpdate(Deal deal, decimal totalAmountOld, decimal totalAmountNew)
         {
-            deal.Lead.Account.TotalSale -= deal.ActualRevenue;
+            deal.Lead.Account.TotalSales -= deal.ActualRevenue;
             deal.ActualRevenue = deal.ActualRevenue - totalAmountOld + totalAmountNew;
-            deal.Lead.Account.TotalSale += deal.ActualRevenue;
+            deal.Lead.Account.TotalSales += deal.ActualRevenue;
         }
     }
 }

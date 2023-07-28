@@ -203,7 +203,7 @@ namespace TinyCRM.API.Migrations
                     b.HasIndex("Phone")
                         .IsUnique();
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Contacts.Contact", b =>
@@ -252,7 +252,7 @@ namespace TinyCRM.API.Migrations
                     b.HasIndex("Phone")
                         .IsUnique();
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contacts", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Deals.Deal", b =>
@@ -296,7 +296,7 @@ namespace TinyCRM.API.Migrations
                     b.HasIndex("LeadId")
                         .IsUnique();
 
-                    b.ToTable("Deals");
+                    b.ToTable("Deals", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Leads.Lead", b =>
@@ -351,7 +351,7 @@ namespace TinyCRM.API.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("Leads");
+                    b.ToTable("Leads", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.ProductDeals.ProductDeal", b =>
@@ -393,7 +393,7 @@ namespace TinyCRM.API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductDeals");
+                    b.ToTable("ProductDeals", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Products.Product", b =>
@@ -438,7 +438,7 @@ namespace TinyCRM.API.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("TinyCRM.Domain.Entities.Users.ApplicationUser", b =>

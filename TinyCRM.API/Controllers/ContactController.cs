@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Roles;

@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
+using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using TinyCRM.API.Models;
 using TinyCRM.API.Services;
 using TinyCRM.API.Services.IServices;
+using TinyCRM.Domain;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Entities.Deals;
@@ -43,6 +44,7 @@ namespace TinyCRM.API.Extensions
 
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
+            services.AddScoped<DataContributor>();
             return services.AddScoped<IAccountRepository, AccountRepository>()
                 .AddScoped<IContactRepository, ContactRepository>()
                 .AddScoped<IProductRepository, ProductRepository>()
@@ -60,6 +62,45 @@ namespace TinyCRM.API.Extensions
                 .AddScoped<IDealService, DealService>()
                 .AddScoped<IProductDealService, ProductDealService>()
                 .AddScoped<IUserService, UserService>();
+        }
+
+        public static IServiceCollection AddSwagger(this IServiceCollection services)
+        {
+            services.AddEndpointsApiExplorer();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Tiny CRM",
+                    Version = "v1"
+                });
+
+                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please insert JWT with Bearer into field",
+                    Name = "Authorization",
+                    BearerFormat = "JWT",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = JwtBearerDefaults.AuthenticationScheme
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
+            return services;
         }
 
         public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
@@ -115,20 +156,33 @@ namespace TinyCRM.API.Extensions
             {
                 options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 
-                options.AddPolicy(Policy.AdminPolicy, policy => policy.RequireRole(Role.Admin));
-                options.AddPolicy(Policy.UserPolicy, policy => policy.RequireRole(Role.User));
+                options.AddPolicy(Policy.SuperAdminPolicy,
+                    policy => policy.RequireRole(Role.SuperAdmin));
+                options.AddPolicy(Policy.AdminPolicy,
+                    policy => policy.RequireRole(Role.SuperAdmin, Role.Admin));
+                options.AddPolicy(Policy.UserPolicy,
+                    policy => policy.RequireRole(Role.User, Role.Admin, Role.SuperAdmin));
                 options.AddPolicy(Policy.AccessProfilePolicy, policy => policy.RequireAssertion(context =>
                 {
                     var httpContext = context.Resource as HttpContext;
                     var id = httpContext!.Request.RouteValues["id"] as string;
                     var user = httpContext.User;
                     var isAdmin = user.IsInRole(Role.Admin);
+                    var isSuperAdmin = user.IsInRole(Role.SuperAdmin);
                     var hasSameEmail = user.Claims.Any(claim => claim.Type == ClaimTypes.NameIdentifier && claim.Value == id);
 
-                    return isAdmin || hasSameEmail;
+                    return isAdmin || hasSameEmail || isSuperAdmin;
                 }));
             });
+
             return services;
+        }
+
+        public static async Task SeedDataAsync(this IApplicationBuilder app)
+        {
+            using var scope = app.ApplicationServices.CreateScope();
+            var seedData = scope.ServiceProvider.GetRequiredService<DataContributor>();
+            await seedData.SeedAsync();
         }
 
         public static void ConfigureOptions(this IServiceCollection services, IConfiguration configuration)

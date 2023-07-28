@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 using TinyCRM.Domain.Base;
 using TinyCRM.Domain.Interfaces;
 
@@ -81,6 +81,11 @@ namespace TinyCRM.Infrastructure
         public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression)
         {
             return DbSet.AnyAsync(expression);
+        }
+
+        public Task<bool> AnyAsync()
+        {
+            return DbSet.AnyAsync();
         }
 
         public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)

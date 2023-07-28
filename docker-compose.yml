@@ -11,6 +11,7 @@ services:
       dockerfile: TinyCRM.API/Dockerfile
     environment:
         - ASPNETCORE_URLS=http://+:5000;https://+:5001
+        - ConnectionStrings__Default=Server=tinycrm.db,1433;Database=TinyCrm;User Id=sa;Password=Admin123;TrustServerCertificate=True;
   tinycrm.db:
      image: mcr.microsoft.com/mssql/server:latest
      environment:
@@ -19,4 +20,7 @@ services:
      ports:
         - "1433:1433"
      volumes:
-        - ./crmdata:/var/opt/mssql 
+        - crmdata:/var/opt/mssql 
+     user: root
+volumes:
+  crmdata:
