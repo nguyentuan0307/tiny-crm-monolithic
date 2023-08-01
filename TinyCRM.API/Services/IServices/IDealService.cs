@@ -14,6 +14,6 @@ namespace TinyCRM.API.Services.IServices
 
         public Task<DealDto> UpdateDealAsync(Guid id, DealUpdateDto dealDto);
 
-        public Task<IList<DealDto>> GetDealsByAccountIdAsync(Guid accountId);
+        public Task<IList<DealDto>> GetDealsByAccountIdAsync(Guid accountId, DealSearchDto search);
     }
 }

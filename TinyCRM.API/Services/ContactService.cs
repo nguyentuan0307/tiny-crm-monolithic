@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -38,7 +38,7 @@ namespace TinyCRM.API.Services
 
         private async Task CheckValidateAccount(Guid accountId)
         {
-            if (!await _accountRepository.AnyAsync(p => p.Id == accountId))
+            if (!await _accountRepository.AnyAsync(accountId))
             {
                 throw new BadRequestHttpException("Account is not exist");
             }
@@ -61,9 +61,17 @@ namespace TinyCRM.API.Services
         public async Task<IList<ContactDto>> GetContactsAsync(ContactSearchDto search)
         {
             const string includeTables = "Account";
-            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
-            var query = _contactRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
+            var contactQueryParameters = new ContactQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables
+            };
+            var query = _contactRepository
+                .GetContacts(contactQueryParameters);
 
             var contacts = await query.ToListAsync();
             var contactDtOs = _mapper.Map<IList<ContactDto>>(contacts);
@@ -86,14 +94,6 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Contact, bool>> GetExpression(string? keyword)
-        {
-            Expression<Func<Contact, bool>> expression = p => string.IsNullOrEmpty(keyword)
-            || p.Name.Contains(keyword)
-            || p.Email.Contains(keyword);
-            return expression;
-        }
-
         public async Task<ContactDto> UpdateContactAsync(Guid id, ContactUpdateDto contactDto)
         {
             var existingContact = await FindContactAsync(id);
@@ -107,13 +107,12 @@ namespace TinyCRM.API.Services
 
         private async Task CheckValidate(string email, string phone, Guid guid = default)
         {
-            var accounts = await _contactRepository.List(p => p.Email == email
-            || p.Phone == phone).ToListAsync();
-            if (accounts.Any(a => a.Email == email && a.Id != guid))
+            if (await _contactRepository.IsEmailExistAsync(email, guid))
             {
                 throw new BadRequestHttpException("Email is already exist");
             }
-            if (accounts.Any(a => a.Phone == email))
+
+            if (await _contactRepository.IsPhoneExistAsync(phone, guid))
             {
                 throw new BadRequestHttpException("Phone is already exist");
             }
@@ -121,17 +120,34 @@ namespace TinyCRM.API.Services
 
         private async Task<Contact> FindContactAsync(Guid id)
         {
-            return await _contactRepository.GetAsync(p => p.Id == id)
+            return await _contactRepository.GetAsync(id)
                 ?? throw new NotFoundHttpException("Contact is not found");
         }
 
-        public async Task<IList<ContactDto>> GetContactsByAccountIdAsync(Guid accountId)
+        public async Task<IList<ContactDto>> GetContactsByAccountIdAsync(Guid accountId, ContactSearchDto search)
         {
-            if (!await _accountRepository.AnyAsync(p => p.Id == accountId))
+            if (!await _accountRepository.AnyAsync(accountId))
             {
                 throw new BadRequestHttpException("Account is not exist");
             }
-            var contacts = await _contactRepository.List(p => p.AccountId == accountId).ToListAsync();
+
+            const string includeTables = "Account";
+            var sorting = ConvertSort(search);
+
+            var contactQueryParameters = new ContactQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables,
+                AccountId = accountId
+            };
+            var query = _contactRepository
+                .GetContactsByAccountId(contactQueryParameters);
+
+            var contacts = await query.ToListAsync();
+
             return _mapper.Map<IList<ContactDto>>(contacts);
         }
     }

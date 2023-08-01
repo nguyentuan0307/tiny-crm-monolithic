@@ -9,21 +9,15 @@ namespace TinyCRM.API.Controllers
 {
     [ApiController]
     [Route("api/accounts")]
-    public class AccountController : Controller
+    public class CrmAccountController : Controller
     {
         private readonly IAccountService _accountService;
-        private readonly IDealService _dealService;
-        private readonly ILeadService _leadService;
-        private readonly IContactService _contactService;
-        private readonly ILogger<AccountController> _logger;
+        private readonly ILogger<CrmAccountController> _logger;
 
-        public AccountController(IAccountService accountService, ILogger<AccountController> logger, IDealService dealService, ILeadService leadService, IContactService contactService)
+        public CrmAccountController(IAccountService accountService, ILogger<CrmAccountController> logger)
         {
             _accountService = accountService;
             _logger = logger;
-            _dealService = dealService;
-            _leadService = leadService;
-            _contactService = contactService;
         }
 
         [HttpGet]
@@ -68,30 +62,6 @@ namespace TinyCRM.API.Controllers
             await _accountService.DeleteAccountAsync(id);
             _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Account: {id}");
             return Ok("Successfully Deleted Account");
-        }
-
-        [HttpGet("{id:guid}/contacts")]
-        public async Task<IActionResult> GetContactsByAccountIdAsync(Guid id)
-        {
-            var contactDtOs = await _contactService.GetContactsByAccountIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
-            return Ok(contactDtOs);
-        }
-
-        [HttpGet("{id:guid}/leads")]
-        public async Task<IActionResult> GetLeadsByAccountIdAsync(Guid id)
-        {
-            var leadDtOs = await _leadService.GetLeadsByAccountIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
-            return Ok(leadDtOs);
-        }
-
-        [HttpGet("{id:guid}/deals")]
-        public async Task<IActionResult> GetDealsByAccountIdAsync(Guid id)
-        {
-            var dealDtOs = await _dealService.GetDealsByAccountIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Deals: {JsonSerializer.Serialize(dealDtOs)}");
-            return Ok(dealDtOs);
         }
     }
 }

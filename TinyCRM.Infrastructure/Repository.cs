@@ -2,18 +2,19 @@
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.Domain.Base;
+using TinyCRM.Domain.Helper.Specification;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.Infrastructure
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
     {
         private readonly DbFactory _dbFactory;
         private DbSet<TEntity>? _dbSet;
 
         protected DbSet<TEntity> DbSet => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
 
-        public Repository(DbFactory dbFactory)
+        protected Repository(DbFactory dbFactory)
         {
             _dbFactory = dbFactory;
         }
@@ -27,7 +28,7 @@ namespace TinyCRM.Infrastructure
             await DbSet.AddAsync(entity);
         }
 
-        public async Task AddRangeAsync(List<TEntity> entities)
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await DbSet.AddRangeAsync(entities);
         }
@@ -46,41 +47,57 @@ namespace TinyCRM.Infrastructure
             DbSet.Update(entity);
         }
 
-        public virtual Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> expression, string? includeTables = null)
+        public Task<TEntity?> GetAsync(TKey id, string? includeTables = null)
         {
             IQueryable<TEntity> query = DbSet;
-            if (string.IsNullOrEmpty(includeTables)) return query.FirstOrDefaultAsync(expression);
+
+            query = query.Where(ExpressionForGet(id));
+
+            if (string.IsNullOrEmpty(includeTables)) return query.FirstOrDefaultAsync();
             var includeProperties = includeTables.Split(',');
 
             query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
-            return query.FirstOrDefaultAsync(expression);
+            return query.FirstOrDefaultAsync();
         }
 
-        public IQueryable<TEntity> List(Expression<Func<TEntity, bool>>? expression = null, string? includeTables = null,
+        public IQueryable<TEntity> List(ISpecification<TEntity> specification, string? includeTables = null,
             string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue)
         {
             IQueryable<TEntity> query = DbSet;
-            if (!string.IsNullOrEmpty(includeTables))
-            {
-                var includeProperties = includeTables.Split(',');
 
-                query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
-            }
-            if (expression != null)
-            {
-                query = query.Where(expression);
-            }
-            if (!string.IsNullOrWhiteSpace(sorting))
-            {
-                query = query.OrderBy(sorting);
-            }
+            query = Including(query, includeTables);
+
+            query = Filter(query, specification);
+
+            query = Sorting(query, sorting);
+
             query = query.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
             return query;
         }
 
-        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression)
+        private static IQueryable<TEntity> Filter(IQueryable<TEntity> query, ISpecification<TEntity> specification)
         {
-            return DbSet.AnyAsync(expression);
+            query = query.Where(specification.IsSatisfiedBy());
+            return query;
+        }
+
+        private static IQueryable<TEntity> Including(IQueryable<TEntity> query, string? includeTables = null)
+        {
+            if (string.IsNullOrEmpty(includeTables)) return query;
+            var includeProperties = includeTables.Split(',');
+
+            query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
+            return query;
+        }
+
+        private static IQueryable<TEntity> Sorting(IQueryable<TEntity> query, string? sorting)
+        {
+            return string.IsNullOrWhiteSpace(sorting) ? query : query.OrderBy(sorting);
+        }
+
+        public virtual Task<bool> AnyAsync(TKey id)
+        {
+            return DbSet.AnyAsync();
         }
 
         public Task<bool> AnyAsync()
@@ -91,6 +108,11 @@ namespace TinyCRM.Infrastructure
         public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)
         {
             return DbSet.CountAsync(expression);
+        }
+
+        protected virtual Expression<Func<TEntity, bool>> ExpressionForGet(TKey id)
+        {
+            return p => true;
         }
     }
 }

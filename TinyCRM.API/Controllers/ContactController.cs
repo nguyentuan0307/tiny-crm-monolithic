@@ -63,5 +63,13 @@ namespace TinyCRM.API.Controllers
             _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Contact: {id}");
             return Ok("Successfully Deleted Contact");
         }
+
+        [HttpGet("account/{id:guid}")]
+        public async Task<IActionResult> GetContactsByAccountIdAsync(Guid id, [FromQuery] ContactSearchDto search)
+        {
+            var contactDtOs = await _contactService.GetContactsByAccountIdAsync(id, search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
+            return Ok(contactDtOs);
+        }
     }
 }

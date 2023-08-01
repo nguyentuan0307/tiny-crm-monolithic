@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Products;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -34,10 +34,9 @@ namespace TinyCRM.API.Services
 
         private async Task CheckValidate(string code, Guid id = default)
         {
-            var product = await _productRepository.GetAsync(p => p.Code == code);
-            if (product != null && product.Id != id)
+            if (await _productRepository.ProductCodeIsExistAsync(code, id))
             {
-                throw new BadRequestHttpException("Product code is existed");
+                throw new BadRequestHttpException("Product Code is exist");
             }
         }
 
@@ -50,7 +49,7 @@ namespace TinyCRM.API.Services
 
         private async Task<Product> GetProductAsync(Guid id)
         {
-            return await _productRepository.GetAsync(p => p.Id == id)
+            return await _productRepository.GetAsync(id)
                 ?? throw new NotFoundHttpException("Product is not found");
         }
 
@@ -64,9 +63,16 @@ namespace TinyCRM.API.Services
         public async Task<IList<ProductDto>> GetProductsAsync(ProductSearchDto search)
         {
             var includeTables = string.Empty;
-            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
-            var query = _productRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
+            var productQueryParameter = new ProductQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables,
+            };
+            var query = _productRepository.GetProducts(productQueryParameter);
 
             var products = await query.ToListAsync();
             var productDtOs = _mapper.Map<IList<ProductDto>>(products);
@@ -86,14 +92,6 @@ namespace TinyCRM.API.Services
             };
             sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
             return sort;
-        }
-
-        private static Expression<Func<Product, bool>> GetExpression(string? keyword)
-        {
-            Expression<Func<Product, bool>> expression = p => string.IsNullOrEmpty(keyword)
-            || p.Code.Contains(keyword)
-            || p.Name.Contains(keyword);
-            return expression;
         }
 
         public async Task<ProductDto> UpdateProductAsync(Guid id, ProductUpdateDto productDto)

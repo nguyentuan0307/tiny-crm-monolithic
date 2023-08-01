@@ -109,5 +109,13 @@ namespace TinyCRM.API.Controllers
             _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Statistic Deal: {JsonSerializer.Serialize(dealStatisticDto)}");
             return Ok(dealStatisticDto);
         }
+
+        [HttpGet("account/{id:guid}")]
+        public async Task<IActionResult> GetDealsByAccountIdAsync(Guid id, [FromQuery] DealSearchDto search)
+        {
+            var dealDtOs = await _dealService.GetDealsByAccountIdAsync(id, search);
+            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Deals: {JsonSerializer.Serialize(dealDtOs)}");
+            return Ok(dealDtOs);
+        }
     }
 }

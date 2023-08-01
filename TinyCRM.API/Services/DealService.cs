@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Enums;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -35,7 +35,7 @@ namespace TinyCRM.API.Services
 
         private async Task<Deal> FindDealAsync(Guid id, string? includeTables = default)
         {
-            return await _dealRepository.GetAsync(p => p.Id == id, includeTables)
+            return await _dealRepository.GetAsync(id, includeTables)
                     ?? throw new NotFoundHttpException("Deal is not found");
         }
 
@@ -49,9 +49,18 @@ namespace TinyCRM.API.Services
         public async Task<IList<DealDto>> GetDealsAsync(DealSearchDto search)
         {
             const string includeTables = "Lead,ProductDeals.Product";
-            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
-            var query = _dealRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
+
+            var dealQueryParameters = new DealQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                IncludeTables = includeTables,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize
+            };
+
+            var query = _dealRepository.GetDeals(dealQueryParameters);
 
             var leads = await query.ToListAsync();
             var leadDtOs = _mapper.Map<IList<DealDto>>(leads);
@@ -69,14 +78,6 @@ namespace TinyCRM.API.Services
             };
             sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
             return sort;
-        }
-
-        private static Expression<Func<Deal, bool>> GetExpression(string? keyWord)
-        {
-            Expression<Func<Deal, bool>> expression = p => string.IsNullOrEmpty(keyWord)
-            || p.Title.Contains(keyWord)
-            || p.Lead.Account.Name.Contains(keyWord);
-            return expression;
         }
 
         public async Task<DealDto> UpdateDealAsync(Guid id, DealUpdateDto dealDto)
@@ -98,11 +99,7 @@ namespace TinyCRM.API.Services
 
         public async Task<DealStatisticDto> GetStatisticDealAsync()
         {
-            var statistic = await _dealRepository.List().Select(x => new
-            {
-                x.StatusDeal,
-                x.ActualRevenue
-            }).ToListAsync();
+            var statistic = await _dealRepository.GetDealStatistics().ToListAsync();
 
             if (statistic.Count == 0)
             {
@@ -120,13 +117,26 @@ namespace TinyCRM.API.Services
             return dealStatisticDto;
         }
 
-        public async Task<IList<DealDto>> GetDealsByAccountIdAsync(Guid accountId)
+        public async Task<IList<DealDto>> GetDealsByAccountIdAsync(Guid accountId, DealSearchDto search)
         {
-            if (!await _accountRepository.AnyAsync(a => a.Id == accountId))
+            if (!await _accountRepository.AnyAsync(accountId))
             {
                 throw new BadRequestHttpException("Account is not found");
             }
-            var dealAccounts = await _dealRepository.List(p => p.Lead.AccountId == accountId, "Lead").ToListAsync();
+
+            const string includeTables = "Lead.Account";
+            var sorting = ConvertSort(search);
+
+            var dealQueryParameters = new DealQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables,
+                AccountId = accountId
+            };
+            var dealAccounts = await _dealRepository.GetDealsByAccountId(dealQueryParameters).ToListAsync();
 
             return _mapper.Map<IList<DealDto>>(dealAccounts);
         }

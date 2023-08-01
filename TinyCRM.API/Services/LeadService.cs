@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
-using TinyCRM.API.Models;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.Lead;
 using TinyCRM.API.Services.IServices;
@@ -10,6 +8,7 @@ using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Enums;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -48,7 +47,7 @@ namespace TinyCRM.API.Services
 
         private async Task<bool> IsExistAccount(Guid accountId)
         {
-            return await _accountRepository.AnyAsync(p => p.Id == accountId);
+            return await _accountRepository.AnyAsync(accountId);
         }
 
         public async Task DeleteLeadAsync(Guid id)
@@ -81,13 +80,19 @@ namespace TinyCRM.API.Services
         public async Task<IList<LeadDto>> GetLeadsAsync(LeadSearchDto search)
         {
             const string includeTables = "Account";
-            var expression = GetExpression(search);
             var sorting = ConvertSort(search);
-            var query = _leadRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
 
-            var leads = await query.ToListAsync();
-            var leadDtOs = _mapper.Map<IList<LeadDto>>(leads);
-            return leadDtOs;
+            var leadQueryParameters = new LeadQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables,
+            };
+            var leads = await _leadRepository.GetLeads(leadQueryParameters).ToListAsync();
+
+            return _mapper.Map<IList<LeadDto>>(leads);
         }
 
         private static string ConvertSort(LeadSearchDto search)
@@ -102,15 +107,6 @@ namespace TinyCRM.API.Services
             };
             sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
             return sort;
-        }
-
-        private static Expression<Func<Lead, bool>> GetExpression(EntitySearchDto search)
-        {
-            Expression<Func<Lead, bool>> expression = p => string.IsNullOrEmpty(search.KeyWord)
-            || p.Title.Contains(search.KeyWord)
-            || p.Account.Name.Contains(search.KeyWord);
-
-            return expression;
         }
 
         public async Task<DealDto> QualifyLeadAsync(Guid id)
@@ -135,7 +131,7 @@ namespace TinyCRM.API.Services
         private async Task<Lead> GetSatisfiedLead(Guid id)
         {
             var existingLead = await FindLeadAsync(id);
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
+            if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
@@ -152,7 +148,7 @@ namespace TinyCRM.API.Services
         {
             var existingLead = await FindLeadAsync(id);
 
-            if (existingLead.StatusLead == StatusLead.Disqualified || existingLead.StatusLead == StatusLead.Qualified)
+            if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
             {
                 throw new BadRequestHttpException("Lead is disqualified or qualified");
             }
@@ -180,17 +176,13 @@ namespace TinyCRM.API.Services
 
         private async Task<Lead> FindLeadAsync(Guid id)
         {
-            return await _leadRepository.GetAsync(l => l.Id == id)
+            return await _leadRepository.GetAsync(id)
                 ?? throw new NotFoundHttpException("Lead is not found");
         }
 
         public async Task<LeadStatisticDto> GetStatisticLeadAsync()
         {
-            var statisticLeads = await _leadRepository.List().Select(x => new
-            {
-                x.StatusLead,
-                x.EstimatedRevenue
-            }).ToListAsync();
+            var statisticLeads = await _leadRepository.GetLeadStatistics().ToListAsync();
 
             if (statisticLeads.Count == 0)
             {
@@ -208,13 +200,25 @@ namespace TinyCRM.API.Services
             return leadStatisticDto;
         }
 
-        public async Task<IList<LeadDto>> GetLeadsByAccountIdAsync(Guid accountId)
+        public async Task<IList<LeadDto>> GetLeadsByAccountIdAsync(Guid accountId, LeadSearchDto search)
         {
-            if (!await _accountRepository.AnyAsync(a => a.Id == accountId))
+            if (!await _accountRepository.AnyAsync(accountId))
             {
                 throw new BadRequestHttpException("Account is not found");
             }
-            var leads = await _leadRepository.List(l => l.AccountId == accountId).ToListAsync();
+            const string includeTables = "Account";
+            var sorting = ConvertSort(search);
+
+            var leadQueryParameters = new LeadQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables,
+                AccountId = accountId
+            };
+            var leads = await _leadRepository.GetLeadsByAccountId(leadQueryParameters).ToListAsync();
             return _mapper.Map<IList<LeadDto>>(leads);
         }
     }

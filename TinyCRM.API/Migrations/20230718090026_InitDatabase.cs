@@ -19,7 +19,7 @@ namespace TinyCRM.API.Migrations
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
-                    TotalSale = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalSales = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),

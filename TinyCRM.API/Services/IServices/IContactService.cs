@@ -14,6 +14,6 @@ namespace TinyCRM.API.Services.IServices
 
         public Task<ContactDto> UpdateContactAsync(Guid id, ContactUpdateDto contactDto);
 
-        public Task<IList<ContactDto>> GetContactsByAccountIdAsync(Guid accountId);
+        public Task<IList<ContactDto>> GetContactsByAccountIdAsync(Guid accountId, ContactSearchDto search);
     }
 }

@@ -1,26 +1,27 @@
 ﻿using System.Linq.Expressions;
+using TinyCRM.Domain.Helper.Specification;
 
 namespace TinyCRM.Domain.Interfaces
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<TEntity, in TKey> where TEntity : class
     {
-        Task AddAsync(T entity);
+        Task AddAsync(TEntity entity);
 
-        Task AddRangeAsync(List<T> entities);
+        Task AddRangeAsync(IEnumerable<TEntity> entities);
 
-        void Remove(T entity);
+        void Remove(TEntity entity);
 
-        void Update(T entity);
+        void Update(TEntity entity);
 
-        Task<T?> GetAsync(Expression<Func<T, bool>> expression, string? stringInclude = null);
+        Task<TEntity?> GetAsync(TKey id, string? stringInclude = null);
 
-        IQueryable<T> List(Expression<Func<T, bool>>? expression = null, string? includeTables = null,
+        IQueryable<TEntity> List(ISpecification<TEntity> specification, string? includeTables = null,
             string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue);
 
-        Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
+        Task<bool> AnyAsync(TKey id);
 
         Task<bool> AnyAsync();
 
-        Task<int> CountAsync(Expression<Func<T, bool>> expression);
+        Task<int> CountAsync(Expression<Func<TEntity, bool>> expression);
     }
 }

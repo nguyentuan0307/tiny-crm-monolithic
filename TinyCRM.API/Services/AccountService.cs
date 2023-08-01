@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Accounts;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -33,7 +33,7 @@ namespace TinyCRM.API.Services
 
         public async Task DeleteAccountAsync(Guid id)
         {
-            var account = await GetExistingAccount(id);
+            var account = await FindAccountAsync(id);
 
             _accountRepository.Remove(account);
             await _unitOfWork.SaveChangeAsync();
@@ -41,7 +41,7 @@ namespace TinyCRM.API.Services
 
         public async Task<AccountDto> GetAccountByIdAsync(Guid id)
         {
-            var account = await GetExistingAccount(id);
+            var account = await FindAccountAsync(id);
 
             return _mapper.Map<AccountDto>(account);
         }
@@ -49,10 +49,17 @@ namespace TinyCRM.API.Services
         public async Task<IList<AccountDto>> GetAccountsAsync(AccountSearchDto search)
         {
             var includeTables = string.Empty;
-            var expression = GetExpression(search.KeyWord);
             var sorting = ConvertSort(search);
+            var accountQueryParameters = new AccountQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                IncludeTables = includeTables,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize
+            };
 
-            var query = _accountRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
+            var query = _accountRepository.GetAccounts(accountQueryParameters);
 
             var accounts = await query.ToListAsync();
             var accountDtOs = _mapper.Map<IList<AccountDto>>(accounts);
@@ -75,18 +82,9 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<Account, bool>> GetExpression(string? keyWord)
-        {
-            Expression<Func<Account, bool>> expression = p => string.IsNullOrEmpty(keyWord)
-                || p.Name.Contains(keyWord)
-                || p.Email.Contains(keyWord);
-
-            return expression;
-        }
-
         public async Task<AccountDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto)
         {
-            var existingAccount = await GetExistingAccount(id);
+            var existingAccount = await FindAccountAsync(id);
             await CheckValidate(accountDto.Email, accountDto.Phone, existingAccount.Id);
 
             _mapper.Map(accountDto, existingAccount);
@@ -96,21 +94,20 @@ namespace TinyCRM.API.Services
             return _mapper.Map<AccountDto>(existingAccount);
         }
 
-        public async Task<Account> GetExistingAccount(Guid id, string? includeTables = default)
+        private async Task<Account> FindAccountAsync(Guid id)
         {
-            return await _accountRepository.GetAsync(p => p.Id == id, includeTables)
+            return await _accountRepository.GetAsync(id)
                 ?? throw new NotFoundHttpException("Account is not found");
         }
 
         private async Task CheckValidate(string email, string phone, Guid guid = default)
         {
-            var accounts = await _accountRepository.List(p => p.Email == email
-            || p.Phone == phone).ToListAsync();
-            if (accounts.Any(a => a.Email == email && a.Id != guid))
+            if (await _accountRepository.EmailIsExitsAsync(email, guid))
             {
                 throw new BadRequestHttpException("Email is already exist");
             }
-            if (accounts.Any(a => a.Phone == email))
+
+            if (await _accountRepository.PhoneIsExistAsync(phone, guid))
             {
                 throw new BadRequestHttpException("Phone is already exist");
             }

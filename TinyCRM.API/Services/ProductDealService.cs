@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.API.Services.IServices;
@@ -8,6 +7,7 @@ using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
 using TinyCRM.Domain.Enums;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
@@ -58,13 +58,13 @@ namespace TinyCRM.API.Services
 
         private async Task<Deal> FindDealAsync(Guid dealId, string? includeTables = default)
         {
-            return await _dealRepository.GetAsync(p => p.Id == dealId, includeTables) ??
+            return await _dealRepository.GetAsync(dealId, includeTables) ??
                 throw new NotFoundHttpException("Deal is not found");
         }
 
         private async Task IsExistProduct(Guid productId)
         {
-            if (!await _productRepository.AnyAsync(p => p.Id == productId))
+            if (!await _productRepository.AnyAsync(productId))
                 throw new NotFoundHttpException("Product is not found");
         }
 
@@ -91,7 +91,7 @@ namespace TinyCRM.API.Services
 
         private async Task<ProductDeal> FindProductDealAsync(Guid productDealId, string? includeTables = default)
         {
-            return await _productDealRepository.GetAsync(p => p.Id == productDealId, includeTables) ??
+            return await _productDealRepository.GetAsync(productDealId, includeTables) ??
                 throw new NotFoundHttpException("ProductDeal is not found");
         }
 
@@ -108,20 +108,19 @@ namespace TinyCRM.API.Services
         public async Task<IList<ProductDealDto>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDto search)
         {
             const string includeTables = "Product";
-            var expression = GetExpression(dealId, search.KeyWord);
             var sorting = ConvertSort(search);
-            var query = _productDealRepository.List(expression, includeTables, sorting, search.PageIndex, search.PageSize);
+            var productDealsQueryParameter = new ProductDealQueryParameters
+            {
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize,
+                IncludeTables = includeTables,
+                DealId = dealId
+            };
+            var query = _productDealRepository.GetProductDealsByDealId(productDealsQueryParameter);
             var productDeals = await query.ToListAsync();
             return _mapper.Map<IList<ProductDealDto>>(productDeals);
-        }
-
-        private static Expression<Func<ProductDeal, bool>> GetExpression(Guid dealId, string? keyWord)
-        {
-            Expression<Func<ProductDeal, bool>> expression = p => p.DealId == dealId
-            && (string.IsNullOrEmpty(keyWord)
-                || p.Product.Name.Contains(keyWord)
-                || p.Product.Code.Contains(keyWord));
-            return expression;
         }
 
         private static string ConvertSort(ProductDealSearchDto search)

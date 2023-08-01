@@ -8,11 +8,11 @@ namespace TinyCRM.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UserController : Controller
+    public class IamAccountController : Controller
     {
         private readonly IUserService _userService;
 
-        public UserController(IUserService userService)
+        public IamAccountController(IUserService userService)
         {
             _userService = userService;
         }

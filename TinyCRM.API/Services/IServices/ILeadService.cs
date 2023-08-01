@@ -15,7 +15,7 @@ namespace TinyCRM.API.Services.IServices
 
         public Task<IList<LeadDto>> GetLeadsAsync(LeadSearchDto search);
 
-        public Task<IList<LeadDto>> GetLeadsByAccountIdAsync(Guid accountId);
+        public Task<IList<LeadDto>> GetLeadsByAccountIdAsync(Guid accountId, LeadSearchDto search);
 
         public Task<LeadStatisticDto> GetStatisticLeadAsync();
 
