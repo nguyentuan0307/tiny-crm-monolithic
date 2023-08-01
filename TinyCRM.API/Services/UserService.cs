@@ -13,6 +13,7 @@ using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Roles;
 using TinyCRM.Domain.Entities.Users;
 using TinyCRM.Domain.Helper.QueryParameters;
+using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.API.Services
 {
@@ -24,9 +25,11 @@ namespace TinyCRM.API.Services
         private readonly IMapper _mapper;
         private readonly JwtSettings _jwtSettings;
         private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-            IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<IdentityRole> roleManager, IUserRepository userRepository)
+            IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<IdentityRole> roleManager,
+            IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -34,10 +37,12 @@ namespace TinyCRM.API.Services
             _jwtSettings = jwtOptions.Value;
             _roleManager = roleManager;
             _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IdentityResult> SignUpAsync(SignUpDto signUpDto)
         {
+            _unitOfWork.BeginTransaction();
             if (!await _roleManager.RoleExistsAsync(Role.User))
             {
                 await _roleManager.CreateAsync(new IdentityRole(Role.User));
@@ -45,9 +50,21 @@ namespace TinyCRM.API.Services
             var user = _mapper.Map<ApplicationUser>(signUpDto);
 
             var result = await _userManager.CreateAsync(user, signUpDto.Password);
-            if (result.Succeeded)
+            if (!result.Succeeded)
+            {
+                _unitOfWork.Rollback();
+                throw new IdentityException(result.Errors.First());
+            }
+
+            try
             {
                 await _userManager.AddToRoleAsync(user, Role.User);
+                _unitOfWork.Commit();
+            }
+            catch
+            {
+                _unitOfWork.Rollback();
+                throw new BadRequestHttpException("Adding role to user failed.");
             }
             return result;
         }

@@ -120,7 +120,8 @@ namespace TinyCRM.API.Extensions
                     options.Lockout.AllowedForNewUsers = true;
 
                     // User settings.
-                    options.User.AllowedUserNameCharacters = @"^[a-zA-Z0-9\-._@+]+$";
+                    options.User.AllowedUserNameCharacters =
+                        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<AppDataContext>()
