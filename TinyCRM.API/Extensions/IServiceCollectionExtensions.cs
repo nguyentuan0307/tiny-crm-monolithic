@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Security.Claims;
 using System.Text;
 using TinyCRM.API.Models;
 using TinyCRM.API.Services;
@@ -50,7 +48,8 @@ namespace TinyCRM.API.Extensions
                 .AddScoped<IProductRepository, ProductRepository>()
                 .AddScoped<ILeadRepository, LeadRepository>()
                 .AddScoped<IDealRepository, DealRepository>()
-                .AddScoped<IProductDealRepository, ProductDealRepository>();
+                .AddScoped<IProductDealRepository, ProductDealRepository>()
+                .AddScoped<IUserRepository, UserRepository>();
         }
 
         public static IServiceCollection AddServices(this IServiceCollection services)
@@ -121,8 +120,7 @@ namespace TinyCRM.API.Extensions
                     options.Lockout.AllowedForNewUsers = true;
 
                     // User settings.
-                    options.User.AllowedUserNameCharacters =
-                        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                    options.User.AllowedUserNameCharacters = @"^[a-zA-Z0-9\-._@+]+$";
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<AppDataContext>()
@@ -154,25 +152,12 @@ namespace TinyCRM.API.Extensions
         {
             services.AddAuthorization(options =>
             {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-
                 options.AddPolicy(Policy.SuperAdminPolicy,
                     policy => policy.RequireRole(Role.SuperAdmin));
                 options.AddPolicy(Policy.AdminPolicy,
                     policy => policy.RequireRole(Role.SuperAdmin, Role.Admin));
                 options.AddPolicy(Policy.UserPolicy,
                     policy => policy.RequireRole(Role.User, Role.Admin, Role.SuperAdmin));
-                options.AddPolicy(Policy.AccessProfilePolicy, policy => policy.RequireAssertion(context =>
-                {
-                    var httpContext = context.Resource as HttpContext;
-                    var id = httpContext!.Request.RouteValues["id"] as string;
-                    var user = httpContext.User;
-                    var isAdmin = user.IsInRole(Role.Admin);
-                    var isSuperAdmin = user.IsInRole(Role.SuperAdmin);
-                    var hasSameEmail = user.Claims.Any(claim => claim.Type == ClaimTypes.NameIdentifier && claim.Value == id);
-
-                    return isAdmin || hasSameEmail || isSuperAdmin;
-                }));
             });
 
             return services;

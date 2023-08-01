@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq.Dynamic.Core;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 using TinyCRM.API.Exceptions;
@@ -14,6 +12,7 @@ using TinyCRM.API.Models.User;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Roles;
 using TinyCRM.Domain.Entities.Users;
+using TinyCRM.Domain.Helper.QueryParameters;
 
 namespace TinyCRM.API.Services
 {
@@ -24,15 +23,17 @@ namespace TinyCRM.API.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
         private readonly JwtSettings _jwtSettings;
+        private readonly IUserRepository _userRepository;
 
         public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-            IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<IdentityRole> roleManager)
+            IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<IdentityRole> roleManager, IUserRepository userRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
             _jwtSettings = jwtOptions.Value;
             _roleManager = roleManager;
+            _userRepository = userRepository;
         }
 
         public async Task<IdentityResult> SignUpAsync(SignUpDto signUpDto)
@@ -68,35 +69,54 @@ namespace TinyCRM.API.Services
             return result;
         }
 
-        public async Task<UserProfileDto> UpdateProfileAsync(string id, ProfileUserUpdateDto updateDto)
+        public async Task<UserProfileDto> UpdateProfileAsync(string id, ProfileUserUpdateDto updateDto, ClaimsPrincipal user)
         {
-            var user = await _userManager.FindByIdAsync(id)
+            if (!CanUpdateUser(user, id))
+                throw new UnauthorizedHttpException("No permission to update this user.");
+
+            var userUpdate = await _userManager.FindByIdAsync(id)
                        ?? throw new BadRequestHttpException("User not found");
 
-            _mapper.Map(updateDto, user);
-            await _userManager.UpdateAsync(user);
-            return _mapper.Map<UserProfileDto>(user);
+            _mapper.Map(updateDto, userUpdate);
+            await _userManager.UpdateAsync(userUpdate);
+            return _mapper.Map<UserProfileDto>(userUpdate);
         }
 
-        public async Task<IdentityResult> ChangePasswordAsync(string id, UserChangePasswordDto changePasswordDto)
+        public async Task<IdentityResult> ChangePasswordAsync(string id, UserChangePasswordDto changePasswordDto, ClaimsPrincipal user)
         {
-            var user = await _userManager.FindByIdAsync(id)
+            if (!CanUpdateUser(user, id))
+                throw new UnauthorizedHttpException("No permission to update this user.");
+            var userUpdate = await _userManager.FindByIdAsync(id)
                        ?? throw new BadRequestHttpException("User not found");
 
-            var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(userUpdate, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             return result;
+        }
+
+        private static bool CanUpdateUser(ClaimsPrincipal user, string userIdToUpdate)
+        {
+            var claims = user.Claims.ToList();
+
+            var loggedInUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: "Admin" or "SuperAdmin" });
+
+            var isSelf = loggedInUserId == userIdToUpdate;
+
+            return isAdmin || isSelf;
         }
 
         public async Task<string> SignInAsync(SignInDto signInDto)
         {
+            var user = await _userManager.FindByEmailAsync(signInDto.Email)
+                       ?? throw new BadRequestHttpException("User not found");
+
             var result = await _signInManager.PasswordSignInAsync(signInDto.Email, signInDto.Password, false, true);
             if (!result.Succeeded)
             {
                 throw new BadRequestHttpException("These credentials do not match our records.");
             }
 
-            var user = await _userManager.FindByEmailAsync(signInDto.Email)
-                ?? throw new BadRequestHttpException("User not found");
             var roles = await _userManager.GetRolesAsync(user);
 
             var token = GenerateToken(user.Id, user.Email!, roles);
@@ -113,19 +133,19 @@ namespace TinyCRM.API.Services
 
         public async Task<IEnumerable<UserProfileDto>> GetProfileUsersAsync(ProfileUserSearchDto search)
         {
-            var query = _userManager.Users;
-            if (!string.IsNullOrEmpty(search.KeyWord))
-            {
-                query = query.Where(GetExpression(search.KeyWord));
-            }
-
             var sorting = ConvertSort(search);
-            if (!string.IsNullOrEmpty(sorting))
+            var userQueryParameters = new UserQueryParameters
             {
-                query.OrderBy(sorting);
-            }
-            query = query.Skip(search.PageSize * (search.PageIndex - 1)).Take(search.PageSize);
+                KeyWord = search.KeyWord,
+                Sorting = sorting,
+                PageIndex = search.PageIndex,
+                PageSize = search.PageSize
+            };
+
+            var query = _userRepository.GetUsers(userQueryParameters);
+
             var users = await query.ToListAsync();
+
             return _mapper.Map<IEnumerable<UserProfileDto>>(users);
         }
 
@@ -142,14 +162,6 @@ namespace TinyCRM.API.Services
             return sort;
         }
 
-        private static Expression<Func<ApplicationUser, bool>> GetExpression(string? keyWord)
-        {
-            Expression<Func<ApplicationUser, bool>> expression = p => string.IsNullOrEmpty(keyWord)
-                                                                      || p.Name.Contains(keyWord)
-                                                                      || p.Email!.Contains(keyWord);
-            return expression;
-        }
-
         private string GenerateToken(string id, string email, IEnumerable<string> roles)
         {
             var authClaims = new List<Claim>
@@ -163,7 +175,7 @@ namespace TinyCRM.API.Services
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.ValidIssuer,
                 audience: _jwtSettings.ValidAudience,
-                expires: DateTime.Now.AddMinutes(_jwtSettings.ExpiryInMinutes),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryInMinutes),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256)
             );

@@ -71,8 +71,10 @@ namespace TinyCRM.API.Services
         public async Task DeleteProductDealAsync(Guid dealId, Guid productDealId)
         {
             var deal = await FindDealAsync(dealId);
+
             if (deal.StatusDeal != StatusDeal.Open)
                 throw new BadRequestHttpException("Deal is Won/Lose");
+
             var productDeal = await FindProductDealAsync(productDealId);
 
             if (dealId != productDeal.DealId)

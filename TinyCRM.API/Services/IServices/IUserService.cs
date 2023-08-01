@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using TinyCRM.API.Models.User;
 
 namespace TinyCRM.API.Services.IServices
@@ -15,8 +16,8 @@ namespace TinyCRM.API.Services.IServices
 
         Task<IdentityResult> SignUpAdminAsync(SignUpDto signUpDto);
 
-        Task<UserProfileDto> UpdateProfileAsync(string id, ProfileUserUpdateDto updateDto);
+        Task<UserProfileDto> UpdateProfileAsync(string id, ProfileUserUpdateDto updateDto, ClaimsPrincipal user);
 
-        Task<IdentityResult> ChangePasswordAsync(string id, UserChangePasswordDto changePasswordDto);
+        Task<IdentityResult> ChangePasswordAsync(string id, UserChangePasswordDto changePasswordDto, ClaimsPrincipal user);
     }
 }

@@ -5,63 +5,63 @@ using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
 using TinyCRM.Domain.Entities.Roles;
 
-namespace TinyCRM.API.Controllers
+namespace TinyCRM.API.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/crm-accounts")]
+public class CrmAccountController : Controller
 {
-    [ApiController]
-    [Route("api/accounts")]
-    public class CrmAccountController : Controller
+    private readonly IAccountService _accountService;
+    private readonly ILogger<CrmAccountController> _logger;
+
+    public CrmAccountController(IAccountService accountService, ILogger<CrmAccountController> logger)
     {
-        private readonly IAccountService _accountService;
-        private readonly ILogger<CrmAccountController> _logger;
+        _accountService = accountService;
+        _logger = logger;
+    }
 
-        public CrmAccountController(IAccountService accountService, ILogger<CrmAccountController> logger)
-        {
-            _accountService = accountService;
-            _logger = logger;
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDto search)
+    {
+        var accountDtOs = await _accountService.GetAccountsAsync(search);
+        _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDtOs)}");
+        return Ok(accountDtOs);
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDto search)
-        {
-            var accountDtOs = await _accountService.GetAccountsAsync(search);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDtOs)}");
-            return Ok(accountDtOs);
-        }
+    [HttpGet("{id:guid}")]
+    [ActionName(nameof(GetAccountByIdAsync))]
+    public async Task<IActionResult> GetAccountByIdAsync(Guid id)
+    {
+        var accountDto = await _accountService.GetAccountByIdAsync(id);
+        _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDto)}");
+        return Ok(accountDto);
+    }
 
-        [HttpGet("{id:guid}")]
-        [ActionName(nameof(GetAccountByIdAsync))]
-        public async Task<IActionResult> GetAccountByIdAsync(Guid id)
-        {
-            var accountDto = await _accountService.GetAccountByIdAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDto)}");
-            return Ok(accountDto);
-        }
+    [HttpPost]
+    [Authorize(Policy = Policy.AdminPolicy)]
+    public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDto accountDto)
+    {
+        var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
+        _logger.LogInformation($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDto)}");
+        return CreatedAtAction(nameof(GetAccountByIdAsync), new { id = accountNewDto.Id }, accountNewDto);
+    }
 
-        [HttpPost]
-        [Authorize(Policy = Policy.AdminPolicy)]
-        public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDto accountDto)
-        {
-            var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDto)}");
-            return CreatedAtAction(nameof(GetAccountByIdAsync), new { id = accountNewDto.Id }, accountNewDto);
-        }
+    [HttpPut("{id:guid}")]
+    [Authorize(Policy = Policy.AdminPolicy)]
+    public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDto accountDto)
+    {
+        var accountUpdateDto = await _accountService.UpdateAccountAsync(id, accountDto);
+        _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Account: {JsonSerializer.Serialize(accountUpdateDto)}");
+        return Ok(accountUpdateDto);
+    }
 
-        [HttpPut("{id:guid}")]
-        [Authorize(Policy = Policy.AdminPolicy)]
-        public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDto accountDto)
-        {
-            var accountUpdateDto = await _accountService.UpdateAccountAsync(id, accountDto);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Updated Account: {JsonSerializer.Serialize(accountUpdateDto)}");
-            return Ok(accountUpdateDto);
-        }
-
-        [HttpDelete("{id:guid}")]
-        [Authorize(Policy = Policy.AdminPolicy)]
-        public async Task<IActionResult> DeleteAccountAsync(Guid id)
-        {
-            await _accountService.DeleteAccountAsync(id);
-            _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Account: {id}");
-            return Ok("Successfully Deleted Account");
-        }
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = Policy.AdminPolicy)]
+    public async Task<IActionResult> DeleteAccountAsync(Guid id)
+    {
+        await _accountService.DeleteAccountAsync(id);
+        _logger.LogInformation($"[{DateTime.Now}]Successfully Deleted Account: {id}");
+        return Ok("Successfully Deleted Account");
     }
 }

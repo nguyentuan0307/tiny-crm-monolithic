@@ -18,6 +18,7 @@ namespace TinyCRM.Infrastructure
         public DbSet<Lead> Leads { get; set; } = null!;
         public DbSet<Deal> Deals { get; set; } = null!;
         public DbSet<ProductDeal> ProductDeals { get; set; } = null!;
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;
 
         public AppDataContext(DbContextOptions<AppDataContext> options) : base(options)
         {
