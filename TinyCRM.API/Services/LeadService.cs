@@ -80,12 +80,10 @@ namespace TinyCRM.API.Services
         public async Task<IList<LeadDto>> GetLeadsAsync(LeadSearchDto search)
         {
             const string includeTables = "Account";
-            var sorting = ConvertSort(search);
-
             var leadQueryParameters = new LeadQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,
@@ -93,20 +91,6 @@ namespace TinyCRM.API.Services
             var leads = await _leadRepository.GetLeads(leadQueryParameters).ToListAsync();
 
             return _mapper.Map<IList<LeadDto>>(leads);
-        }
-
-        private static string ConvertSort(LeadSearchDto search)
-        {
-            if (search.SortFilter == null) return string.Empty;
-
-            var sort = search.SortFilter.ToString() switch
-            {
-                "Title" => "Title",
-                "AccountName" => "Account.Name",
-                _ => "Id"
-            };
-            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
-            return sort;
         }
 
         public async Task<DealDto> QualifyLeadAsync(Guid id)
@@ -207,12 +191,11 @@ namespace TinyCRM.API.Services
                 throw new BadRequestHttpException("Account is not found");
             }
             const string includeTables = "Account";
-            var sorting = ConvertSort(search);
 
             var leadQueryParameters = new LeadQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,

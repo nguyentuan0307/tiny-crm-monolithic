@@ -63,11 +63,10 @@ namespace TinyCRM.API.Services
         public async Task<IList<ProductDto>> GetProductsAsync(ProductSearchDto search)
         {
             var includeTables = string.Empty;
-            var sorting = ConvertSort(search);
             var productQueryParameter = new ProductQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,
@@ -78,20 +77,6 @@ namespace TinyCRM.API.Services
             var productDtOs = _mapper.Map<IList<ProductDto>>(products);
 
             return productDtOs;
-        }
-
-        private static string ConvertSort(ProductSearchDto search)
-        {
-            if (search.SortFilter == null) return string.Empty;
-            var sort = search.SortFilter.ToString() switch
-            {
-                "Code" => "Code",
-                "Name" => "Name",
-                "Price" => "Price",
-                _ => "Code"
-            };
-            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
-            return sort;
         }
 
         public async Task<ProductDto> UpdateProductAsync(Guid id, ProductUpdateDto productDto)

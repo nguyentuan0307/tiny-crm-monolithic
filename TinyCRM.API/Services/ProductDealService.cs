@@ -110,11 +110,10 @@ namespace TinyCRM.API.Services
         public async Task<IList<ProductDealDto>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDto search)
         {
             const string includeTables = "Product";
-            var sorting = ConvertSort(search);
             var productDealsQueryParameter = new ProductDealQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,
@@ -123,22 +122,6 @@ namespace TinyCRM.API.Services
             var query = _productDealRepository.GetProductDealsByDealId(productDealsQueryParameter);
             var productDeals = await query.ToListAsync();
             return _mapper.Map<IList<ProductDealDto>>(productDeals);
-        }
-
-        private static string ConvertSort(ProductDealSearchDto search)
-        {
-            if (search.SortFilter == null) return string.Empty;
-            var sort = search.SortFilter.ToString() switch
-            {
-                "ProductCode" => "Product.Code",
-                "ProductName" => "Product.Name",
-                "PricePerUnit" => "Price",
-                "Quantity" => "Quantity",
-                "TotalAmount" => "TotalAmount",
-                _ => "Id"
-            };
-            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
-            return sort;
         }
 
         public async Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDto productDealDto)

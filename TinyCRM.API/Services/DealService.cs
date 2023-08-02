@@ -49,13 +49,12 @@ namespace TinyCRM.API.Services
         public async Task<IList<DealDto>> GetDealsAsync(DealSearchDto search)
         {
             const string includeTables = "Lead,ProductDeals.Product";
-            var sorting = ConvertSort(search);
 
             var dealQueryParameters = new DealQueryParameters
             {
                 KeyWord = search.KeyWord,
                 IncludeTables = includeTables,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize
             };
@@ -66,18 +65,6 @@ namespace TinyCRM.API.Services
             var leadDtOs = _mapper.Map<IList<DealDto>>(leads);
 
             return leadDtOs;
-        }
-
-        private static string ConvertSort(DealSearchDto search)
-        {
-            if (search.SortFilter == null) return string.Empty;
-            var sort = search.SortFilter.ToString() switch
-            {
-                "Title" => "Title",
-                _ => "Id"
-            };
-            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
-            return sort;
         }
 
         public async Task<DealDto> UpdateDealAsync(Guid id, DealUpdateDto dealDto)
@@ -125,12 +112,11 @@ namespace TinyCRM.API.Services
             }
 
             const string includeTables = "Lead.Account";
-            var sorting = ConvertSort(search);
 
             var dealQueryParameters = new DealQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,

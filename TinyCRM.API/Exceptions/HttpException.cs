@@ -3,7 +3,7 @@
     public abstract class HttpException : Exception
     {
         public int StatusCode { get; set; }
-        public string? ErrorCode { get; set; }
+        public string ErrorCode { get; set; } = string.Empty;
 
         protected HttpException(string message) : base(message)
         {

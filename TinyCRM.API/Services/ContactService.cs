@@ -61,11 +61,10 @@ namespace TinyCRM.API.Services
         public async Task<IList<ContactDto>> GetContactsAsync(ContactSearchDto search)
         {
             const string includeTables = "Account";
-            var sorting = ConvertSort(search);
             var contactQueryParameters = new ContactQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables
@@ -77,21 +76,6 @@ namespace TinyCRM.API.Services
             var contactDtOs = _mapper.Map<IList<ContactDto>>(contacts);
 
             return contactDtOs;
-        }
-
-        private static string ConvertSort(ContactSearchDto search)
-        {
-            if (search.SortFilter == null) return string.Empty;
-            var sort = search.SortFilter.ToString() switch
-            {
-                "Name" => "Name",
-                "Email" => "Email",
-                "Phone" => "Phone",
-                "AccountName" => "Account.Name",
-                _ => "Id"
-            };
-            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
-            return sort;
         }
 
         public async Task<ContactDto> UpdateContactAsync(Guid id, ContactUpdateDto contactDto)
@@ -132,12 +116,11 @@ namespace TinyCRM.API.Services
             }
 
             const string includeTables = "Account";
-            var sorting = ConvertSort(search);
 
             var contactQueryParameters = new ContactQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,

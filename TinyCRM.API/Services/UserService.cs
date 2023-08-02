@@ -150,11 +150,10 @@ namespace TinyCRM.API.Services
 
         public async Task<IEnumerable<UserProfileDto>> GetProfileUsersAsync(ProfileUserSearchDto search)
         {
-            var sorting = ConvertSort(search);
             var userQueryParameters = new UserQueryParameters
             {
                 KeyWord = search.KeyWord,
-                Sorting = sorting,
+                Sorting = search.ConvertSort(),
                 PageIndex = search.PageIndex,
                 PageSize = search.PageSize
             };
@@ -164,19 +163,6 @@ namespace TinyCRM.API.Services
             var users = await query.ToListAsync();
 
             return _mapper.Map<IEnumerable<UserProfileDto>>(users);
-        }
-
-        private static string ConvertSort(ProfileUserSearchDto search)
-        {
-            if (search.SortFilter == null) return string.Empty;
-            var sort = search.SortFilter.ToString() switch
-            {
-                "Name" => "Name",
-                "Email" => "Email",
-                _ => "Name"
-            };
-            sort = search.SortDirection ? $"{sort} asc" : $"{sort} desc";
-            return sort;
         }
 
         private string GenerateToken(string id, string email, IEnumerable<string> roles)
