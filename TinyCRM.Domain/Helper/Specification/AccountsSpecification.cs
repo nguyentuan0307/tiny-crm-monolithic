@@ -25,19 +25,3 @@ public class AccountsSpecification : ISpecification<Account>
         return expression;
     }
 }
-
-public class AccountSpecification : ISpecification<Account>
-{
-    private readonly Guid _accountId;
-
-    public AccountSpecification(Guid accountId)
-    {
-        _accountId = accountId;
-    }
-
-    public Expression<Func<Account, bool>> IsSatisfiedBy()
-    {
-        Expression<Func<Account, bool>> expression = p => p.Id == _accountId;
-        return expression;
-    }
-}

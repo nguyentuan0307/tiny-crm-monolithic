@@ -3,11 +3,11 @@ using TinyCRM.Domain.Entities.Users;
 
 namespace TinyCRM.Domain.Helper.Specification;
 
-public class UsersSpecification : ISpecification<ApplicationUser>
+public class UsersByFilterSpecification : ISpecification<ApplicationUser>
 {
     private readonly string? _keyWord;
 
-    public UsersSpecification(string? keyWord)
+    public UsersByFilterSpecification(string? keyWord)
     {
         _keyWord = keyWord;
     }

@@ -14,7 +14,7 @@ namespace TinyCRM.Infrastructure.Repositories
 
         public IQueryable<Contact> GetContacts(ContactQueryParameters contactQueryParameters)
         {
-            var specification = new ContactsSpecification(contactQueryParameters.KeyWord);
+            var specification = new ContactsByFilterSpecification(contactQueryParameters.KeyWord);
             return List(specification: specification,
                 includeTables: contactQueryParameters.IncludeTables,
                 sorting: contactQueryParameters.Sorting,
@@ -24,7 +24,9 @@ namespace TinyCRM.Infrastructure.Repositories
 
         public IQueryable<Contact> GetContactsByAccountId(ContactQueryParameters contactQueryParameters)
         {
-            var specification = new ContactsByAccountIdSpecification(contactQueryParameters.KeyWord, contactQueryParameters.AccountId!.Value);
+            var contactsByAccountIdSpecification = new ContactsByAccountIdSpecification(contactQueryParameters.AccountId!.Value);
+            var contactsSpecification = new ContactsByFilterSpecification(contactQueryParameters.KeyWord);
+            var specification = new AndSpecifications<Contact>(contactsByAccountIdSpecification, contactsSpecification);
             return List(specification: specification,
                 includeTables: contactQueryParameters.IncludeTables,
                 sorting: contactQueryParameters.Sorting,

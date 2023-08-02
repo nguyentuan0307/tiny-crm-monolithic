@@ -3,11 +3,11 @@ using TinyCRM.Domain.Entities.Deals;
 
 namespace TinyCRM.Domain.Helper.Specification;
 
-public class DealsSpecification : ISpecification<Deal>
+public class DealsByFilterSpecification : ISpecification<Deal>
 {
     private readonly string? _keyWord;
 
-    public DealsSpecification(string? keyWord)
+    public DealsByFilterSpecification(string? keyWord)
     {
         _keyWord = keyWord;
     }
@@ -28,24 +28,15 @@ public class DealsSpecification : ISpecification<Deal>
 
 public class DealsByAccountIdSpecification : ISpecification<Deal>
 {
-    private readonly string? _keyWord;
     private readonly Guid _accountId;
 
-    public DealsByAccountIdSpecification(string? keyWord, Guid accountId)
+    public DealsByAccountIdSpecification(Guid accountId)
     {
         _accountId = accountId;
-        _keyWord = keyWord;
     }
 
     public Expression<Func<Deal, bool>> IsSatisfiedBy()
     {
-        Expression<Func<Deal, bool>> expression = p => p.Lead.AccountId == _accountId;
-
-        if (string.IsNullOrEmpty(_keyWord)) return expression;
-        {
-            expression = p => p.Lead.AccountId == _accountId &&
-                              (p.Title.Contains(_keyWord) || p.Lead.Account.Name.Contains(_keyWord));
-            return expression;
-        }
+        return p => p.Lead.AccountId == _accountId;
     }
 }

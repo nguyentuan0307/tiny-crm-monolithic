@@ -14,7 +14,7 @@ namespace TinyCRM.Infrastructure.Repositories
 
         public IQueryable<Product> GetProducts(ProductQueryParameters productQueryParameters)
         {
-            var specification = new ProductsSpecification(productQueryParameters.KeyWord);
+            var specification = new ProductsByFilterSpecification(productQueryParameters.KeyWord);
             return List(specification: specification,
                 includeTables: productQueryParameters.IncludeTables,
                 sorting: productQueryParameters.Sorting,

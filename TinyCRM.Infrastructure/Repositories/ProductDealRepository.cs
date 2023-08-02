@@ -14,7 +14,9 @@ namespace TinyCRM.Infrastructure.Repositories
 
         public IQueryable<ProductDeal> GetProductDealsByDealId(ProductDealQueryParameters productDealQueryParameters)
         {
-            var specification = new ProductDealsByDealIdSpecification(productDealQueryParameters.KeyWord, productDealQueryParameters.DealId!.Value);
+            var productDealsByDealIdSpecification = new ProductDealsByDealIdSpecification(productDealQueryParameters.DealId!.Value);
+            var productDealsByFilterSpecification = new ProductDealsByFilterSpecification(productDealQueryParameters.KeyWord);
+            var specification = new AndSpecifications<ProductDeal>(productDealsByDealIdSpecification, productDealsByFilterSpecification);
             return List(specification: specification,
                 includeTables: productDealQueryParameters.IncludeTables,
                 sorting: productDealQueryParameters.Sorting,

@@ -20,8 +20,8 @@ namespace TinyCRM.Infrastructure.Repositories
 
         public IQueryable<Deal> GetDeals(DealQueryParameters dealQueryParameters)
         {
-            var filterDealsSpecification = new DealsSpecification(dealQueryParameters.KeyWord);
-            return List(specification: filterDealsSpecification,
+            var specification = new DealsByFilterSpecification(dealQueryParameters.KeyWord);
+            return List(specification: specification,
                 includeTables: dealQueryParameters.IncludeTables,
                 sorting: dealQueryParameters.Sorting,
                 pageIndex: dealQueryParameters.PageIndex,
@@ -30,8 +30,11 @@ namespace TinyCRM.Infrastructure.Repositories
 
         public IQueryable<Deal> GetDealsByAccountId(DealQueryParameters dealQueryParameters)
         {
-            var filterDealsSpecification = new DealsByAccountIdSpecification(dealQueryParameters.KeyWord, dealQueryParameters.AccountId!.Value);
-            return List(specification: filterDealsSpecification,
+            var dealsByAccountIdSpecification = new DealsByAccountIdSpecification(dealQueryParameters.AccountId!.Value);
+            var dealsByFilterSpecification = new DealsByFilterSpecification(dealQueryParameters.KeyWord);
+            var specification = new AndSpecifications<Deal>(dealsByAccountIdSpecification, dealsByFilterSpecification);
+
+            return List(specification: specification,
                 includeTables: dealQueryParameters.IncludeTables,
                 sorting: dealQueryParameters.Sorting,
                 pageIndex: dealQueryParameters.PageIndex,

@@ -3,27 +3,39 @@ using TinyCRM.Domain.Entities.ProductDeals;
 
 namespace TinyCRM.Domain.Helper.Specification;
 
-public class ProductDealsByDealIdSpecification : ISpecification<ProductDeal>
+public class ProductDealsByFilterSpecification : ISpecification<ProductDeal>
 {
     private readonly string? _keyWord;
-    private readonly Guid _dealId;
 
-    public ProductDealsByDealIdSpecification(string? keyWord, Guid dealId)
+    public ProductDealsByFilterSpecification(string? keyWord)
     {
         _keyWord = keyWord;
+    }
+
+    public Expression<Func<ProductDeal, bool>> IsSatisfiedBy()
+    {
+        Expression<Func<ProductDeal, bool>> expression = p => true;
+        if (_keyWord == null) return expression;
+        if (!string.IsNullOrEmpty(_keyWord))
+        {
+            expression = p => p.Product.Code.Contains(_keyWord) || p.Product.Name.Contains(_keyWord);
+        }
+
+        return expression;
+    }
+}
+
+public class ProductDealsByDealIdSpecification : ISpecification<ProductDeal>
+{
+    private readonly Guid _dealId;
+
+    public ProductDealsByDealIdSpecification(Guid dealId)
+    {
         _dealId = dealId;
     }
 
     public Expression<Func<ProductDeal, bool>> IsSatisfiedBy()
     {
-        Expression<Func<ProductDeal, bool>> expression = p => p.DealId == _dealId;
-        if (_keyWord == null) return expression;
-        if (!string.IsNullOrEmpty(_keyWord))
-        {
-            expression = p => p.DealId == _dealId &&
-                (p.Product.Code.Contains(_keyWord) || p.Product.Name.Contains(_keyWord));
-        }
-
-        return expression;
+        return p => p.DealId == _dealId;
     }
 }

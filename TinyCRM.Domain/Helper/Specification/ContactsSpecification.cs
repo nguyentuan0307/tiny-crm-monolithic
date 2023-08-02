@@ -2,11 +2,11 @@
 
 namespace TinyCRM.Domain.Helper.Specification;
 
-public class ContactsSpecification : ISpecification<Entities.Contacts.Contact>
+public class ContactsByFilterSpecification : ISpecification<Entities.Contacts.Contact>
 {
     private readonly string? _keyWord;
 
-    public ContactsSpecification(string? keyWord)
+    public ContactsByFilterSpecification(string? keyWord)
     {
         _keyWord = keyWord;
     }
@@ -28,23 +28,14 @@ public class ContactsSpecification : ISpecification<Entities.Contacts.Contact>
 public class ContactsByAccountIdSpecification : ISpecification<Entities.Contacts.Contact>
 {
     private readonly Guid _accountId;
-    private readonly string? _keyWord;
 
-    public ContactsByAccountIdSpecification(string? keyWord, Guid accountId)
+    public ContactsByAccountIdSpecification(Guid accountId)
     {
         _accountId = accountId;
-        _keyWord = keyWord;
     }
 
     public Expression<Func<Entities.Contacts.Contact, bool>> IsSatisfiedBy()
     {
-        Expression<Func<Entities.Contacts.Contact, bool>> expression = p => p.AccountId == _accountId;
-
-        if (string.IsNullOrEmpty(_keyWord)) return expression;
-        {
-            expression = p => p.AccountId == _accountId &&
-                              (p.Name.Contains(_keyWord) || p.Email.Contains(_keyWord));
-            return expression;
-        }
+        return p => p.AccountId == _accountId;
     }
 }

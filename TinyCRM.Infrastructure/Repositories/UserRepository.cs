@@ -12,7 +12,7 @@ public class UserRepository : Repository<ApplicationUser, string>, IUserReposito
 
     public IQueryable<ApplicationUser> GetUsers(UserQueryParameters userQueryParameters)
     {
-        var specification = new UsersSpecification(userQueryParameters.KeyWord);
+        var specification = new UsersByFilterSpecification(userQueryParameters.KeyWord);
         return List(specification: specification,
             includeTables: userQueryParameters.IncludeTables,
             sorting: userQueryParameters.Sorting,

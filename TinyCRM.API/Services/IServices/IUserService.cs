@@ -1,5 +1,5 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using TinyCRM.API.Models.User;
 
 namespace TinyCRM.API.Services.IServices

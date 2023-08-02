@@ -25,7 +25,7 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
 
     public IQueryable<Lead> GetLeads(LeadQueryParameters leadQueryParameters)
     {
-        var specification = new LeadsSpecification(leadQueryParameters.KeyWord);
+        var specification = new LeadsByFilterSpecification(leadQueryParameters.KeyWord);
         return List(specification: specification,
             includeTables: leadQueryParameters.IncludeTables,
             sorting: leadQueryParameters.Sorting,
@@ -35,7 +35,9 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
 
     public IQueryable<Lead> GetLeadsByAccountId(LeadQueryParameters leadQueryParameters)
     {
-        var specification = new LeadsByAccountIdSpecification(leadQueryParameters.KeyWord, leadQueryParameters.AccountId!.Value);
+        var leadsByAccountIdSpecification = new LeadsByAccountIdSpecification(leadQueryParameters.AccountId!.Value);
+        var leadsByFilterSpecification = new LeadsByFilterSpecification(leadQueryParameters.KeyWord);
+        var specification = new AndSpecifications<Lead>(leadsByAccountIdSpecification, leadsByFilterSpecification);
         return List(specification: specification,
             includeTables: leadQueryParameters.IncludeTables,
             sorting: leadQueryParameters.Sorting,
