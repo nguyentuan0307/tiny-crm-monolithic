@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Contact;
 using TinyCRM.API.Services.IServices;
@@ -69,10 +68,9 @@ namespace TinyCRM.API.Services
                 PageSize = search.PageSize,
                 IncludeTables = includeTables
             };
-            var query = _contactRepository
-                .GetContacts(contactQueryParameters);
 
-            var contacts = await query.ToListAsync();
+            var contacts = await _contactRepository
+                .GetContactsAsync(contactQueryParameters);
             var contactDtOs = _mapper.Map<IList<ContactDto>>(contacts);
 
             return contactDtOs;
@@ -126,10 +124,9 @@ namespace TinyCRM.API.Services
                 IncludeTables = includeTables,
                 AccountId = accountId
             };
-            var query = _contactRepository
-                .GetContactsByAccountId(contactQueryParameters);
 
-            var contacts = await query.ToListAsync();
+            var contacts = await _contactRepository
+                .GetContactsByAccountIdAsync(contactQueryParameters);
 
             return _mapper.Map<IList<ContactDto>>(contacts);
         }

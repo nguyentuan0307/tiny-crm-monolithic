@@ -18,36 +18,36 @@ namespace TinyCRM.Infrastructure.Repositories
             return DbSet.Any(d => d.LeadId == leadId);
         }
 
-        public IQueryable<Deal> GetDeals(DealQueryParameters dealQueryParameters)
+        public async Task<List<Deal>> GetDealsAsync(DealQueryParameters dealQueryParameters)
         {
             var specification = new DealsByFilterSpecification(dealQueryParameters.KeyWord);
-            return List(specification: specification,
+            return await ListAsync(specification: specification,
                 includeTables: dealQueryParameters.IncludeTables,
                 sorting: dealQueryParameters.Sorting,
                 pageIndex: dealQueryParameters.PageIndex,
                 pageSize: dealQueryParameters.PageSize);
         }
 
-        public IQueryable<Deal> GetDealsByAccountId(DealQueryParameters dealQueryParameters)
+        public async Task<List<Deal>> GetDealsByAccountIdAsync(DealQueryParameters dealQueryParameters)
         {
             var dealsByAccountIdSpecification = new DealsByAccountIdSpecification(dealQueryParameters.AccountId!.Value);
 
             var specification = dealsByAccountIdSpecification.And(new DealsByFilterSpecification(dealQueryParameters.KeyWord));
 
-            return List(specification: specification,
+            return await ListAsync(specification: specification,
                 includeTables: dealQueryParameters.IncludeTables,
                 sorting: dealQueryParameters.Sorting,
                 pageIndex: dealQueryParameters.PageIndex,
                 pageSize: dealQueryParameters.PageSize);
         }
 
-        public IQueryable<DealStatistic> GetDealStatistics()
+        public async Task<List<DealStatistic>> GetDealStatisticsAsync()
         {
-            return DbSet.Select(x => new DealStatistic
+            return await DbSet.Select(x => new DealStatistic
             {
                 StatusDeal = x.StatusDeal,
                 ActualRevenue = x.ActualRevenue
-            });
+            }).ToListAsync();
         }
 
         protected override Expression<Func<Deal, bool>> ExpressionForGet(Guid id)

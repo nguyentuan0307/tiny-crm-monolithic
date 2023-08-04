@@ -10,10 +10,10 @@ public class UserRepository : Repository<ApplicationUser, string>, IUserReposito
     {
     }
 
-    public IQueryable<ApplicationUser> GetUsers(UserQueryParameters userQueryParameters)
+    public async Task<List<ApplicationUser>> GetUsersAsync(UserQueryParameters userQueryParameters)
     {
         var specification = new UsersByFilterSpecification(userQueryParameters.KeyWord);
-        return List(specification: specification,
+        return await ListAsync(specification: specification,
             includeTables: userQueryParameters.IncludeTables,
             sorting: userQueryParameters.Sorting,
             pageIndex: userQueryParameters.PageIndex,

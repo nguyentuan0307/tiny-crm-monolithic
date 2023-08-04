@@ -5,6 +5,6 @@ namespace TinyCRM.Domain.Entities.ProductDeals
 {
     public interface IProductDealRepository : IRepository<ProductDeal, Guid>
     {
-        public IQueryable<ProductDeal> GetProductDealsByDealId(ProductDealQueryParameters productDealQueryParameters);
+        Task<List<ProductDeal>> GetProductDealsByDealIdAsync(ProductDealQueryParameters productDealQueryParameters);
     }
 }

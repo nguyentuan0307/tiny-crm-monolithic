@@ -2,14 +2,13 @@
 using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
-namespace TinyCRM.Domain.Entities.Leads
+namespace TinyCRM.Domain.Entities.Leads;
+
+public interface ILeadRepository : IRepository<Lead, Guid>
 {
-    public interface ILeadRepository : IRepository<Lead, Guid>
-    {
-        IQueryable<Lead> GetLeads(LeadQueryParameters leadQueryParameters);
+    Task<List<Lead>> GetLeadsAsync(LeadQueryParameters leadQueryParameters);
 
-        IQueryable<Lead> GetLeadsByAccountId(LeadQueryParameters dealQueryParameters);
+    Task<List<Lead>> GetLeadsByAccountIdAsync(LeadQueryParameters dealQueryParameters);
 
-        IQueryable<LeadStatistic> GetLeadStatistics();
-    }
+    Task<List<LeadStatistic>> GetLeadStatisticsAsync();
 }

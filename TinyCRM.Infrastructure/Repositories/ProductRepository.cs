@@ -12,10 +12,10 @@ namespace TinyCRM.Infrastructure.Repositories
         {
         }
 
-        public IQueryable<Product> GetProducts(ProductQueryParameters productQueryParameters)
+        public async Task<List<Product>> GetProductsAsync(ProductQueryParameters productQueryParameters)
         {
             var specification = new ProductsByFilterSpecification(productQueryParameters.KeyWord);
-            return List(specification: specification,
+            return await ListAsync(specification: specification,
                 includeTables: productQueryParameters.IncludeTables,
                 sorting: productQueryParameters.Sorting,
                 pageIndex: productQueryParameters.PageIndex,

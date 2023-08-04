@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Deal;
 using TinyCRM.API.Models.Lead;
@@ -88,7 +87,7 @@ namespace TinyCRM.API.Services
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,
             };
-            var leads = await _leadRepository.GetLeads(leadQueryParameters).ToListAsync();
+            var leads = await _leadRepository.GetLeadsAsync(leadQueryParameters);
 
             return _mapper.Map<IList<LeadDto>>(leads);
         }
@@ -166,7 +165,7 @@ namespace TinyCRM.API.Services
 
         public async Task<LeadStatisticDto> GetStatisticLeadAsync()
         {
-            var statisticLeads = await _leadRepository.GetLeadStatistics().ToListAsync();
+            var statisticLeads = await _leadRepository.GetLeadStatisticsAsync();
 
             if (statisticLeads.Count == 0)
             {
@@ -201,7 +200,7 @@ namespace TinyCRM.API.Services
                 IncludeTables = includeTables,
                 AccountId = accountId
             };
-            var leads = await _leadRepository.GetLeadsByAccountId(leadQueryParameters).ToListAsync();
+            var leads = await _leadRepository.GetLeadsByAccountIdAsync(leadQueryParameters);
             return _mapper.Map<IList<LeadDto>>(leads);
         }
     }

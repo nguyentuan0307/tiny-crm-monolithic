@@ -60,7 +60,7 @@ namespace TinyCRM.Infrastructure
             return query.FirstOrDefaultAsync();
         }
 
-        public IQueryable<TEntity> List(ISpecification<TEntity> specification, string? includeTables = null,
+        public async Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification, string? includeTables = null,
             string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue)
         {
             IQueryable<TEntity> query = DbSet;
@@ -72,7 +72,7 @@ namespace TinyCRM.Infrastructure
             query = Sorting(query, sorting);
 
             query = query.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
-            return query;
+            return await query.ToListAsync();
         }
 
         private static IQueryable<TEntity> Filter(IQueryable<TEntity> query, ISpecification<TEntity> specification)

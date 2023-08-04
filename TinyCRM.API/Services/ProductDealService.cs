@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.ProductDeal;
 using TinyCRM.API.Services.IServices;
@@ -119,8 +118,7 @@ namespace TinyCRM.API.Services
                 IncludeTables = includeTables,
                 DealId = dealId
             };
-            var query = _productDealRepository.GetProductDealsByDealId(productDealsQueryParameter);
-            var productDeals = await query.ToListAsync();
+            var productDeals = await _productDealRepository.GetProductDealsByDealIdAsync(productDealsQueryParameter);
             return _mapper.Map<IList<ProductDealDto>>(productDeals);
         }
 

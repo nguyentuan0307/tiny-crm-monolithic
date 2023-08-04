@@ -2,16 +2,15 @@
 using TinyCRM.Domain.Interfaces;
 using TinyCRM.Infrastructure.Helpers.Model;
 
-namespace TinyCRM.Domain.Entities.Deals
+namespace TinyCRM.Domain.Entities.Deals;
+
+public interface IDealRepository : IRepository<Deal, Guid>
 {
-    public interface IDealRepository : IRepository<Deal, Guid>
-    {
-        public bool IsExistingLead(Guid leadId);
+    bool IsExistingLead(Guid leadId);
 
-        public IQueryable<Deal> GetDeals(DealQueryParameters dealQueryParameters);
+    Task<List<Deal>> GetDealsAsync(DealQueryParameters dealQueryParameters);
 
-        public IQueryable<Deal> GetDealsByAccountId(DealQueryParameters dealQueryParameters);
+    Task<List<Deal>> GetDealsByAccountIdAsync(DealQueryParameters dealQueryParameters);
 
-        IQueryable<DealStatistic> GetDealStatistics();
-    }
+    Task<List<DealStatistic>> GetDealStatisticsAsync();
 }

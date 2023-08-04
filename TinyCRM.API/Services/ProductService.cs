@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Product;
 using TinyCRM.API.Services.IServices;
@@ -71,9 +70,8 @@ namespace TinyCRM.API.Services
                 PageSize = search.PageSize,
                 IncludeTables = includeTables,
             };
-            var query = _productRepository.GetProducts(productQueryParameter);
 
-            var products = await query.ToListAsync();
+            var products = await _productRepository.GetProductsAsync(productQueryParameter);
             var productDtOs = _mapper.Map<IList<ProductDto>>(products);
 
             return productDtOs;

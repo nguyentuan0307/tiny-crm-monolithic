@@ -23,33 +23,33 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
         return DbSet.AnyAsync(p => p.Id == id);
     }
 
-    public IQueryable<Lead> GetLeads(LeadQueryParameters leadQueryParameters)
+    public async Task<List<Lead>> GetLeadsAsync(LeadQueryParameters leadQueryParameters)
     {
         var specification = new LeadsByFilterSpecification(leadQueryParameters.KeyWord);
-        return List(specification: specification,
+        return await ListAsync(specification: specification,
             includeTables: leadQueryParameters.IncludeTables,
             sorting: leadQueryParameters.Sorting,
             pageIndex: leadQueryParameters.PageIndex,
             pageSize: leadQueryParameters.PageSize);
     }
 
-    public IQueryable<Lead> GetLeadsByAccountId(LeadQueryParameters leadQueryParameters)
+    public async Task<List<Lead>> GetLeadsByAccountIdAsync(LeadQueryParameters leadQueryParameters)
     {
         var leadsByAccountIdSpecification = new LeadsByAccountIdSpecification(leadQueryParameters.AccountId!.Value);
         var specification = leadsByAccountIdSpecification.And(new LeadsByFilterSpecification(leadQueryParameters.KeyWord));
-        return List(specification: specification,
+        return await ListAsync(specification: specification,
             includeTables: leadQueryParameters.IncludeTables,
             sorting: leadQueryParameters.Sorting,
             pageIndex: leadQueryParameters.PageIndex,
             pageSize: leadQueryParameters.PageSize);
     }
 
-    public IQueryable<LeadStatistic> GetLeadStatistics()
+    public async Task<List<LeadStatistic>> GetLeadStatisticsAsync()
     {
-        return DbSet.Select(x => new LeadStatistic
+        return await DbSet.Select(x => new LeadStatistic
         {
             StatusLead = x.StatusLead,
             EstimatedRevenue = x.EstimatedRevenue
-        });
+        }).ToListAsync();
     }
 }

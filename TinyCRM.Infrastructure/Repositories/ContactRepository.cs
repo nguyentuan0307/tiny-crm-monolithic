@@ -12,22 +12,22 @@ namespace TinyCRM.Infrastructure.Repositories
         {
         }
 
-        public IQueryable<Contact> GetContacts(ContactQueryParameters contactQueryParameters)
+        public async Task<List<Contact>> GetContactsAsync(ContactQueryParameters contactQueryParameters)
         {
             var specification = new ContactsByFilterSpecification(contactQueryParameters.KeyWord);
-            return List(specification: specification,
+            return await ListAsync(specification: specification,
                 includeTables: contactQueryParameters.IncludeTables,
                 sorting: contactQueryParameters.Sorting,
                 pageIndex: contactQueryParameters.PageIndex,
                 pageSize: contactQueryParameters.PageSize);
         }
 
-        public IQueryable<Contact> GetContactsByAccountId(ContactQueryParameters contactQueryParameters)
+        public async Task<List<Contact>> GetContactsByAccountIdAsync(ContactQueryParameters contactQueryParameters)
         {
             var contactsByAccountIdSpecification = new ContactsByAccountIdSpecification(contactQueryParameters.AccountId!.Value);
             var specification = contactsByAccountIdSpecification.And(new ContactsByFilterSpecification(contactQueryParameters.KeyWord));
 
-            return List(specification: specification,
+            return await ListAsync(specification: specification,
                 includeTables: contactQueryParameters.IncludeTables,
                 sorting: contactQueryParameters.Sorting,
                 pageIndex: contactQueryParameters.PageIndex,

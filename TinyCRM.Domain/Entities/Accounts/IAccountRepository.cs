@@ -1,14 +1,13 @@
 ﻿using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
-namespace TinyCRM.Domain.Entities.Accounts
+namespace TinyCRM.Domain.Entities.Accounts;
+
+public interface IAccountRepository : IRepository<Account, Guid>
 {
-    public interface IAccountRepository : IRepository<Account, Guid>
-    {
-        IQueryable<Account> GetAccounts(AccountQueryParameters accountQueryParameters);
+    Task<List<Account>> GetAccountsAsync(AccountQueryParameters accountQueryParameters);
 
-        Task<bool> EmailIsExitsAsync(string email, Guid id);
+    Task<bool> EmailIsExitsAsync(string email, Guid id);
 
-        Task<bool> PhoneIsExistAsync(string phone, Guid id);
-    }
+    Task<bool> PhoneIsExistAsync(string phone, Guid id);
 }

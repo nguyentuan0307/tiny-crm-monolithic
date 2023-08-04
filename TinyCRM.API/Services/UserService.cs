@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -158,10 +157,7 @@ namespace TinyCRM.API.Services
                 PageSize = search.PageSize
             };
 
-            var query = _userRepository.GetUsers(userQueryParameters);
-
-            var users = await query.ToListAsync();
-
+            var users = await _userRepository.GetUsersAsync(userQueryParameters);
             return _mapper.Map<IEnumerable<UserProfileDto>>(users);
         }
 

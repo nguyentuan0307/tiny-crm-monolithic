@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TinyCRM.API.Exceptions;
 using TinyCRM.API.Models.Account;
 using TinyCRM.API.Services.IServices;
@@ -58,9 +57,7 @@ namespace TinyCRM.API.Services
                 PageSize = search.PageSize
             };
 
-            var query = _accountRepository.GetAccounts(accountQueryParameters);
-
-            var accounts = await query.ToListAsync();
+            var accounts = await _accountRepository.GetAccountsAsync(accountQueryParameters);
             var accountDtOs = _mapper.Map<IList<AccountDto>>(accounts);
 
             return accountDtOs;

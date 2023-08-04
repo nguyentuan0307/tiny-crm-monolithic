@@ -12,11 +12,11 @@ namespace TinyCRM.Infrastructure.Repositories
         {
         }
 
-        public IQueryable<Account> GetAccounts(AccountQueryParameters accountQueryParameters)
+        public async Task<List<Account>> GetAccountsAsync(AccountQueryParameters accountQueryParameters)
         {
             var specification = new AccountsSpecification(accountQueryParameters.KeyWord);
 
-            return List(specification: specification,
+            return await ListAsync(specification: specification,
                     includeTables: accountQueryParameters.IncludeTables,
                     sorting: accountQueryParameters.Sorting,
                     pageIndex: accountQueryParameters.PageIndex,
