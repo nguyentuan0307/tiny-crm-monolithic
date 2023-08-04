@@ -1,9 +1,10 @@
 ﻿using System.Linq.Expressions;
 using TinyCRM.Domain.Entities.Users;
+using TinyCRM.Domain.Helper.Specification.Base;
 
-namespace TinyCRM.Domain.Helper.Specification;
+namespace TinyCRM.Domain.Helper.Specification.Users;
 
-public class UsersByFilterSpecification : ISpecification<ApplicationUser>
+public class UsersByFilterSpecification : Specification<ApplicationUser>, ISpecification<ApplicationUser>
 {
     private readonly string? _keyWord;
 
@@ -12,7 +13,7 @@ public class UsersByFilterSpecification : ISpecification<ApplicationUser>
         _keyWord = keyWord;
     }
 
-    public Expression<Func<ApplicationUser, bool>> IsSatisfiedBy()
+    public override Expression<Func<ApplicationUser, bool>> ToExpression()
     {
         Expression<Func<ApplicationUser, bool>> expression = p => true;
         if (_keyWord == null) return expression;

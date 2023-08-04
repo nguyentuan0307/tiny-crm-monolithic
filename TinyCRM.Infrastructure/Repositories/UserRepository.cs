@@ -1,6 +1,6 @@
 ﻿using TinyCRM.Domain.Entities.Users;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.Users;
 
 namespace TinyCRM.Infrastructure.Repositories;
 

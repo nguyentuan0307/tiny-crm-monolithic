@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.Contacts;
 
 namespace TinyCRM.Infrastructure.Repositories
 {
@@ -25,8 +25,8 @@ namespace TinyCRM.Infrastructure.Repositories
         public IQueryable<Contact> GetContactsByAccountId(ContactQueryParameters contactQueryParameters)
         {
             var contactsByAccountIdSpecification = new ContactsByAccountIdSpecification(contactQueryParameters.AccountId!.Value);
-            var contactsSpecification = new ContactsByFilterSpecification(contactQueryParameters.KeyWord);
-            var specification = new AndSpecifications<Contact>(contactsByAccountIdSpecification, contactsSpecification);
+            var specification = contactsByAccountIdSpecification.And(new ContactsByFilterSpecification(contactQueryParameters.KeyWord));
+
             return List(specification: specification,
                 includeTables: contactQueryParameters.IncludeTables,
                 sorting: contactQueryParameters.Sorting,

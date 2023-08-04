@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.Base;
 
 namespace TinyCRM.Domain.Interfaces
 {

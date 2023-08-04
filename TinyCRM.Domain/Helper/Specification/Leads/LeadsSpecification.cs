@@ -1,9 +1,10 @@
 ﻿using System.Linq.Expressions;
 using TinyCRM.Domain.Entities.Leads;
+using TinyCRM.Domain.Helper.Specification.Base;
 
-namespace TinyCRM.Domain.Helper.Specification;
+namespace TinyCRM.Domain.Helper.Specification.Leads;
 
-public class LeadsByFilterSpecification : ISpecification<Lead>
+public class LeadsByFilterSpecification : Specification<Lead>, ISpecification<Lead>
 {
     private readonly string? _keyWord;
 
@@ -12,7 +13,7 @@ public class LeadsByFilterSpecification : ISpecification<Lead>
         _keyWord = keyWord;
     }
 
-    public Expression<Func<Lead, bool>> IsSatisfiedBy()
+    public override Expression<Func<Lead, bool>> ToExpression()
     {
         Expression<Func<Lead, bool>> expression = p => true;
         if (_keyWord == null) return expression;
@@ -23,20 +24,5 @@ public class LeadsByFilterSpecification : ISpecification<Lead>
         }
 
         return expression;
-    }
-}
-
-public class LeadsByAccountIdSpecification : ISpecification<Lead>
-{
-    private readonly Guid _accountId;
-
-    public LeadsByAccountIdSpecification(Guid accountId)
-    {
-        _accountId = accountId;
-    }
-
-    public Expression<Func<Lead, bool>> IsSatisfiedBy()
-    {
-        return p => p.AccountId == _accountId;
     }
 }

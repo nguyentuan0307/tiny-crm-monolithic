@@ -2,7 +2,7 @@
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using TinyCRM.Domain.Base;
-using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.Base;
 using TinyCRM.Domain.Interfaces;
 
 namespace TinyCRM.Infrastructure
@@ -77,7 +77,7 @@ namespace TinyCRM.Infrastructure
 
         private static IQueryable<TEntity> Filter(IQueryable<TEntity> query, ISpecification<TEntity> specification)
         {
-            query = query.Where(specification.IsSatisfiedBy());
+            query = query.Where(specification.ToExpression());
             return query;
         }
 

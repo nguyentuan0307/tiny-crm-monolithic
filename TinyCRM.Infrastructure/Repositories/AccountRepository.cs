@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.Accounts;
 
 namespace TinyCRM.Infrastructure.Repositories
 {

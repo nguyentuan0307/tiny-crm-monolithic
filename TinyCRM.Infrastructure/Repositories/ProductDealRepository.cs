@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.ProductDeals;
 
 namespace TinyCRM.Infrastructure.Repositories
 {
@@ -15,8 +15,10 @@ namespace TinyCRM.Infrastructure.Repositories
         public IQueryable<ProductDeal> GetProductDealsByDealId(ProductDealQueryParameters productDealQueryParameters)
         {
             var productDealsByDealIdSpecification = new ProductDealsByDealIdSpecification(productDealQueryParameters.DealId!.Value);
-            var productDealsByFilterSpecification = new ProductDealsByFilterSpecification(productDealQueryParameters.KeyWord);
-            var specification = new AndSpecifications<ProductDeal>(productDealsByDealIdSpecification, productDealsByFilterSpecification);
+
+            var specification = productDealsByDealIdSpecification.And(
+                    new ProductDealsByFilterSpecification(productDealQueryParameters.KeyWord));
+
             return List(specification: specification,
                 includeTables: productDealQueryParameters.IncludeTables,
                 sorting: productDealQueryParameters.Sorting,

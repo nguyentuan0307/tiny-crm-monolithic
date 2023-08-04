@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Helper.Model;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification;
+using TinyCRM.Domain.Helper.Specification.Leads;
 
 namespace TinyCRM.Infrastructure.Repositories;
 
@@ -36,8 +36,7 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
     public IQueryable<Lead> GetLeadsByAccountId(LeadQueryParameters leadQueryParameters)
     {
         var leadsByAccountIdSpecification = new LeadsByAccountIdSpecification(leadQueryParameters.AccountId!.Value);
-        var leadsByFilterSpecification = new LeadsByFilterSpecification(leadQueryParameters.KeyWord);
-        var specification = new AndSpecifications<Lead>(leadsByAccountIdSpecification, leadsByFilterSpecification);
+        var specification = leadsByAccountIdSpecification.And(new LeadsByFilterSpecification(leadQueryParameters.KeyWord));
         return List(specification: specification,
             includeTables: leadQueryParameters.IncludeTables,
             sorting: leadQueryParameters.Sorting,
