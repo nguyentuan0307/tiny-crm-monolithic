@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.API.Models.Lead;
-using TinyCRM.API.Services.IServices;
+using TinyCRM.Application.Interfaces.IServices;
+using TinyCRM.Application.Models.Lead;
 using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;

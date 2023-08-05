@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
-using TinyCRM.API.Exceptions;
-using TinyCRM.API.Models;
+using System.Net;
+using TinyCRM.Application.Models;
+using TinyCRM.Domain.Exceptions;
 
 namespace TinyCRM.API.Middleware
 {
@@ -13,26 +14,32 @@ namespace TinyCRM.API.Middleware
             {
                 exceptionHandlerApp.Run(async context =>
                 {
+                    int statusCode;
+
                     var ex = context.Features.Get<IExceptionHandlerFeature>()?.Error;
                     Log.Error(ex, "An exception occurred while processing the request");
 
-                    var statusCode = ex switch
+                    var message = ex?.Message;
+                    switch (ex)
                     {
-                        HttpException httpEx => httpEx.StatusCode,
-                        _ => StatusCodes.Status500InternalServerError
-                    };
+                        case EntityNotFoundException:
+                            statusCode = (int)HttpStatusCode.NotFound;
+                            break;
 
-                    var errorCode = ex switch
-                    {
-                        HttpException httpEx => httpEx.ErrorCode,
-                        _ => "Internal Server Error"
-                    };
+                        case NotImplementedException:
+                            statusCode = (int)HttpStatusCode.NotImplemented;
+                            break;
 
-                    var message = ex switch
-                    {
-                        HttpException httpEx => httpEx.Message,
-                        _ => ex?.Message
-                    };
+                        case EntityValidationException:
+                        case InvalidUpdateException:
+                        case InvalidPasswordException:
+                            statusCode = (int)HttpStatusCode.BadRequest;
+                            break;
+
+                        default:
+                            statusCode = (int)HttpStatusCode.InternalServerError;
+                            break;
+                    }
 
                     if (!env.IsDevelopment())
                     {
@@ -43,7 +50,6 @@ namespace TinyCRM.API.Middleware
                     await context.Response.WriteAsJsonAsync(new ExceptionRespone
                     {
                         StatusCode = statusCode,
-                        ErrorCode = errorCode,
                         Message = message
                     });
                 });

@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using TinyCRM.API.Models;
-using TinyCRM.API.Services;
-using TinyCRM.API.Services.IServices;
-using TinyCRM.Domain;
+using TinyCRM.Application.Interfaces.IServices;
+using TinyCRM.Application.Models;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Entities.Deals;
@@ -15,10 +13,14 @@ using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
 using TinyCRM.Domain.Entities.Roles;
-using TinyCRM.Domain.Entities.Users;
 using TinyCRM.Domain.Interfaces;
 using TinyCRM.Infrastructure;
+using TinyCRM.Infrastructure.Identity;
+using TinyCRM.Infrastructure.Identity.Repository;
+using TinyCRM.Infrastructure.Identity.Service;
+using TinyCRM.Infrastructure.Identity.Users;
 using TinyCRM.Infrastructure.Repositories;
+using TinyCRM.Infrastructure.Service;
 
 namespace TinyCRM.API.Extensions
 {
