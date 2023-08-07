@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Entities.Deals;
@@ -64,7 +65,7 @@ public class DataContributor
                 !(await _productRepository.AnyAsync())
             )
             {
-                _logger.LogInformation("Begin seeding data...");
+                Log.Information("Begin seeding data...");
 
                 _accounts = await SeedAccountAsync();
                 await SeedContactAsync();
@@ -74,7 +75,7 @@ public class DataContributor
 
                 await _unitOfWork.SaveChangeAsync();
 
-                _logger.LogInformation("Seed data successfully!");
+                Log.Information("Seed data successfully!");
             }
 
             if (!_roleManager.Roles.Any() && !_userManager.Users.Any())
