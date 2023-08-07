@@ -1,11 +1,10 @@
-﻿namespace TinyCRM.Domain.Enums
+﻿namespace TinyCRM.Domain.Enums;
+
+public enum ReasonDisqualification
 {
-    public enum ReasonDisqualification
-    {
-        Budget,
-        BadData,
-        NotResponsive,
-        LostToCompetitor,
-        Timeline
-    }
+    Budget,
+    BadData,
+    NotResponsive,
+    LostToCompetitor,
+    Timeline
 }

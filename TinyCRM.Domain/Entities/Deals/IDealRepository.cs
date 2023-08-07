@@ -1,6 +1,6 @@
-﻿using TinyCRM.Domain.Helper.QueryParameters;
+﻿using TinyCRM.Domain.Helper.Model;
+using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
-using TinyCRM.Infrastructure.Helpers.Model;
 
 namespace TinyCRM.Domain.Entities.Deals;
 
@@ -12,5 +12,5 @@ public interface IDealRepository : IRepository<Deal, Guid>
 
     Task<List<Deal>> GetDealsByAccountIdAsync(DealQueryParameters dealQueryParameters);
 
-    Task<List<DealStatistic>> GetDealStatisticsAsync();
+    Task<List<DealStatisticDto>> GetDealStatisticsAsync();
 }

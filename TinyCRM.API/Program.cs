@@ -2,7 +2,8 @@ using Serilog;
 using System.Reflection;
 using TinyCRM.API.Extensions;
 using TinyCRM.API.Middleware;
-using TinyCRM.Infrastructure.Helper.AutoMapper;
+using TinyCRM.Application.Helper.AutoMapper;
+using TinyCRM.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,8 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddServices();
 
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(TinyCRMAutoMapper)));
+builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(TinyCrmAutoMapper)));
+builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(UserAutoMapper)));
 
 builder.Services.AddControllers();
 builder.Services.AddSwagger();

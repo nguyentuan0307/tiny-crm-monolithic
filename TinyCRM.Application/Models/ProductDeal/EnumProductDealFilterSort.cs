@@ -1,12 +1,11 @@
-﻿namespace TinyCRM.Application.Models.ProductDeal
+﻿namespace TinyCRM.Application.Models.ProductDeal;
+
+public enum EnumProductDealFilterSort
 {
-    public enum EnumProductDealFilterSort
-    {
-        Id,
-        ProductCode,
-        ProductName,
-        PricePerUnit,
-        Quantity,
-        TotalAmount
-    }
+    Id,
+    ProductCode,
+    ProductName,
+    PricePerUnit,
+    Quantity,
+    TotalAmount
 }

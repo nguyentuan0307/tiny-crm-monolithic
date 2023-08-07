@@ -1,8 +1,7 @@
-﻿namespace TinyCRM.Domain.Enums
+﻿namespace TinyCRM.Domain.Enums;
+
+public enum TypeProduct
 {
-    public enum TypeProduct
-    {
-        Service,
-        Physical,
-    }
+    Service,
+    Physical,
 }

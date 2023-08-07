@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.Application.Interfaces.IServices;
 using TinyCRM.Application.Models.Contact;
+using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
@@ -30,10 +30,10 @@ public class ContactController : Controller
     }
 
     [HttpGet("{id:guid}")]
-    [ActionName(nameof(GetContactByIdAsync))]
-    public async Task<IActionResult> GetContactByIdAsync(Guid id)
+    [ActionName(nameof(GetContactAsync))]
+    public async Task<IActionResult> GetContactAsync(Guid id)
     {
-        var contactDto = await _contactService.GetContactByIdAsync(id);
+        var contactDto = await _contactService.GetContactAsync(id);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contact: {JsonSerializer.Serialize(contactDto)}");
         return Ok(contactDto);
     }
@@ -44,7 +44,7 @@ public class ContactController : Controller
     {
         var contactNewDto = await _contactService.CreateContactAsync(contactDto);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Created Contact: {JsonSerializer.Serialize(contactNewDto)}");
-        return CreatedAtAction(nameof(GetContactByIdAsync), new { id = contactNewDto.Id }, contactNewDto);
+        return CreatedAtAction(nameof(GetContactAsync), new { id = contactNewDto.Id }, contactNewDto);
     }
 
     [HttpPut("{id:guid}")]
@@ -65,10 +65,10 @@ public class ContactController : Controller
         return Ok("Successfully Deleted Contact");
     }
 
-    [HttpGet("account/{id:guid}")]
-    public async Task<IActionResult> GetContactsByAccountIdAsync(Guid id, [FromQuery] ContactSearchDto search)
+    [HttpGet("account/{accountId:guid}")]
+    public async Task<IActionResult> GetContactsAsync(Guid accountId, [FromQuery] ContactSearchDto search)
     {
-        var contactDtOs = await _contactService.GetContactsByAccountIdAsync(id, search);
+        var contactDtOs = await _contactService.GetContactsAsync(accountId, search);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
         return Ok(contactDtOs);
     }

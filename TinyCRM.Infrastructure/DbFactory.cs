@@ -1,24 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace TinyCRM.Infrastructure
+namespace TinyCRM.Infrastructure;
+
+public class DbFactory : IDisposable
 {
-    public class DbFactory : IDisposable
+    private bool _disposed;
+    private readonly Func<AppDataContext> _instanceFunc;
+    private DbContext? _dbContext;
+    public DbContext DbContext => _dbContext ??= _instanceFunc.Invoke();
+
+    public DbFactory(Func<AppDataContext> dbContextFactory)
     {
-        private bool _disposed;
-        private readonly Func<AppDataContext> _instanceFunc;
-        private DbContext? _dbContext;
-        public DbContext DbContext => _dbContext ??= _instanceFunc.Invoke();
+        _instanceFunc = dbContextFactory;
+    }
 
-        public DbFactory(Func<AppDataContext> dbContextFactory)
-        {
-            _instanceFunc = dbContextFactory;
-        }
-
-        public void Dispose()
-        {
-            if (_disposed || _dbContext == null) return;
-            _disposed = true;
-            _dbContext.Dispose();
-        }
+    public void Dispose()
+    {
+        if (_disposed || _dbContext == null) return;
+        _disposed = true;
+        _dbContext.Dispose();
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.Application.Interfaces.IServices;
 using TinyCRM.Application.Models.Lead;
+using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
@@ -30,10 +30,10 @@ public class LeadController : Controller
     }
 
     [HttpGet("{id:guid}")]
-    [ActionName(nameof(GetLeadByIdAsync))]
-    public async Task<IActionResult> GetLeadByIdAsync(Guid id)
+    [ActionName(nameof(GetLeadAsync))]
+    public async Task<IActionResult> GetLeadAsync(Guid id)
     {
-        var leadDto = await _leadService.GetLeadByIdAsync(id);
+        var leadDto = await _leadService.GetLeadAsync(id);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead: {JsonSerializer.Serialize(leadDto)}");
         return Ok(leadDto);
     }
@@ -44,7 +44,7 @@ public class LeadController : Controller
     {
         var leadCreateDto = await _leadService.CreateLeadAsync(leadDto);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Created Lead: {JsonSerializer.Serialize(leadCreateDto)}");
-        return CreatedAtAction(nameof(GetLeadByIdAsync), new { id = leadCreateDto.Id }, leadCreateDto);
+        return CreatedAtAction(nameof(GetLeadAsync), new { id = leadCreateDto.Id }, leadCreateDto);
     }
 
     [HttpPut("{id:guid}")]
@@ -71,7 +71,7 @@ public class LeadController : Controller
     {
         var dealDto = await _leadService.QualifyLeadAsync(id);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Qualified Lead: {JsonSerializer.Serialize(dealDto)}");
-        return CreatedAtRoute(new { id = dealDto.Id, controller = "deal", action = nameof(DealController.GetDealByIdAsync) }, dealDto);
+        return CreatedAtRoute(new { id = dealDto.Id, controller = "deal", action = nameof(DealController.GetDealAsync) }, dealDto);
     }
 
     [HttpPost("{id:guid}/disqualify")]
@@ -91,10 +91,10 @@ public class LeadController : Controller
         return Ok(leadStatisticDto);
     }
 
-    [HttpGet("account/{id:guid}")]
-    public async Task<IActionResult> GetLeadsByAccountIdAsync(Guid id, [FromQuery] LeadSearchDto search)
+    [HttpGet("account/{accountId:guid}")]
+    public async Task<IActionResult> GetLeadsByAsync(Guid accountId, [FromQuery] LeadSearchDto search)
     {
-        var leadDtOs = await _leadService.GetLeadsByAccountIdAsync(id, search);
+        var leadDtOs = await _leadService.GetLeadsAsync(accountId, search);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
         return Ok(leadDtOs);
     }

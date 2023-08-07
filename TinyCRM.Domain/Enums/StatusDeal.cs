@@ -1,9 +1,8 @@
-﻿namespace TinyCRM.Domain.Enums
+﻿namespace TinyCRM.Domain.Enums;
+
+public enum StatusDeal
 {
-    public enum StatusDeal
-    {
-        Won,
-        Lost,
-        Open
-    }
+    Won,
+    Lost,
+    Open
 }

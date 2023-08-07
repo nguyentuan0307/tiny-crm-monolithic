@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TinyCRM.Application.Models.User
+namespace TinyCRM.Application.Models.User;
+
+public class UserChangePasswordDto
 {
-    public class UserChangePasswordDto
-    {
-        [EmailAddress]
-        public string Email { get; set; } = null!;
+    [EmailAddress]
+    public string Email { get; set; } = null!;
 
-        [Required]
-        public string CurrentPassword { get; set; } = null!;
+    [Required]
+    public string CurrentPassword { get; set; } = null!;
 
-        [Required]
-        public string NewPassword { get; set; } = null!;
-    }
+    [Required]
+    public string NewPassword { get; set; } = null!;
 }

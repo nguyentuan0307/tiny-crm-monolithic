@@ -1,57 +1,56 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using TinyCRM.Application.Helper.Specification.Contacts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification.Contacts;
 
-namespace TinyCRM.Infrastructure.Repositories
+namespace TinyCRM.Infrastructure.Repositories;
+
+public class ContactRepository : Repository<Contact, Guid>, IContactRepository
 {
-    public class ContactRepository : Repository<Contact, Guid>, IContactRepository
+    public ContactRepository(DbFactory dbFactory) : base(dbFactory)
     {
-        public ContactRepository(DbFactory dbFactory) : base(dbFactory)
-        {
-        }
+    }
 
-        public async Task<List<Contact>> GetContactsAsync(ContactQueryParameters contactQueryParameters)
-        {
-            var specification = new ContactsByFilterSpecification(contactQueryParameters.KeyWord);
-            return await ListAsync(specification: specification,
-                includeTables: contactQueryParameters.IncludeTables,
-                sorting: contactQueryParameters.Sorting,
-                pageIndex: contactQueryParameters.PageIndex,
-                pageSize: contactQueryParameters.PageSize);
-        }
+    public async Task<List<Contact>> GetContactsAsync(ContactQueryParameters contactQueryParameters)
+    {
+        var specification = new ContactsByFilterSpecification(contactQueryParameters.KeyWord);
+        return await ListAsync(specification: specification,
+            includeTables: contactQueryParameters.IncludeTables,
+            sorting: contactQueryParameters.Sorting,
+            pageIndex: contactQueryParameters.PageIndex,
+            pageSize: contactQueryParameters.PageSize);
+    }
 
-        public async Task<List<Contact>> GetContactsByAccountIdAsync(ContactQueryParameters contactQueryParameters)
-        {
-            var contactsByAccountIdSpecification = new ContactsByAccountIdSpecification(contactQueryParameters.AccountId!.Value);
-            var specification = contactsByAccountIdSpecification.And(new ContactsByFilterSpecification(contactQueryParameters.KeyWord));
+    public async Task<List<Contact>> GetContactsByAccountIdAsync(ContactQueryParameters contactQueryParameters)
+    {
+        var contactsByAccountIdSpecification = new ContactsByAccountIdSpecification(contactQueryParameters.AccountId!.Value);
+        var specification = contactsByAccountIdSpecification.And(new ContactsByFilterSpecification(contactQueryParameters.KeyWord));
 
-            return await ListAsync(specification: specification,
-                includeTables: contactQueryParameters.IncludeTables,
-                sorting: contactQueryParameters.Sorting,
-                pageIndex: contactQueryParameters.PageIndex,
-                pageSize: contactQueryParameters.PageSize);
-        }
+        return await ListAsync(specification: specification,
+            includeTables: contactQueryParameters.IncludeTables,
+            sorting: contactQueryParameters.Sorting,
+            pageIndex: contactQueryParameters.PageIndex,
+            pageSize: contactQueryParameters.PageSize);
+    }
 
-        protected override Expression<Func<Contact, bool>> ExpressionForGet(Guid id)
-        {
-            return p => p.Id == id;
-        }
+    protected override Expression<Func<Contact, bool>> ExpressionForGet(Guid id)
+    {
+        return p => p.Id == id;
+    }
 
-        public override Task<bool> AnyAsync(Guid id)
-        {
-            return DbSet.AnyAsync(p => p.Id == id);
-        }
+    public override Task<bool> AnyAsync(Guid id)
+    {
+        return DbSet.AnyAsync(p => p.Id == id);
+    }
 
-        public Task<bool> IsPhoneExistAsync(string phone, Guid guid)
-        {
-            return DbSet.AnyAsync(p => p.Phone == phone && p.Id != guid);
-        }
+    public Task<bool> IsPhoneExistAsync(string phone, Guid guid)
+    {
+        return DbSet.AnyAsync(p => p.Phone == phone && p.Id != guid);
+    }
 
-        public Task<bool> IsEmailExistAsync(string email, Guid guid)
-        {
-            return DbSet.AnyAsync(p => p.Email == email && p.Id != guid);
-        }
+    public Task<bool> IsEmailExistAsync(string email, Guid guid)
+    {
+        return DbSet.AnyAsync(p => p.Email == email && p.Id != guid);
     }
 }

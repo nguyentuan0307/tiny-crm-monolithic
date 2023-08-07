@@ -1,7 +1,6 @@
-﻿namespace TinyCRM.Domain.Helper.QueryParameters
+﻿namespace TinyCRM.Domain.Helper.QueryParameters;
+
+public class ContactQueryParameters : BaseQueryParameters
 {
-    public class ContactQueryParameters : BaseQueryParameters
-    {
-        public Guid? AccountId { get; set; }
-    }
+    public Guid? AccountId { get; set; }
 }

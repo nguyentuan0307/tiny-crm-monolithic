@@ -1,8 +1,7 @@
-﻿namespace TinyCRM.Application.Models.User
+﻿namespace TinyCRM.Application.Models.User;
+
+public enum EnumProfileUserFilterSort
 {
-    public enum EnumProfileUserFilterSort
-    {
-        Name,
-        Email
-    }
+    Name,
+    Email
 }

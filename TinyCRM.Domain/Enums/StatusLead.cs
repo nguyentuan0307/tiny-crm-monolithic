@@ -1,10 +1,9 @@
-﻿namespace TinyCRM.Domain.Enums
+﻿namespace TinyCRM.Domain.Enums;
+
+public enum StatusLead
 {
-    public enum StatusLead
-    {
-        Prospect,
-        Open,
-        Qualified,
-        Disqualified,
-    }
+    Prospect,
+    Open,
+    Qualified,
+    Disqualified,
 }

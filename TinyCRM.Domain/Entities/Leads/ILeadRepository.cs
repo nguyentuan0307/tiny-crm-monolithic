@@ -10,5 +10,5 @@ public interface ILeadRepository : IRepository<Lead, Guid>
 
     Task<List<Lead>> GetLeadsByAccountIdAsync(LeadQueryParameters dealQueryParameters);
 
-    Task<List<LeadStatistic>> GetLeadStatisticsAsync();
+    Task<List<LeadStatisticDto>> GetLeadStatisticsAsync();
 }

@@ -4,56 +4,55 @@ using System.Net;
 using TinyCRM.Application.Models;
 using TinyCRM.Domain.Exceptions;
 
-namespace TinyCRM.API.Middleware
+namespace TinyCRM.API.Middleware;
+
+public static class CustomExceptionMiddleware
 {
-    public static class CustomExceptionMiddleware
+    public static void UseCustomerExceptionHandler(this IApplicationBuilder app, IHostEnvironment env)
     {
-        public static void UseCustomerExceptionHandler(this IApplicationBuilder app, IHostEnvironment env)
+        app.UseExceptionHandler(exceptionHandlerApp =>
         {
-            app.UseExceptionHandler(exceptionHandlerApp =>
+            exceptionHandlerApp.Run(async context =>
             {
-                exceptionHandlerApp.Run(async context =>
+                int statusCode;
+
+                var ex = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+                Log.Error(ex, "An exception occurred while processing the request");
+
+                var message = ex?.Message;
+                switch (ex)
                 {
-                    int statusCode;
+                    case EntityNotFoundException:
+                        statusCode = (int)HttpStatusCode.NotFound;
+                        break;
 
-                    var ex = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-                    Log.Error(ex, "An exception occurred while processing the request");
+                    case NotImplementedException:
+                        statusCode = (int)HttpStatusCode.NotImplemented;
+                        break;
 
-                    var message = ex?.Message;
-                    switch (ex)
-                    {
-                        case EntityNotFoundException:
-                            statusCode = (int)HttpStatusCode.NotFound;
-                            break;
+                    case EntityValidationException:
+                    case InvalidUpdateException:
+                    case InvalidPasswordException:
+                        statusCode = (int)HttpStatusCode.BadRequest;
+                        break;
 
-                        case NotImplementedException:
-                            statusCode = (int)HttpStatusCode.NotImplemented;
-                            break;
+                    default:
+                        statusCode = (int)HttpStatusCode.InternalServerError;
+                        break;
+                }
 
-                        case EntityValidationException:
-                        case InvalidUpdateException:
-                        case InvalidPasswordException:
-                            statusCode = (int)HttpStatusCode.BadRequest;
-                            break;
-
-                        default:
-                            statusCode = (int)HttpStatusCode.InternalServerError;
-                            break;
-                    }
-
-                    if (!env.IsDevelopment())
-                    {
-                        message = "An error occurred from the system. Please try again";
-                    }
-                    context.Response.StatusCode = statusCode;
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(new ExceptionRespone
-                    {
-                        StatusCode = statusCode,
-                        Message = message
-                    });
+                if (!env.IsDevelopment())
+                {
+                    message = "An error occurred from the system. Please try again";
+                }
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new ExceptionResponse
+                {
+                    StatusCode = statusCode,
+                    Message = message
                 });
             });
-        }
+        });
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace TinyCRM.Domain.Enums
+﻿namespace TinyCRM.Domain.Enums;
+
+public enum SourceLead
 {
-    public enum SourceLead
-    {
-        Email,
-        Phone,
-        Event,
-        Referral,
-        Web
-    }
+    Email,
+    Phone,
+    Event,
+    Referral,
+    Web
 }

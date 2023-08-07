@@ -1,11 +1,10 @@
-﻿namespace TinyCRM.Domain.Helper.QueryParameters
+﻿namespace TinyCRM.Domain.Helper.QueryParameters;
+
+public abstract class BaseQueryParameters
 {
-    public abstract class BaseQueryParameters
-    {
-        public string? KeyWord { get; set; }
-        public string? IncludeTables { get; set; }
-        public string? Sorting { get; set; }
-        public int PageIndex { get; set; }
-        public int PageSize { get; set; }
-    }
+    public string? KeyWord { get; set; }
+    public string? IncludeTables { get; set; }
+    public string? Sorting { get; set; }
+    public int PageIndex { get; set; }
+    public int PageSize { get; set; }
 }

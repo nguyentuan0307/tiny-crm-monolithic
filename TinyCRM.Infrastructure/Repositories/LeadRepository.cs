@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using TinyCRM.Application.Helper.Specification.Leads;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Helper.Model;
 using TinyCRM.Domain.Helper.QueryParameters;
-using TinyCRM.Domain.Helper.Specification.Leads;
 
 namespace TinyCRM.Infrastructure.Repositories;
 
@@ -44,9 +44,9 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
             pageSize: leadQueryParameters.PageSize);
     }
 
-    public async Task<List<LeadStatistic>> GetLeadStatisticsAsync()
+    public async Task<List<LeadStatisticDto>> GetLeadStatisticsAsync()
     {
-        return await DbSet.Select(x => new LeadStatistic
+        return await DbSet.Select(x => new LeadStatisticDto
         {
             StatusLead = x.StatusLead,
             EstimatedRevenue = x.EstimatedRevenue

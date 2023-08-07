@@ -1,118 +1,117 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using TinyCRM.Domain.Base;
+using TinyCRM.Domain.Entities.Base;
 using TinyCRM.Domain.Helper.Specification.Base;
 using TinyCRM.Domain.Interfaces;
 
-namespace TinyCRM.Infrastructure
+namespace TinyCRM.Infrastructure;
+
+public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
 {
-    public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
+    private readonly DbFactory _dbFactory;
+    private DbSet<TEntity>? _dbSet;
+
+    protected DbSet<TEntity> DbSet => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
+
+    protected Repository(DbFactory dbFactory)
     {
-        private readonly DbFactory _dbFactory;
-        private DbSet<TEntity>? _dbSet;
+        _dbFactory = dbFactory;
+    }
 
-        protected DbSet<TEntity> DbSet => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
-
-        protected Repository(DbFactory dbFactory)
+    public async Task AddAsync(TEntity entity)
+    {
+        if (entity is IAuditEntity auditEntity)
         {
-            _dbFactory = dbFactory;
+            auditEntity.CreatedDate = DateTime.UtcNow;
         }
+        await DbSet.AddAsync(entity);
+    }
 
-        public async Task AddAsync(TEntity entity)
+    public async Task AddRangeAsync(IEnumerable<TEntity> entities)
+    {
+        await DbSet.AddRangeAsync(entities);
+    }
+
+    public void Remove(TEntity entity)
+    {
+        DbSet.Remove(entity);
+    }
+
+    public virtual void Update(TEntity entity)
+    {
+        if (entity is IAuditEntity auditEntity)
         {
-            if (entity is IAuditEntity auditEntity)
-            {
-                auditEntity.CreatedDate = DateTime.UtcNow;
-            }
-            await DbSet.AddAsync(entity);
+            auditEntity.UpdatedDate = DateTime.UtcNow;
         }
+        DbSet.Update(entity);
+    }
 
-        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
-        {
-            await DbSet.AddRangeAsync(entities);
-        }
+    public Task<TEntity?> GetAsync(TKey id, string? includeTables = null)
+    {
+        IQueryable<TEntity> query = DbSet;
 
-        public void Remove(TEntity entity)
-        {
-            DbSet.Remove(entity);
-        }
+        query = query.Where(ExpressionForGet(id));
 
-        public virtual void Update(TEntity entity)
-        {
-            if (entity is IAuditEntity auditEntity)
-            {
-                auditEntity.UpdatedDate = DateTime.UtcNow;
-            }
-            DbSet.Update(entity);
-        }
+        if (string.IsNullOrEmpty(includeTables)) return query.FirstOrDefaultAsync();
+        var includeProperties = includeTables.Split(',');
 
-        public Task<TEntity?> GetAsync(TKey id, string? includeTables = null)
-        {
-            IQueryable<TEntity> query = DbSet;
+        query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
+        return query.FirstOrDefaultAsync();
+    }
 
-            query = query.Where(ExpressionForGet(id));
+    public async Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification, string? includeTables = null,
+        string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue)
+    {
+        IQueryable<TEntity> query = DbSet;
 
-            if (string.IsNullOrEmpty(includeTables)) return query.FirstOrDefaultAsync();
-            var includeProperties = includeTables.Split(',');
+        query = Including(query, includeTables);
 
-            query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
-            return query.FirstOrDefaultAsync();
-        }
+        query = Filter(query, specification);
 
-        public async Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification, string? includeTables = null,
-            string? sorting = null, int pageIndex = 1, int pageSize = int.MaxValue)
-        {
-            IQueryable<TEntity> query = DbSet;
+        query = Sorting(query, sorting);
 
-            query = Including(query, includeTables);
+        query = query.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+        return await query.ToListAsync();
+    }
 
-            query = Filter(query, specification);
+    private static IQueryable<TEntity> Filter(IQueryable<TEntity> query, ISpecification<TEntity> specification)
+    {
+        query = query.Where(specification.ToExpression());
+        return query;
+    }
 
-            query = Sorting(query, sorting);
+    private static IQueryable<TEntity> Including(IQueryable<TEntity> query, string? includeTables = null)
+    {
+        if (string.IsNullOrEmpty(includeTables)) return query;
+        var includeProperties = includeTables.Split(',');
 
-            query = query.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
-            return await query.ToListAsync();
-        }
+        query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
+        return query;
+    }
 
-        private static IQueryable<TEntity> Filter(IQueryable<TEntity> query, ISpecification<TEntity> specification)
-        {
-            query = query.Where(specification.ToExpression());
-            return query;
-        }
+    private static IQueryable<TEntity> Sorting(IQueryable<TEntity> query, string? sorting)
+    {
+        return string.IsNullOrWhiteSpace(sorting) ? query : query.OrderBy(sorting);
+    }
 
-        private static IQueryable<TEntity> Including(IQueryable<TEntity> query, string? includeTables = null)
-        {
-            if (string.IsNullOrEmpty(includeTables)) return query;
-            var includeProperties = includeTables.Split(',');
+    public virtual Task<bool> AnyAsync(TKey id)
+    {
+        return DbSet.AnyAsync();
+    }
 
-            query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
-            return query;
-        }
+    public Task<bool> AnyAsync()
+    {
+        return DbSet.AnyAsync();
+    }
 
-        private static IQueryable<TEntity> Sorting(IQueryable<TEntity> query, string? sorting)
-        {
-            return string.IsNullOrWhiteSpace(sorting) ? query : query.OrderBy(sorting);
-        }
+    public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)
+    {
+        return DbSet.CountAsync(expression);
+    }
 
-        public virtual Task<bool> AnyAsync(TKey id)
-        {
-            return DbSet.AnyAsync();
-        }
-
-        public Task<bool> AnyAsync()
-        {
-            return DbSet.AnyAsync();
-        }
-
-        public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)
-        {
-            return DbSet.CountAsync(expression);
-        }
-
-        protected virtual Expression<Func<TEntity, bool>> ExpressionForGet(TKey id)
-        {
-            return p => true;
-        }
+    protected virtual Expression<Func<TEntity, bool>> ExpressionForGet(TKey id)
+    {
+        return p => true;
     }
 }

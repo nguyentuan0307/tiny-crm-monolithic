@@ -1,9 +1,8 @@
-﻿namespace TinyCRM.Application.Models.User
+﻿namespace TinyCRM.Application.Models.User;
+
+public class UserProfileDto
 {
-    public class UserProfileDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string Email { get; set; } = null!;
-    }
+    public Guid Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
 }

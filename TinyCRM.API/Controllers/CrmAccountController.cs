@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.Application.Interfaces.IServices;
 using TinyCRM.Application.Models.Account;
+using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
@@ -30,10 +30,10 @@ public class CrmAccountController : Controller
     }
 
     [HttpGet("{id:guid}")]
-    [ActionName(nameof(GetAccountByIdAsync))]
-    public async Task<IActionResult> GetAccountByIdAsync(Guid id)
+    [ActionName(nameof(GetAccountAsync))]
+    public async Task<IActionResult> GetAccountAsync(Guid id)
     {
-        var accountDto = await _accountService.GetAccountByIdAsync(id);
+        var accountDto = await _accountService.GetAccountAsync(id);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDto)}");
         return Ok(accountDto);
     }
@@ -44,7 +44,7 @@ public class CrmAccountController : Controller
     {
         var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDto)}");
-        return CreatedAtAction(nameof(GetAccountByIdAsync), new { id = accountNewDto.Id }, accountNewDto);
+        return CreatedAtAction(nameof(GetAccountAsync), new { id = accountNewDto.Id }, accountNewDto);
     }
 
     [HttpPut("{id:guid}")]

@@ -1,10 +1,9 @@
 ﻿using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
 
-namespace TinyCRM.Domain.Entities.ProductDeals
+namespace TinyCRM.Domain.Entities.ProductDeals;
+
+public interface IProductDealRepository : IRepository<ProductDeal, Guid>
 {
-    public interface IProductDealRepository : IRepository<ProductDeal, Guid>
-    {
-        Task<List<ProductDeal>> GetProductDealsByDealIdAsync(ProductDealQueryParameters productDealQueryParameters);
-    }
+    Task<List<ProductDeal>> GetProductDealsByDealIdAsync(ProductDealQueryParameters productDealQueryParameters);
 }

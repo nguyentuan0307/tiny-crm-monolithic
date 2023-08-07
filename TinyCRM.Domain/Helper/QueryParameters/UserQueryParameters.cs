@@ -1,6 +1,5 @@
-﻿namespace TinyCRM.Domain.Helper.QueryParameters
+﻿namespace TinyCRM.Domain.Helper.QueryParameters;
+
+public class UserQueryParameters : BaseQueryParameters
 {
-    public class UserQueryParameters : BaseQueryParameters
-    {
-    }
 }

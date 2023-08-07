@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TinyCRM.Application.Interfaces.IServices;
 using TinyCRM.Application.Models.User;
+using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Entities.Roles;
-using TinyCRM.Infrastructure.Identity;
-using TinyCRM.Infrastructure.Identity.Service;
-using TinyCRM.Infrastructure.Service;
 
 namespace TinyCRM.API.Controllers;
 
@@ -23,95 +20,59 @@ public class IamAccountController : Controller
 
     [HttpPost("sign-up")]
     [Authorize(Policy = Policy.AdminPolicy)]
-    public async Task<IActionResult> SignUp(SignUpDto signUpDto)
+    public async Task<IActionResult> SignUpAsync(SignUpDto signUpDto)
     {
         if (signUpDto.Password != signUpDto.ConfirmPassword)
             return BadRequest(new { Message = "Password and ConfirmPassword do not match" });
-
-        var result = await _userService.SignUpAsync(signUpDto);
-        if (result.Succeeded)
-        {
-            var response = new { name = signUpDto.Name, email = signUpDto.Email, phoneNumber = signUpDto.PhoneNumber };
-            return Ok(response);
-        }
-
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError("error", error.Description);
-        }
-        return BadRequest(ModelState);
+        var user = await _userService.SignUpAsync(signUpDto);
+        return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
     [HttpPost("sign-up-admin")]
     [Authorize(policy: Policy.SuperAdminPolicy)]
-    public async Task<IActionResult> SignUpAdmin(SignUpDto signUpDto)
+    public async Task<IActionResult> SignUpAdminAsync(SignUpDto signUpDto)
     {
         if (signUpDto.Password != signUpDto.ConfirmPassword)
             return BadRequest(new { Message = "Password and ConfirmPassword do not match" });
-
-        var result = await _userService.SignUpAdminAsync(signUpDto);
-        if (result.Succeeded)
-        {
-            var response = new { name = signUpDto.Name, email = signUpDto.Email, phoneNumber = signUpDto.PhoneNumber };
-            return Ok(response);
-        }
-
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError("error", error.Description);
-        }
-        return BadRequest(ModelState);
+        var user = await _userService.SignUpAsync(signUpDto);
+        return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
     [HttpPost("sign-in")]
     [AllowAnonymous]
-    public async Task<IActionResult> SignIn(SignInDto signInDto)
+    public async Task<IActionResult> SignInAsync(SignInDto signInDto)
     {
         var result = await _userService.SignInAsync(signInDto);
-        if (string.IsNullOrEmpty(result))
-        {
-            var errorResponse = new { Message = "Invalid email or password" };
-            return BadRequest(errorResponse);
-        }
 
-        var response = new { Token = result };
-        return Ok(response);
+        return Ok(new { Token = result });
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProfile(string id)
+    [ActionName(nameof(GetProfileAsync))]
+    public async Task<IActionResult> GetProfileAsync(string id)
     {
         var user = await _userService.GetProfileAsync(id);
         return Ok(user);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProfiles([FromQuery] ProfileUserSearchDto search)
+    public async Task<IActionResult> GetProfilesAsync([FromQuery] ProfileUserSearchDto search)
     {
-        var users = await _userService.GetProfileUsersAsync(search);
+        var users = await _userService.GetProfilesAsync(search);
         return Ok(users);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProfile(string id, [FromBody] ProfileUserUpdateDto updateDto)
+    public async Task<IActionResult> UpdateProfileAsync(string id, [FromBody] ProfileUserUpdateDto updateDto)
     {
         var userProfileDto = await _userService.UpdateProfileAsync(id, updateDto, User);
         return Ok(userProfileDto);
     }
 
     [HttpPut("{id}/change-password")]
-    public async Task<IActionResult> ChangePassword(string id, [FromBody] UserChangePasswordDto changePasswordDto)
+    public async Task<IActionResult> ChangePasswordAsync(string id, [FromBody] UserChangePasswordDto changePasswordDto)
     {
-        var result = await _userService.ChangePasswordAsync(id, changePasswordDto, User);
-        if (result.Succeeded)
-        {
-            return Ok("Changed password successfully.");
-        }
-
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError("error", error.Description);
-        }
-        return BadRequest(ModelState);
+        await _userService.ChangePasswordAsync(id, changePasswordDto, User);
+        return NoContent();
     }
 }

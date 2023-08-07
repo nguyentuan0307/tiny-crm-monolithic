@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TinyCRM.Application.Interfaces.IServices;
 using TinyCRM.Application.Models.Product;
+using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
@@ -30,10 +30,10 @@ public class ProductController : Controller
     }
 
     [HttpGet("{id:guid}")]
-    [ActionName(nameof(GetProductByIdAsync))]
-    public async Task<IActionResult> GetProductByIdAsync(Guid id)
+    [ActionName(nameof(GetProductAsync))]
+    public async Task<IActionResult> GetProductAsync(Guid id)
     {
-        var productDto = await _productService.GetProductByIdAsync(id);
+        var productDto = await _productService.GetProductAsync(id);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product: {JsonSerializer.Serialize(productDto)}");
         return Ok(productDto);
     }
@@ -44,7 +44,7 @@ public class ProductController : Controller
     {
         var productNewDto = await _productService.CreateProductAsync(productDto);
         _logger.LogInformation($"[{DateTime.Now}]Successfully Created Product: {JsonSerializer.Serialize(productNewDto)}");
-        return CreatedAtAction(nameof(GetProductByIdAsync), new { id = productNewDto.Id }, productNewDto);
+        return CreatedAtAction(nameof(GetProductAsync), new { id = productNewDto.Id }, productNewDto);
     }
 
     [HttpPut("{id:guid}")]

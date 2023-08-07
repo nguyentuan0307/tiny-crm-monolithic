@@ -1,7 +1,6 @@
-﻿namespace TinyCRM.Domain.Helper.QueryParameters
+﻿namespace TinyCRM.Domain.Helper.QueryParameters;
+
+public class ProductDealQueryParameters : BaseQueryParameters
 {
-    public class ProductDealQueryParameters : BaseQueryParameters
-    {
-        public Guid? DealId { get; set; }
-    }
+    public Guid? DealId { get; set; }
 }

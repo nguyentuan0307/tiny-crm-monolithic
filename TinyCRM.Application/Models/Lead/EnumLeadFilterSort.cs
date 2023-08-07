@@ -1,9 +1,8 @@
-﻿namespace TinyCRM.Application.Models.Lead
+﻿namespace TinyCRM.Application.Models.Lead;
+
+public enum EnumLeadFilterSort
 {
-    public enum EnumLeadFilterSort
-    {
-        Id,
-        Title,
-        AccountName
-    }
+    Id,
+    Title,
+    AccountName
 }

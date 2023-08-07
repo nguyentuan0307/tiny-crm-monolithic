@@ -1,8 +1,7 @@
-﻿namespace TinyCRM.Application.Models.Deal
+﻿namespace TinyCRM.Application.Models.Deal;
+
+public enum EnumDealFilterSort
 {
-    public enum EnumDealFilterSort
-    {
-        Id,
-        Title,
-    }
+    Id,
+    Title,
 }

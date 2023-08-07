@@ -1,11 +1,10 @@
-﻿namespace TinyCRM.Application.Models.Contact
+﻿namespace TinyCRM.Application.Models.Contact;
+
+public enum EnumContactFilterSort
 {
-    public enum EnumContactFilterSort
-    {
-        Id,
-        Name,
-        Email,
-        Phone,
-        AccountName
-    }
+    Id,
+    Name,
+    Email,
+    Phone,
+    AccountName
 }
