@@ -85,4 +85,22 @@ public class IamAccountController : Controller
         Log.Information($"[{DateTime.Now}]Successfully Changed Password User: {id}");
         return NoContent();
     }
+
+    [HttpPut("{id}/update-role")]
+    [Authorize(Policy = TinyCrmPermissions.Users.EditRole)]
+    public async Task<IActionResult> UpdateRoleAsync(string id, [FromBody] string[] roleIds)
+    {
+        await _userService.UpdateRoleAsync(id, roleIds);
+        Log.Information($"[{DateTime.Now}]Successfully Updated Role User: {id}");
+        return NoContent();
+    }
+
+    [HttpPut("{id}/delete")]
+    [Authorize(Policy = TinyCrmPermissions.Users.Delete)]
+    public async Task<IActionResult> DeleteAsync(string id)
+    {
+        await _userService.DeleteAsync(id);
+        Log.Information($"[{DateTime.Now}]Successfully Deleted User: {id}");
+        return NoContent();
+    }
 }

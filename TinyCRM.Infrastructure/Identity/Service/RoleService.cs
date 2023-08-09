@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TinyCRM.Application.Helper.Common;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
+using TinyCRM.Domain.Const;
 using TinyCRM.Domain.Exceptions;
 using TinyCRM.Infrastructure.Identity.Role;
 
@@ -36,18 +37,23 @@ public class RoleService : IRoleService
 
     public async Task<RoleDto> UpdateAsync(Guid id, RoleUpdateDto role)
     {
+        var appRole = await FindRoleAsync(id);
+
+        if (appRole.Name == ConstRole.SuperAdmin)
+        {
+            throw new InvalidUpdateException("Cannot update super admin role");
+        }
+
         role.Permissions = role.Permissions.Distinct().ToList();
         var invalidPermissions = Utilities.ListInvalidPermissions(role.Permissions);
         if (invalidPermissions.Any())
         {
             throw new InvalidUpdateException($"Invalid permissions[{string.Join(", ", invalidPermissions)}]");
         }
-        var appRole = await FindRoleAsync(id);
 
-        appRole.Id = id.ToString();
         _mapper.Map(role, appRole);
-
         var result = await _roleManager.UpdateAsync(appRole);
+
         if (!result.Succeeded)
             throw new InvalidUpdateException(result.Errors.First().Description);
 

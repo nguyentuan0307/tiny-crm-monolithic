@@ -116,11 +116,49 @@ public class UserService : IUserService
     public async Task DeleteAsync(string id)
     {
         var appUser = await _userManager.FindByIdAsync(id)
-                      ?? throw new Exception($"User with id [{id}] not found");
+                      ?? throw new EntityNotFoundException($"User with id [{id}] not found");
         var deleteResult = await _userManager.DeleteAsync(appUser);
         if (!deleteResult.Succeeded)
         {
             throw new InvalidUpdateException(deleteResult.Errors.First().Description);
+        }
+    }
+
+    public async Task UpdateRoleAsync(string id, string[] roleIds)
+    {
+        var appUser = await _userManager.FindByIdAsync(id)
+                      ?? throw new EntityNotFoundException($"User with id [{id}] not found");
+        _unitOfWork.BeginTransaction();
+        await RemoveUserFromRolesAsync(appUser);
+        try
+        {
+            foreach (var roleId in roleIds)
+            {
+                var appRole = await _roleManager.FindByIdAsync(roleId)
+                              ?? throw new EntityNotFoundException($"Role with id [{id}] not found");
+                var updateRoleResult = await _userManager.AddToRoleAsync(appUser, appRole.Name!);
+                if (!updateRoleResult.Succeeded)
+                {
+                    throw new InvalidUpdateException(updateRoleResult.Errors.First().Description);
+                }
+            }
+
+            _unitOfWork.Commit();
+        }
+        catch
+        {
+            _unitOfWork.Rollback();
+            throw new InvalidUpdateException("Adding role to user failed.");
+        }
+    }
+
+    private async Task RemoveUserFromRolesAsync(ApplicationUser user)
+    {
+        var oldRoles = await _userManager.GetRolesAsync(user);
+        var removeRoleResult = await _userManager.RemoveFromRolesAsync(user, oldRoles);
+        if (!removeRoleResult.Succeeded)
+        {
+            throw new InvalidUpdateException(removeRoleResult.Errors.First().Description);
         }
     }
 
