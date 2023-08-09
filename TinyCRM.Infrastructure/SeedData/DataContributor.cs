@@ -2,18 +2,19 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using TinyCRM.Domain.Const;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
-using TinyCRM.Domain.Entities.Roles;
 using TinyCRM.Domain.Enums;
 using TinyCRM.Domain.Interfaces;
+using TinyCRM.Infrastructure.Identity.Role;
 using TinyCRM.Infrastructure.Identity.Users;
 
-namespace TinyCRM.Infrastructure;
+namespace TinyCRM.Infrastructure.SeedData;
 
 public class DataContributor
 {
@@ -23,7 +24,7 @@ public class DataContributor
     private readonly ILeadRepository _leadRepository;
     private readonly IDealRepository _dealRepository;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DataContributor> _logger;
 
@@ -38,7 +39,7 @@ public class DataContributor
         ILeadRepository leadRepository,
         IDealRepository dealRepository,
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager,
+        RoleManager<ApplicationRole> roleManager,
         IUnitOfWork unitOfWork,
         ILogger<DataContributor> logger)
     {
@@ -80,9 +81,9 @@ public class DataContributor
 
             if (!_roleManager.Roles.Any() && !_userManager.Users.Any())
             {
-                await _roleManager.CreateAsync(new IdentityRole(Role.SuperAdmin));
-                await _roleManager.CreateAsync(new IdentityRole(Role.Admin));
-                await _roleManager.CreateAsync(new IdentityRole(Role.User));
+                await _roleManager.CreateAsync(new ApplicationRole(ConstRole.SuperAdmin));
+                await _roleManager.CreateAsync(new ApplicationRole(ConstRole.Admin));
+                await _roleManager.CreateAsync(new ApplicationRole(ConstRole.User));
 
                 var user = new ApplicationUser()
                 {
@@ -92,7 +93,7 @@ public class DataContributor
                 };
 
                 await _userManager.CreateAsync(user, "@SuperAdmin123");
-                await _userManager.AddToRoleAsync(user, Role.SuperAdmin);
+                await _userManager.AddToRoleAsync(user, ConstRole.SuperAdmin);
                 var faker = new Faker<ApplicationUser>()
                     .RuleFor(u => u.UserName, f => f.Internet.UserName())
                     .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.UserName))
@@ -103,7 +104,7 @@ public class DataContributor
                 foreach (var applicationUser in users)
                 {
                     await _userManager.CreateAsync(applicationUser, "@User123");
-                    await _userManager.AddToRoleAsync(applicationUser, Role.User);
+                    await _userManager.AddToRoleAsync(applicationUser, ConstRole.User);
                 }
             }
         }

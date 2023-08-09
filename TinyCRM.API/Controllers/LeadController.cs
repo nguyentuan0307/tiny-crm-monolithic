@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using Serilog;
+using System.Text.Json;
 using TinyCRM.Application.Models.Lead;
+using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/leads")]
 public class LeadController : Controller
@@ -21,6 +20,7 @@ public class LeadController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Read)]
     public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDto search)
     {
         var leadDtOs = await _leadService.GetLeadsAsync(search);
@@ -30,6 +30,7 @@ public class LeadController : Controller
 
     [HttpGet("{id:guid}")]
     [ActionName(nameof(GetLeadAsync))]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Read)]
     public async Task<IActionResult> GetLeadAsync(Guid id)
     {
         var leadDto = await _leadService.GetLeadAsync(id);
@@ -38,7 +39,7 @@ public class LeadController : Controller
     }
 
     [HttpPost]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Create)]
     public async Task<IActionResult> CreateLeadAsync([FromBody] LeadCreateDto leadDto)
     {
         var leadCreateDto = await _leadService.CreateLeadAsync(leadDto);
@@ -47,7 +48,7 @@ public class LeadController : Controller
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Edit)]
     public async Task<IActionResult> UpdateLeadAsync(Guid id, [FromBody] LeadUpdateDto leadDto)
     {
         var leadUpdateDto = await _leadService.UpdateLeadAsync(id, leadDto);
@@ -56,7 +57,7 @@ public class LeadController : Controller
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Delete)]
     public async Task<IActionResult> DeleteLeadAsync(Guid id)
     {
         await _leadService.DeleteLeadAsync(id);
@@ -65,7 +66,7 @@ public class LeadController : Controller
     }
 
     [HttpPost("{id:guid}/qualify")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Edit)]
     public async Task<IActionResult> QualifyLeadAsync(Guid id)
     {
         var dealDto = await _leadService.QualifyLeadAsync(id);
@@ -74,7 +75,7 @@ public class LeadController : Controller
     }
 
     [HttpPost("{id:guid}/disqualify")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Edit)]
     public async Task<IActionResult> DisqualifyLeadAsync(Guid id, [FromBody] DisqualifyDto disqualifyDto)
     {
         await _leadService.DisqualifyLeadAsync(id, disqualifyDto);
@@ -83,6 +84,7 @@ public class LeadController : Controller
     }
 
     [HttpGet("statistic")]
+    [Authorize(Policy = TinyCrmPermissions.Leads.Read)]
     public async Task<IActionResult> GetStatisticLeadAsync()
     {
         var leadStatisticDto = await _leadService.GetStatisticLeadAsync();
@@ -91,7 +93,8 @@ public class LeadController : Controller
     }
 
     [HttpGet("account/{accountId:guid}")]
-    public async Task<IActionResult> GetLeadsByAsync(Guid accountId, [FromQuery] LeadSearchDto search)
+    [Authorize(Policy = TinyCrmPermissions.Leads.Read)]
+    public async Task<IActionResult> GetLeadsAsync(Guid accountId, [FromQuery] LeadSearchDto search)
     {
         var leadDtOs = await _leadService.GetLeadsAsync(accountId, search);
         Log.Information($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");

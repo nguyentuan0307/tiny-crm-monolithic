@@ -8,9 +8,9 @@ public interface IProductDealService
 
     public Task DeleteProductDealAsync(Guid dealId, Guid productDealId);
 
-    public Task<ProductDealDto> GetProductDealByIdAsync(Guid dealId, Guid productDealId);
+    public Task<ProductDealDto> GetProductDealAsync(Guid dealId, Guid productDealId);
 
-    public Task<List<ProductDealDto>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDto search);
+    public Task<List<ProductDealDto>> GetProductDealsAsync(Guid dealId, ProductDealSearchDto search);
 
     public Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDto productDealDto);
 }

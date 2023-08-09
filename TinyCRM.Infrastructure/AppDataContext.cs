@@ -6,11 +6,12 @@ using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
+using TinyCRM.Infrastructure.Identity.Role;
 using TinyCRM.Infrastructure.Identity.Users;
 
 namespace TinyCRM.Infrastructure;
 
-public class AppDataContext : IdentityDbContext<ApplicationUser>
+public class AppDataContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
     public DbSet<Product> Products { get; set; } = null!;
     public DbSet<Account> Accounts { get; set; } = null!;

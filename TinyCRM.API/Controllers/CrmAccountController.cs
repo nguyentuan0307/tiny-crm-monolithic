@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using Serilog;
+using System.Text.Json;
 using TinyCRM.Application.Models.Account;
+using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/crm-accounts")]
 public class CrmAccountController : Controller
@@ -21,6 +20,7 @@ public class CrmAccountController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = TinyCrmPermissions.Accounts.Read)]
     public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDto search)
     {
         var accountDtOs = await _accountService.GetAccountsAsync(search);
@@ -30,6 +30,7 @@ public class CrmAccountController : Controller
 
     [HttpGet("{id:guid}")]
     [ActionName(nameof(GetAccountAsync))]
+    [Authorize(Policy = TinyCrmPermissions.Accounts.Read)]
     public async Task<IActionResult> GetAccountAsync(Guid id)
     {
         var accountDto = await _accountService.GetAccountAsync(id);
@@ -38,7 +39,7 @@ public class CrmAccountController : Controller
     }
 
     [HttpPost]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Accounts.Create)]
     public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDto accountDto)
     {
         var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
@@ -47,7 +48,7 @@ public class CrmAccountController : Controller
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Accounts.Edit)]
     public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDto accountDto)
     {
         var accountUpdateDto = await _accountService.UpdateAccountAsync(id, accountDto);
@@ -56,7 +57,7 @@ public class CrmAccountController : Controller
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Accounts.Delete)]
     public async Task<IActionResult> DeleteAccountAsync(Guid id)
     {
         await _accountService.DeleteAccountAsync(id);

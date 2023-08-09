@@ -1,9 +1,10 @@
 using Serilog;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using TinyCRM.API.Extensions;
 using TinyCRM.API.Middleware;
 using TinyCRM.Application.Helper.AutoMapper;
-using TinyCRM.Infrastructure.Identity;
+using TinyCRM.Infrastructure.Helper.AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,9 +29,14 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(TinyCrmAutoMapper)));
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(UserAutoMapper)));
+builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(InfraAutoMapper)));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddSwagger();
 
 var app = builder.Build();

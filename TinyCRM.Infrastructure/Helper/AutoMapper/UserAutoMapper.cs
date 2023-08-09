@@ -1,10 +1,9 @@
-﻿using TinyCRM.Application.Helper.AutoMapper;
-using TinyCRM.Application.Models.User;
+﻿using TinyCRM.Application.Models.User;
 using TinyCRM.Infrastructure.Identity.Users;
 
-namespace TinyCRM.Infrastructure.Identity;
+namespace TinyCRM.Infrastructure.Helper.AutoMapper;
 
-public class UserAutoMapper : TinyCrmAutoMapper
+public class UserAutoMapper : InfraAutoMapper
 {
     public UserAutoMapper()
     {

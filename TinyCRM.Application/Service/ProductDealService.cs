@@ -96,7 +96,7 @@ public class ProductDealService : IProductDealService
                throw new EntityNotFoundException($"ProductDeal with Id[{productDealId}] is not found");
     }
 
-    public async Task<ProductDealDto> GetProductDealByIdAsync(Guid dealId, Guid productDealId)
+    public async Task<ProductDealDto> GetProductDealAsync(Guid dealId, Guid productDealId)
     {
         const string includeTables = $"{nameof(ProductDeal.Product)}";
         var productDeal = await FindProductDealAsync(productDealId, includeTables);
@@ -106,7 +106,7 @@ public class ProductDealService : IProductDealService
         return _mapper.Map<ProductDealDto>(productDeal);
     }
 
-    public async Task<List<ProductDealDto>> GetProductDealsByDealIdAsync(Guid dealId, ProductDealSearchDto search)
+    public async Task<List<ProductDealDto>> GetProductDealsAsync(Guid dealId, ProductDealSearchDto search)
     {
         const string includeTables = "Product";
         var productDealsQueryParameter = new ProductDealQueryParameters

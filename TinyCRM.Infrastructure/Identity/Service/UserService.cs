@@ -1,18 +1,19 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using TinyCRM.Application.Models;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
+using TinyCRM.Domain.Const;
 using TinyCRM.Domain.Exceptions;
 using TinyCRM.Domain.Helper.QueryParameters;
 using TinyCRM.Domain.Interfaces;
-using TinyCRM.Infrastructure.Identity.Repository;
+using TinyCRM.Infrastructure.Identity.Repository.User;
+using TinyCRM.Infrastructure.Identity.Role;
 using TinyCRM.Infrastructure.Identity.Users;
 
 namespace TinyCRM.Infrastructure.Identity.Service;
@@ -21,14 +22,14 @@ public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IMapper _mapper;
     private readonly JwtSettings _jwtSettings;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-        IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<IdentityRole> roleManager,
+        IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<ApplicationRole> roleManager,
         IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
@@ -43,9 +44,9 @@ public class UserService : IUserService
     public async Task<UserProfileDto> SignUpAsync(SignUpDto signUpDto)
     {
         _unitOfWork.BeginTransaction();
-        if (!await _roleManager.RoleExistsAsync(Role.User))
+        if (!await _roleManager.RoleExistsAsync(ConstRole.User))
         {
-            await _roleManager.CreateAsync(new IdentityRole(Role.User));
+            await _roleManager.CreateAsync(new ApplicationRole(ConstRole.User));
         }
         var user = _mapper.Map<ApplicationUser>(signUpDto);
 
@@ -58,7 +59,7 @@ public class UserService : IUserService
 
         try
         {
-            await _userManager.AddToRoleAsync(user, Role.User);
+            await _userManager.AddToRoleAsync(user, ConstRole.User);
             _unitOfWork.Commit();
         }
         catch
@@ -71,9 +72,9 @@ public class UserService : IUserService
 
     public async Task<UserProfileDto> SignUpAdminAsync(SignUpDto signUpDto)
     {
-        if (!await _roleManager.RoleExistsAsync(Role.Admin))
+        if (!await _roleManager.RoleExistsAsync(ConstRole.Admin))
         {
-            await _roleManager.CreateAsync(new IdentityRole(Role.Admin));
+            await _roleManager.CreateAsync(new ApplicationRole(ConstRole.Admin));
         }
 
         var user = _mapper.Map<ApplicationUser>(signUpDto);
@@ -81,7 +82,7 @@ public class UserService : IUserService
         var result = await _userManager.CreateAsync(user, signUpDto.Password);
         if (result.Succeeded)
         {
-            await _userManager.AddToRoleAsync(user, Role.Admin);
+            await _userManager.AddToRoleAsync(user, ConstRole.Admin);
         }
         return _mapper.Map<UserProfileDto>(user);
     }
@@ -129,7 +130,7 @@ public class UserService : IUserService
 
         var loggedInUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-        var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: Role.Admin or Role.SuperAdmin });
+        var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: ConstRole.Admin or ConstRole.SuperAdmin });
 
         var isSelf = loggedInUserId == userIdToUpdate;
 
@@ -149,7 +150,7 @@ public class UserService : IUserService
 
         var roles = await _userManager.GetRolesAsync(user);
 
-        var token = GenerateToken(user.Id, user.Email!, roles);
+        var token = await GenerateToken(user.Id, user.Email!, roles);
         return token;
     }
 
@@ -175,7 +176,15 @@ public class UserService : IUserService
         return _mapper.Map<List<UserProfileDto>>(users);
     }
 
-    private string GenerateToken(string id, string email, IEnumerable<string> roles)
+    private async Task<string> GenerateToken(string id, string email, IList<string> roles)
+    {
+        var authClaims = await GenerateAuthClaims(id, email, roles);
+        var authKey = GenerateAuthKey();
+        var token = GenerateJwtToken(authClaims, authKey);
+        return WriteJwtToken(token);
+    }
+
+    private async Task<List<Claim>> GenerateAuthClaims(string id, string email, IList<string> roles)
     {
         var authClaims = new List<Claim>
         {
@@ -184,14 +193,42 @@ public class UserService : IUserService
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
         authClaims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-        var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-        var token = new JwtSecurityToken(
+
+        foreach (var roleName in roles)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null) continue;
+            var permissions = await GetPermissionsForRoleAsync(role);
+            authClaims.AddRange(permissions.Select(permission => new Claim("Permission", permission)));
+        }
+        return authClaims;
+    }
+
+    private async Task<IEnumerable<string>> GetPermissionsForRoleAsync(ApplicationRole role)
+    {
+        var claims = await _roleManager.GetClaimsAsync(role);
+
+        return (from claim in claims where claim.Type == "Permission" select claim.Value).ToList();
+    }
+
+    private SymmetricSecurityKey GenerateAuthKey()
+    {
+        return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+    }
+
+    private JwtSecurityToken GenerateJwtToken(List<Claim> authClaims, SecurityKey authKey)
+    {
+        return new JwtSecurityToken(
             issuer: _jwtSettings.ValidIssuer,
             audience: _jwtSettings.ValidAudience,
             expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryInMinutes),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256)
         );
+    }
+
+    private static string WriteJwtToken(SecurityToken token)
+    {
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

@@ -1,14 +1,13 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using System.Text.Json;
+using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/iam-accounts")]
 public class IamAccountController : Controller
@@ -21,7 +20,7 @@ public class IamAccountController : Controller
     }
 
     [HttpPost("sign-up")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Users.Create)]
     public async Task<IActionResult> SignUpAsync(SignUpDto signUpDto)
     {
         if (signUpDto.Password != signUpDto.ConfirmPassword)
@@ -32,18 +31,17 @@ public class IamAccountController : Controller
     }
 
     [HttpPost("sign-up-admin")]
-    [Authorize(policy: Policy.SuperAdminPolicy)]
+    [Authorize(policy: TinyCrmPermissions.Users.CreateAdmin)]
     public async Task<IActionResult> SignUpAdminAsync(SignUpDto signUpDto)
     {
         if (signUpDto.Password != signUpDto.ConfirmPassword)
             return BadRequest(new { Message = "Password and ConfirmPassword do not match" });
-        var user = await _userService.SignUpAsync(signUpDto);
+        var user = await _userService.SignUpAdminAsync(signUpDto);
         Log.Information($"[{DateTime.Now}]Successfully Created User Admin: {JsonSerializer.Serialize(user)}");
         return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
     [HttpPost("sign-in")]
-    [AllowAnonymous]
     public async Task<IActionResult> SignInAsync(SignInDto signInDto)
     {
         var result = await _userService.SignInAsync(signInDto);
@@ -53,6 +51,7 @@ public class IamAccountController : Controller
 
     [HttpGet("{id}")]
     [ActionName(nameof(GetProfileAsync))]
+    [Authorize(Policy = TinyCrmPermissions.Users.Read)]
     public async Task<IActionResult> GetProfileAsync(string id)
     {
         var user = await _userService.GetProfileAsync(id);
@@ -61,6 +60,7 @@ public class IamAccountController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = TinyCrmPermissions.Users.Read)]
     public async Task<IActionResult> GetProfilesAsync([FromQuery] ProfileUserSearchDto search)
     {
         var users = await _userService.GetProfilesAsync(search);
@@ -69,6 +69,7 @@ public class IamAccountController : Controller
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = TinyCrmPermissions.Users.Edit)]
     public async Task<IActionResult> UpdateProfileAsync(string id, [FromBody] ProfileUserUpdateDto updateDto)
     {
         var userProfileDto = await _userService.UpdateProfileAsync(id, updateDto, User);
@@ -77,6 +78,7 @@ public class IamAccountController : Controller
     }
 
     [HttpPut("{id}/change-password")]
+    [Authorize]
     public async Task<IActionResult> ChangePasswordAsync(string id, [FromBody] UserChangePasswordDto changePasswordDto)
     {
         await _userService.ChangePasswordAsync(id, changePasswordDto, User);

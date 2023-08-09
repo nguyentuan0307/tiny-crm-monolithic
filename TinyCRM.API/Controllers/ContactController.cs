@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using Serilog;
+using System.Text.Json;
 using TinyCRM.Application.Models.Contact;
+using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/contacts")]
 public class ContactController : Controller
@@ -21,6 +20,7 @@ public class ContactController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = TinyCrmPermissions.Contacts.Read)]
     public async Task<IActionResult> GetContactsAsync([FromQuery] ContactSearchDto search)
     {
         var contactDtOs = await _contactService.GetContactsAsync(search);
@@ -30,6 +30,7 @@ public class ContactController : Controller
 
     [HttpGet("{id:guid}")]
     [ActionName(nameof(GetContactAsync))]
+    [Authorize(Policy = TinyCrmPermissions.Contacts.Read)]
     public async Task<IActionResult> GetContactAsync(Guid id)
     {
         var contactDto = await _contactService.GetContactAsync(id);
@@ -38,7 +39,7 @@ public class ContactController : Controller
     }
 
     [HttpPost]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Contacts.Create)]
     public async Task<IActionResult> CreateContactAsync([FromBody] ContactCreateDto contactDto)
     {
         var contactNewDto = await _contactService.CreateContactAsync(contactDto);
@@ -47,7 +48,7 @@ public class ContactController : Controller
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Contacts.Edit)]
     public async Task<IActionResult> UpdateContactAsync(Guid id, [FromBody] ContactUpdateDto contactDto)
     {
         var contactUpdateDto = await _contactService.UpdateContactAsync(id, contactDto);
@@ -56,7 +57,7 @@ public class ContactController : Controller
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Contacts.Delete)]
     public async Task<IActionResult> DeleteContactAsync(Guid id)
     {
         await _contactService.DeleteContactAsync(id);
@@ -65,6 +66,7 @@ public class ContactController : Controller
     }
 
     [HttpGet("account/{accountId:guid}")]
+    [Authorize(Policy = TinyCrmPermissions.Contacts.Read)]
     public async Task<IActionResult> GetContactsAsync(Guid accountId, [FromQuery] ContactSearchDto search)
     {
         var contactDtOs = await _contactService.GetContactsAsync(accountId, search);

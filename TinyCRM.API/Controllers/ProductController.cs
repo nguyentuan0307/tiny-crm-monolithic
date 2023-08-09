@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using Serilog;
+using System.Text.Json;
+using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.Product;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/products")]
 public class ProductController : Controller
@@ -21,6 +20,7 @@ public class ProductController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = TinyCrmPermissions.Products.Read)]
     public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDto search)
     {
         var productDtOs = await _productService.GetProductsAsync(search);
@@ -30,6 +30,7 @@ public class ProductController : Controller
 
     [HttpGet("{id:guid}")]
     [ActionName(nameof(GetProductAsync))]
+    [Authorize(Policy = TinyCrmPermissions.Products.Read)]
     public async Task<IActionResult> GetProductAsync(Guid id)
     {
         var productDto = await _productService.GetProductAsync(id);
@@ -38,7 +39,7 @@ public class ProductController : Controller
     }
 
     [HttpPost]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Products.Create)]
     public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDto productDto)
     {
         var productNewDto = await _productService.CreateProductAsync(productDto);
@@ -47,7 +48,7 @@ public class ProductController : Controller
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Products.Edit)]
     public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDto productDto)
     {
         var productUpdateDto = await _productService.UpdateProductAsync(id, productDto);
@@ -56,7 +57,7 @@ public class ProductController : Controller
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Products.Delete)]
     public async Task<IActionResult> DeleteProductAsync(Guid id)
     {
         await _productService.DeleteProductAsync(id);

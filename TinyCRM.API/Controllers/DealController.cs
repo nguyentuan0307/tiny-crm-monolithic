@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using Serilog;
+using System.Text.Json;
 using TinyCRM.Application.Models.Deal;
+using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.ProductDeal;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Domain.Entities.Roles;
 
 namespace TinyCRM.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/deals")]
 public class DealController : Controller
@@ -24,6 +23,7 @@ public class DealController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = TinyCrmPermissions.Deals.Read)]
     public async Task<IActionResult> GetDealsAsync([FromQuery] DealSearchDto search)
     {
         var dealDto = await _dealService.GetDealsAsync(search);
@@ -33,6 +33,7 @@ public class DealController : Controller
 
     [HttpGet("{id:guid}")]
     [ActionName(nameof(GetDealAsync))]
+    [Authorize(Policy = TinyCrmPermissions.Deals.Read)]
     public async Task<IActionResult> GetDealAsync(Guid id)
     {
         var dealDto = await _dealService.GetDealAsync(id);
@@ -41,7 +42,7 @@ public class DealController : Controller
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Deals.Edit)]
     public async Task<IActionResult> UpdateDealAsync(Guid id, [FromBody] DealUpdateDto dealDto)
     {
         var dealUpdateDto = await _dealService.UpdateDealAsync(id, dealDto);
@@ -50,7 +51,7 @@ public class DealController : Controller
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.Deals.Delete)]
     public async Task<IActionResult> DeleteDealAsync(Guid id)
     {
         await _dealService.DeleteDealAsync(id);
@@ -59,33 +60,35 @@ public class DealController : Controller
     }
 
     [HttpGet("{dealId:guid}/product-deals")]
-    public async Task<IActionResult> GetProductDealsByDealIdAsync(Guid dealId, [FromQuery] ProductDealSearchDto search)
+    [Authorize(Policy = TinyCrmPermissions.ProductDeals.Read)]
+    public async Task<IActionResult> GetProductDealsAsync(Guid dealId, [FromQuery] ProductDealSearchDto search)
     {
-        var productDealDto = await _productDealService.GetProductDealsByDealIdAsync(dealId, search);
+        var productDealDto = await _productDealService.GetProductDealsAsync(dealId, search);
         Log.Information($"[{DateTime.Now}]Successfully Retrieved Product Deals: {JsonSerializer.Serialize(productDealDto)}");
         return Ok(productDealDto);
     }
 
     [HttpGet("{dealId:guid}/product-deals/{productDealId}")]
-    [ActionName(nameof(GetProductDealByIdAsync))]
-    public async Task<IActionResult> GetProductDealByIdAsync(Guid dealId, Guid productDealId)
+    [ActionName(nameof(GetProductDealAsync))]
+    [Authorize(Policy = TinyCrmPermissions.ProductDeals.Read)]
+    public async Task<IActionResult> GetProductDealAsync(Guid dealId, Guid productDealId)
     {
-        var productDealDto = await _productDealService.GetProductDealByIdAsync(dealId, productDealId);
+        var productDealDto = await _productDealService.GetProductDealAsync(dealId, productDealId);
         Log.Information($"[{DateTime.Now}]Successfully Retrieved Product Deal: {JsonSerializer.Serialize(productDealDto)}");
         return Ok(productDealDto);
     }
 
     [HttpPost("{dealId:guid}/product-deals")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.ProductDeals.Create)]
     public async Task<IActionResult> CreateProductDealAsync(Guid dealId, [FromBody] ProductDealCreateDto productDealDto)
     {
         var productDealCreateDto = await _productDealService.CreateProductDealAsync(dealId, productDealDto);
         Log.Information($"[{DateTime.Now}]Successfully Created Product Deal: {JsonSerializer.Serialize(productDealCreateDto)}");
-        return CreatedAtAction(nameof(GetProductDealByIdAsync), new { id = productDealCreateDto.DealId, productDealId = productDealCreateDto.Id }, productDealCreateDto);
+        return CreatedAtAction(nameof(GetProductDealAsync), new { id = productDealCreateDto.DealId, productDealId = productDealCreateDto.Id }, productDealCreateDto);
     }
 
     [HttpPut("{dealId:guid}/product-deals/{productDealId}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.ProductDeals.Edit)]
     public async Task<IActionResult> UpdateProductDealAsync(Guid dealId, Guid productDealId, [FromBody] ProductDealUpdateDto productDealDto)
     {
         var productDealUpdateDto = await _productDealService.UpdateProductDealAsync(dealId, productDealId, productDealDto);
@@ -94,7 +97,7 @@ public class DealController : Controller
     }
 
     [HttpDelete("{dealId:guid}/product-deals/{productDealId}")]
-    [Authorize(Policy = Policy.AdminPolicy)]
+    [Authorize(Policy = TinyCrmPermissions.ProductDeals.Delete)]
     public async Task<IActionResult> DeleteProductDealAsync(Guid dealId, Guid productDealId)
     {
         await _productDealService.DeleteProductDealAsync(dealId, productDealId);
@@ -103,6 +106,7 @@ public class DealController : Controller
     }
 
     [HttpGet("statistic")]
+    [Authorize(Policy = TinyCrmPermissions.Deals.Read)]
     public async Task<IActionResult> GetStatisticDealAsync()
     {
         var dealStatisticDto = await _dealService.GetStatisticDealAsync();
@@ -111,6 +115,7 @@ public class DealController : Controller
     }
 
     [HttpGet("account/{accountId:guid}")]
+    [Authorize(Policy = TinyCrmPermissions.Deals.Read)]
     public async Task<IActionResult> GetDealsAsync(Guid accountId, [FromQuery] DealSearchDto search)
     {
         var dealDtOs = await _dealService.GetDealsAsync(accountId, search);

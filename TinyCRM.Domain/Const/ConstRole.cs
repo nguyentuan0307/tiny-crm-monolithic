@@ -1,6 +1,6 @@
-﻿namespace TinyCRM.Domain.Entities.Roles;
+﻿namespace TinyCRM.Domain.Const;
 
-public static class Role
+public static class ConstRole
 {
     public const string Admin = "Admin";
     public const string User = "User";

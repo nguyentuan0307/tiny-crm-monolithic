@@ -20,8 +20,4 @@
 		<ProjectReference Include="..\TinyCRM.Infrastructure\TinyCRM.Infrastructure.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="logs\" />
-	</ItemGroup>
-
 </Project>

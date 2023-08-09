@@ -2,7 +2,7 @@
 using TinyCRM.Domain.Helper.Specification.Base;
 using TinyCRM.Infrastructure.Identity.Users;
 
-namespace TinyCRM.Infrastructure.Identity;
+namespace TinyCRM.Infrastructure.Identity.Specification;
 
 public class UsersByFilterSpecification : Specification<ApplicationUser>, ISpecification<ApplicationUser>
 {

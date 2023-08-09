@@ -1,25 +1,29 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using TinyCRM.API.Authorization;
 using TinyCRM.Application.Models;
 using TinyCRM.Application.Service;
 using TinyCRM.Application.Service.IServices;
+using TinyCRM.Domain.Const;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
 using TinyCRM.Domain.Entities.Deals;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Entities.ProductDeals;
 using TinyCRM.Domain.Entities.Products;
-using TinyCRM.Domain.Entities.Roles;
 using TinyCRM.Domain.Interfaces;
 using TinyCRM.Infrastructure;
-using TinyCRM.Infrastructure.Identity.Repository;
+using TinyCRM.Infrastructure.Identity.Repository.User;
+using TinyCRM.Infrastructure.Identity.Role;
 using TinyCRM.Infrastructure.Identity.Service;
 using TinyCRM.Infrastructure.Identity.Users;
 using TinyCRM.Infrastructure.Repositories;
+using TinyCRM.Infrastructure.SeedData;
 
 namespace TinyCRM.API.Extensions;
 
@@ -33,6 +37,9 @@ public static class ServiceCollectionExtensions
             }
         );
 
+        services.AddScoped<DataContributor>();
+        services.AddScoped<PermissionContributor>();
+
         services.AddScoped<Func<AppDataContext>>((provider) => () => provider.GetService<AppDataContext>()
                                                                      ?? throw new InvalidOperationException());
         services.AddScoped<DbFactory>();
@@ -43,7 +50,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<DataContributor>();
         return services.AddScoped<IAccountRepository, AccountRepository>()
             .AddScoped<IContactRepository, ContactRepository>()
             .AddScoped<IProductRepository, ProductRepository>()
@@ -61,7 +67,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<ILeadService, LeadService>()
             .AddScoped<IDealService, DealService>()
             .AddScoped<IProductDealService, ProductDealService>()
-            .AddScoped<IUserService, UserService>();
+            .AddScoped<IUserService, UserService>()
+            .AddScoped<IRoleService, RoleService>();
     }
 
     public static IServiceCollection AddSwagger(this IServiceCollection services)
@@ -105,7 +112,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 // Password settings.
                 options.Password.RequireDigit = true;
@@ -152,24 +159,19 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuthorizations(this IServiceCollection services)
     {
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(Policy.SuperAdminPolicy,
-                policy => policy.RequireRole(Role.SuperAdmin));
-            options.AddPolicy(Policy.AdminPolicy,
-                policy => policy.RequireRole(Role.SuperAdmin, Role.Admin));
-            options.AddPolicy(Policy.UserPolicy,
-                policy => policy.RequireRole(Role.User, Role.Admin, Role.SuperAdmin));
+            options.AddPolicy(ConstPolicy.SuperAdminPolicy,
+                policy => policy.RequireRole(ConstRole.SuperAdmin));
+            options.AddPolicy(ConstPolicy.AdminPolicy,
+                policy => policy.RequireRole(ConstRole.SuperAdmin, ConstRole.Admin));
+            options.AddPolicy(ConstPolicy.UserPolicy,
+                policy => policy.RequireRole(ConstRole.User, ConstRole.Admin, ConstRole.SuperAdmin));
         });
 
         return services;
-    }
-
-    public static async Task SeedDataAsync(this IApplicationBuilder app)
-    {
-        using var scope = app.ApplicationServices.CreateScope();
-        var seedData = scope.ServiceProvider.GetRequiredService<DataContributor>();
-        await seedData.SeedAsync();
     }
 
     public static void ConfigureOptions(this IServiceCollection services, IConfiguration configuration)
