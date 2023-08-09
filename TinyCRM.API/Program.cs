@@ -24,6 +24,7 @@ builder.Services.AddAuthorizations();
 builder.Services.ConfigureOptions(builder.Configuration);
 
 builder.Services.AddDatabase(builder.Configuration);
+await builder.Services.ApplyMigrateAsync();
 
 builder.Services.AddRepositories();
 builder.Services.AddServices();

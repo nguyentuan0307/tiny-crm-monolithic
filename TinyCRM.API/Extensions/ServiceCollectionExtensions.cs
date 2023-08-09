@@ -178,4 +178,14 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<JwtSettings>(configuration.GetSection("JWT"));
     }
+
+    public static async Task ApplyMigrateAsync(this IServiceCollection services)
+    {
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDataContext>();
+        if ((await context.Database.GetPendingMigrationsAsync()).Any())
+        {
+            await context.Database.MigrateAsync();
+        }
+    }
 }
