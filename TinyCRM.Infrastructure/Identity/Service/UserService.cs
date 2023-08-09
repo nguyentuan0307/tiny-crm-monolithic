@@ -164,7 +164,11 @@ public class UserService : IUserService
             {
                 var appRole = await _roleManager.FindByIdAsync(roleId)
                               ?? throw new EntityNotFoundException($"Role with id [{roleId}] not found");
-
+                if (appRole.Name == ConstRole.SuperAdmin)
+                {
+                    _unitOfWork.Rollback();
+                    throw new InvalidUpdateException("Cannot add SuperAdmin role to user.");
+                }
                 var updateRoleResult = await _userManager.AddToRoleAsync(appUser, appRole.Name!);
                 if (updateRoleResult.Succeeded) continue;
                 _unitOfWork.Rollback();

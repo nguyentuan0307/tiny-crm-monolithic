@@ -13,6 +13,7 @@ using TinyCRM.Domain.Enums;
 using TinyCRM.Domain.Interfaces;
 using TinyCRM.Infrastructure.Identity.Role;
 using TinyCRM.Infrastructure.Identity.Users;
+using TinyCRM.Infrastructure.Logger;
 
 namespace TinyCRM.Infrastructure.SeedData;
 
@@ -66,7 +67,7 @@ public class DataContributor
                 !(await _productRepository.AnyAsync())
             )
             {
-                Log.Information("Begin seeding data...");
+                LoggerService.LogInformation("Begin seeding data...");
 
                 _accounts = await SeedAccountAsync();
                 await SeedContactAsync();
@@ -76,7 +77,7 @@ public class DataContributor
 
                 await _unitOfWork.SaveChangeAsync();
 
-                Log.Information("Seed data successfully!");
+                LoggerService.LogInformation("Seed data successfully!");
             }
 
             if (!_roleManager.Roles.Any() && !_userManager.Users.Any())

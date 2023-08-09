@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 using System.Text.Json;
 using TinyCRM.Application.Models.Account;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
+using TinyCRM.Infrastructure.Logger;
 
 namespace TinyCRM.API.Controllers;
 
@@ -24,7 +24,7 @@ public class CrmAccountController : Controller
     public async Task<IActionResult> GetAccountsAsync([FromQuery] AccountSearchDto search)
     {
         var accountDtOs = await _accountService.GetAccountsAsync(search);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDtOs)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Accounts: {JsonSerializer.Serialize(accountDtOs)}");
         return Ok(accountDtOs);
     }
 
@@ -34,7 +34,7 @@ public class CrmAccountController : Controller
     public async Task<IActionResult> GetAccountAsync(Guid id)
     {
         var accountDto = await _accountService.GetAccountAsync(id);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Account: {JsonSerializer.Serialize(accountDto)}");
         return Ok(accountDto);
     }
 
@@ -43,7 +43,7 @@ public class CrmAccountController : Controller
     public async Task<IActionResult> CreateAccountAsync([FromBody] AccountCreateDto accountDto)
     {
         var accountNewDto = await _accountService.CreateAccountAsync(accountDto);
-        Log.Information($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created Account: {JsonSerializer.Serialize(accountNewDto)}");
         return CreatedAtAction(nameof(GetAccountAsync), new { id = accountNewDto.Id }, accountNewDto);
     }
 
@@ -52,7 +52,7 @@ public class CrmAccountController : Controller
     public async Task<IActionResult> UpdateAccountAsync(Guid id, [FromBody] AccountUpdateDto accountDto)
     {
         var accountUpdateDto = await _accountService.UpdateAccountAsync(id, accountDto);
-        Log.Information($"[{DateTime.Now}]Successfully Updated Account: {JsonSerializer.Serialize(accountUpdateDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated Account: {JsonSerializer.Serialize(accountUpdateDto)}");
         return Ok(accountUpdateDto);
     }
 
@@ -61,7 +61,7 @@ public class CrmAccountController : Controller
     public async Task<IActionResult> DeleteAccountAsync(Guid id)
     {
         await _accountService.DeleteAccountAsync(id);
-        Log.Information($"[{DateTime.Now}]Successfully Deleted Account: {id}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Deleted Account: {id}");
         return Ok("Successfully Deleted Account");
     }
 }

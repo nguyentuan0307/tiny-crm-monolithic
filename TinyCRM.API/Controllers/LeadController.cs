@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 using System.Text.Json;
 using TinyCRM.Application.Models.Lead;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
+using TinyCRM.Infrastructure.Logger;
 
 namespace TinyCRM.API.Controllers;
 
@@ -24,7 +24,7 @@ public class LeadController : Controller
     public async Task<IActionResult> GetLeadsAsync([FromQuery] LeadSearchDto search)
     {
         var leadDtOs = await _leadService.GetLeadsAsync(search);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
         return Ok(leadDtOs);
     }
 
@@ -34,7 +34,7 @@ public class LeadController : Controller
     public async Task<IActionResult> GetLeadAsync(Guid id)
     {
         var leadDto = await _leadService.GetLeadAsync(id);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Lead: {JsonSerializer.Serialize(leadDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead: {JsonSerializer.Serialize(leadDto)}");
         return Ok(leadDto);
     }
 
@@ -43,7 +43,7 @@ public class LeadController : Controller
     public async Task<IActionResult> CreateLeadAsync([FromBody] LeadCreateDto leadDto)
     {
         var leadCreateDto = await _leadService.CreateLeadAsync(leadDto);
-        Log.Information($"[{DateTime.Now}]Successfully Created Lead: {JsonSerializer.Serialize(leadCreateDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created Lead: {JsonSerializer.Serialize(leadCreateDto)}");
         return CreatedAtAction(nameof(GetLeadAsync), new { id = leadCreateDto.Id }, leadCreateDto);
     }
 
@@ -52,7 +52,7 @@ public class LeadController : Controller
     public async Task<IActionResult> UpdateLeadAsync(Guid id, [FromBody] LeadUpdateDto leadDto)
     {
         var leadUpdateDto = await _leadService.UpdateLeadAsync(id, leadDto);
-        Log.Information($"[{DateTime.Now}]Successfully Updated Lead: {JsonSerializer.Serialize(leadUpdateDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated Lead: {JsonSerializer.Serialize(leadUpdateDto)}");
         return Ok(leadUpdateDto);
     }
 
@@ -61,7 +61,7 @@ public class LeadController : Controller
     public async Task<IActionResult> DeleteLeadAsync(Guid id)
     {
         await _leadService.DeleteLeadAsync(id);
-        Log.Information($"[{DateTime.Now}]Successfully Deleted Lead: {id}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Deleted Lead: {id}");
         return Ok("Successfully Deleted Lead");
     }
 
@@ -70,7 +70,7 @@ public class LeadController : Controller
     public async Task<IActionResult> QualifyLeadAsync(Guid id)
     {
         var dealDto = await _leadService.QualifyLeadAsync(id);
-        Log.Information($"[{DateTime.Now}]Successfully Qualified Lead: {JsonSerializer.Serialize(dealDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Qualified Lead: {JsonSerializer.Serialize(dealDto)}");
         return CreatedAtRoute(new { id = dealDto.Id, controller = "deal", action = nameof(DealController.GetDealAsync) }, dealDto);
     }
 
@@ -79,7 +79,7 @@ public class LeadController : Controller
     public async Task<IActionResult> DisqualifyLeadAsync(Guid id, [FromBody] DisqualifyDto disqualifyDto)
     {
         await _leadService.DisqualifyLeadAsync(id, disqualifyDto);
-        Log.Information($"[{DateTime.Now}]Successfully Disqualified Lead: {id}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Disqualified Lead: {id}");
         return Ok("Successfully Disqualify Lead");
     }
 
@@ -88,7 +88,7 @@ public class LeadController : Controller
     public async Task<IActionResult> GetStatisticLeadAsync()
     {
         var leadStatisticDto = await _leadService.GetStatisticLeadAsync();
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Lead Statistic: {JsonSerializer.Serialize(leadStatisticDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Lead Statistic: {JsonSerializer.Serialize(leadStatisticDto)}");
         return Ok(leadStatisticDto);
     }
 
@@ -97,7 +97,7 @@ public class LeadController : Controller
     public async Task<IActionResult> GetLeadsAsync(Guid accountId, [FromQuery] LeadSearchDto search)
     {
         var leadDtOs = await _leadService.GetLeadsAsync(accountId, search);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Leads: {JsonSerializer.Serialize(leadDtOs)}");
         return Ok(leadDtOs);
     }
 }

@@ -1,22 +1,14 @@
-using Serilog;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using TinyCRM.API.Extensions;
 using TinyCRM.API.Middleware;
 using TinyCRM.Application.Helper.AutoMapper;
 using TinyCRM.Infrastructure.Helper.AutoMapper;
+using TinyCRM.Infrastructure.Logger;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
-            .CreateLogger();
-
-builder.Services.AddLogging(loggingBuilder =>
-{
-    loggingBuilder.AddSerilog(dispose: true);
-});
+LoggerService.ConfigureLogger(builder.Configuration);
 
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddAuthorizations();

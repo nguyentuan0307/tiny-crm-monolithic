@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 using System.Text.Json;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Const;
+using TinyCRM.Infrastructure.Logger;
 
 namespace TinyCRM.API.Controllers;
 
@@ -27,7 +27,7 @@ public class IamAccountController : Controller
         if (signUpDto.Password != signUpDto.ConfirmPassword)
             return BadRequest(new { Message = "Password and ConfirmPassword do not match" });
         var user = await _userService.SignUpAsync(signUpDto);
-        Log.Information($"[{DateTime.Now}]Successfully Created User: {JsonSerializer.Serialize(user)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created User: {JsonSerializer.Serialize(user)}");
         return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
@@ -38,7 +38,7 @@ public class IamAccountController : Controller
         if (signUpDto.Password != signUpDto.ConfirmPassword)
             return BadRequest(new { Message = "Password and ConfirmPassword do not match" });
         var user = await _userService.SignUpAdminAsync(signUpDto);
-        Log.Information($"[{DateTime.Now}]Successfully Created User Admin: {JsonSerializer.Serialize(user)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created User Admin: {JsonSerializer.Serialize(user)}");
         return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
@@ -46,7 +46,7 @@ public class IamAccountController : Controller
     public async Task<IActionResult> SignInAsync(SignInDto signInDto)
     {
         var result = await _userService.SignInAsync(signInDto);
-        Log.Information($"[{DateTime.Now}]Successfully Signed In User: {JsonSerializer.Serialize(result)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Signed In User: {JsonSerializer.Serialize(result)}");
         return Ok(new { Token = result });
     }
 
@@ -56,7 +56,7 @@ public class IamAccountController : Controller
     public async Task<IActionResult> GetProfileAsync(string id)
     {
         var user = await _userService.GetProfileAsync(id);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved User: {JsonSerializer.Serialize(user)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved User: {JsonSerializer.Serialize(user)}");
         return Ok(user);
     }
 
@@ -65,7 +65,7 @@ public class IamAccountController : Controller
     public async Task<IActionResult> GetProfilesAsync([FromQuery] ProfileUserSearchDto search)
     {
         var users = await _userService.GetProfilesAsync(search);
-        Log.Information($"[{DateTime.Now}]Successfully Retrieved Users: {JsonSerializer.Serialize(users)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Users: {JsonSerializer.Serialize(users)}");
         return Ok(users);
     }
 
@@ -74,7 +74,7 @@ public class IamAccountController : Controller
     public async Task<IActionResult> UpdateProfileAsync(string id, [FromBody] ProfileUserUpdateDto updateDto)
     {
         var userProfileDto = await _userService.UpdateProfileAsync(id, updateDto, User);
-        Log.Information($"[{DateTime.Now}]Successfully Updated User: {JsonSerializer.Serialize(userProfileDto)}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated User: {JsonSerializer.Serialize(userProfileDto)}");
         return Ok(userProfileDto);
     }
 
@@ -83,7 +83,7 @@ public class IamAccountController : Controller
     public async Task<IActionResult> ChangePasswordAsync(string id, [FromBody] UserChangePasswordDto changePasswordDto)
     {
         await _userService.ChangePasswordAsync(id, changePasswordDto, User);
-        Log.Information($"[{DateTime.Now}]Successfully Changed Password User: {id}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Changed Password User: {id}");
         return NoContent();
     }
 
@@ -92,7 +92,7 @@ public class IamAccountController : Controller
     public async Task<IActionResult> UpdateRoleAsync(string id, [FromBody] string[] roleIds)
     {
         await _userService.UpdateRoleAsync(id, roleIds);
-        Log.Information($"[{DateTime.Now}]Successfully Updated Role User: {id}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated Role User: {id}");
         return NoContent();
     }
 
@@ -102,7 +102,7 @@ public class IamAccountController : Controller
     {
         var isSuperAdmin = User.IsInRole(ConstRole.SuperAdmin);
         await _userService.DeleteAsync(id, isSuperAdmin);
-        Log.Information($"[{DateTime.Now}]Successfully Deleted User: {id}");
+        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Deleted User: {id}");
         return NoContent();
     }
 }

@@ -3,6 +3,7 @@ using Serilog;
 using System.Net;
 using TinyCRM.Application.Models;
 using TinyCRM.Domain.Exceptions;
+using TinyCRM.Infrastructure.Logger;
 
 namespace TinyCRM.API.Middleware;
 
@@ -17,7 +18,7 @@ public static class CustomExceptionMiddleware
                 int statusCode;
 
                 var ex = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-                Log.Error(ex, "An exception occurred while processing the request");
+                LoggerService.LogError(ex, "An exception occurred while processing the request");
 
                 var message = ex?.Message;
                 switch (ex)
