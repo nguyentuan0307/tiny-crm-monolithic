@@ -72,17 +72,28 @@ public class UserService : IUserService
 
     public async Task<UserProfileDto> SignUpAdminAsync(SignUpDto signUpDto)
     {
+        _unitOfWork.BeginTransaction();
         if (!await _roleManager.RoleExistsAsync(ConstRole.Admin))
         {
             await _roleManager.CreateAsync(new ApplicationRole(ConstRole.Admin));
         }
 
         var user = _mapper.Map<ApplicationUser>(signUpDto);
-
         var result = await _userManager.CreateAsync(user, signUpDto.Password);
-        if (result.Succeeded)
+        if (!result.Succeeded)
         {
-            await _userManager.AddToRoleAsync(user, ConstRole.Admin);
+            _unitOfWork.Rollback();
+            throw new InvalidUpdateException(result.Errors.First().Description);
+        }
+        try
+        {
+            await _userManager.AddToRoleAsync(user, ConstRole.User);
+            _unitOfWork.Commit();
+        }
+        catch
+        {
+            _unitOfWork.Rollback();
+            throw new InvalidUpdateException("Adding role to user failed.");
         }
         return _mapper.Map<UserProfileDto>(user);
     }
@@ -113,10 +124,14 @@ public class UserService : IUserService
             throw new InvalidUpdateException(result.Errors.First().Description);
     }
 
-    public async Task DeleteAsync(string id)
+    public async Task DeleteAsync(string id, bool isSuperAdmin = false)
     {
         var appUser = await _userManager.FindByIdAsync(id)
                       ?? throw new EntityNotFoundException($"User with id [{id}] not found");
+        var roles = await _userManager.GetRolesAsync(appUser);
+        if (roles.Contains(ConstRole.Admin) && !isSuperAdmin)
+            throw new InvalidUpdateException("Cannot delete admin user.");
+
         var deleteResult = await _userManager.DeleteAsync(appUser);
         if (!deleteResult.Succeeded)
         {
@@ -128,19 +143,32 @@ public class UserService : IUserService
     {
         var appUser = await _userManager.FindByIdAsync(id)
                       ?? throw new EntityNotFoundException($"User with id [{id}] not found");
+
+        var existingRoles = await _userManager.GetRolesAsync(appUser);
+        var rolesToAdd = roleIds.Except(existingRoles);
+        var rolesToRemove = existingRoles.Except(roleIds);
+
         _unitOfWork.BeginTransaction();
-        await RemoveUserFromRolesAsync(appUser);
+
         try
         {
-            foreach (var roleId in roleIds)
+            foreach (var roleName in rolesToRemove)
+            {
+                var removeRoleResult = await _userManager.RemoveFromRoleAsync(appUser, roleName);
+                if (removeRoleResult.Succeeded) continue;
+                _unitOfWork.Rollback();
+                throw new InvalidUpdateException(removeRoleResult.Errors.First().Description);
+            }
+
+            foreach (var roleId in rolesToAdd)
             {
                 var appRole = await _roleManager.FindByIdAsync(roleId)
-                              ?? throw new EntityNotFoundException($"Role with id [{id}] not found");
+                              ?? throw new EntityNotFoundException($"Role with id [{roleId}] not found");
+
                 var updateRoleResult = await _userManager.AddToRoleAsync(appUser, appRole.Name!);
-                if (!updateRoleResult.Succeeded)
-                {
-                    throw new InvalidUpdateException(updateRoleResult.Errors.First().Description);
-                }
+                if (updateRoleResult.Succeeded) continue;
+                _unitOfWork.Rollback();
+                throw new InvalidUpdateException(updateRoleResult.Errors.First().Description);
             }
 
             _unitOfWork.Commit();
@@ -148,17 +176,7 @@ public class UserService : IUserService
         catch
         {
             _unitOfWork.Rollback();
-            throw new InvalidUpdateException("Adding role to user failed.");
-        }
-    }
-
-    private async Task RemoveUserFromRolesAsync(ApplicationUser user)
-    {
-        var oldRoles = await _userManager.GetRolesAsync(user);
-        var removeRoleResult = await _userManager.RemoveFromRolesAsync(user, oldRoles);
-        if (!removeRoleResult.Succeeded)
-        {
-            throw new InvalidUpdateException(removeRoleResult.Errors.First().Description);
+            throw new InvalidUpdateException("Updating user roles failed.");
         }
     }
 

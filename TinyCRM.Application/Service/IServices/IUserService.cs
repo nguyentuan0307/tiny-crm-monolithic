@@ -19,7 +19,7 @@ public interface IUserService
 
     Task ChangePasswordAsync(string id, UserChangePasswordDto changePasswordDto, ClaimsPrincipal user);
 
-    Task DeleteAsync(string id);
+    Task DeleteAsync(string id, bool isSuperAdmin = false);
 
     Task UpdateRoleAsync(string id, string[] roleIds);
 }

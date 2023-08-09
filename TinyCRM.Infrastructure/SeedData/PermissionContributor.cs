@@ -65,7 +65,6 @@ public class PermissionContributor
                     await _roleManager.RemoveClaimAsync(user, claim);
                 }
             }
-            return;
         }
 
         foreach (var claim in permissionsClaims.Where(claim => claim.Value.Contains("Read") && !claim.Value.Contains("Roles")))
@@ -88,7 +87,6 @@ public class PermissionContributor
                     await _roleManager.RemoveClaimAsync(admin, claim);
                 }
             }
-            return;
         }
 
         foreach (var claim in permissionsClaims.Where(claim => !claim.Value.Contains("Roles") && !claim.Value.Contains("CreateAdmin")))

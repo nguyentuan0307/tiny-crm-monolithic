@@ -74,6 +74,6 @@ public static class TinyCrmPermissions
         public const string CreateAdmin = Default + ".CreateAdmin";
         public const string Edit = Default + ".Edit";
         public const string Delete = Default + ".Delete";
-        public const string EditRole = Default + ".EditRole";
+        public const string EditRoles = Default + ".EditRoles";
     }
 }

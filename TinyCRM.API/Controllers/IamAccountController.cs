@@ -5,6 +5,7 @@ using System.Text.Json;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
+using TinyCRM.Domain.Const;
 
 namespace TinyCRM.API.Controllers;
 
@@ -87,7 +88,7 @@ public class IamAccountController : Controller
     }
 
     [HttpPut("{id}/update-role")]
-    [Authorize(Policy = TinyCrmPermissions.Users.EditRole)]
+    [Authorize(Policy = TinyCrmPermissions.Users.EditRoles)]
     public async Task<IActionResult> UpdateRoleAsync(string id, [FromBody] string[] roleIds)
     {
         await _userService.UpdateRoleAsync(id, roleIds);
@@ -99,7 +100,8 @@ public class IamAccountController : Controller
     [Authorize(Policy = TinyCrmPermissions.Users.Delete)]
     public async Task<IActionResult> DeleteAsync(string id)
     {
-        await _userService.DeleteAsync(id);
+        var isSuperAdmin = User.IsInRole(ConstRole.SuperAdmin);
+        await _userService.DeleteAsync(id, isSuperAdmin);
         Log.Information($"[{DateTime.Now}]Successfully Deleted User: {id}");
         return NoContent();
     }
