@@ -5,5 +5,5 @@ public enum StatusLead
     Prospect,
     Open,
     Qualified,
-    Disqualified,
+    Disqualified
 }

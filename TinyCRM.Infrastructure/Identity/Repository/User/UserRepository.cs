@@ -13,11 +13,11 @@ public class UserRepository : Repository<ApplicationUser, string>, IUserReposito
     public async Task<List<ApplicationUser>> GetUsersAsync(UserQueryParameters userQueryParameters)
     {
         var specification = new UsersByFilterSpecification(userQueryParameters.KeyWord);
-        return await ListAsync(specification: specification,
-            includeTables: userQueryParameters.IncludeTables,
-            sorting: userQueryParameters.Sorting,
-            pageIndex: userQueryParameters.PageIndex,
-            pageSize: userQueryParameters.PageSize
+        return await ListAsync(specification,
+            userQueryParameters.IncludeTables,
+            userQueryParameters.Sorting,
+            userQueryParameters.PageIndex,
+            userQueryParameters.PageSize
         );
     }
 }

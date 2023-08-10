@@ -7,15 +7,21 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
 {
     private const string PermissionPolicyPrefix = "TinyCrm.Permissions";
 
-    private DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
-
-    public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() => Task.FromResult<AuthorizationPolicy?>(null);
-
-    public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => FallbackPolicyProvider.GetDefaultPolicyAsync();
-
     public PermissionPolicyProvider(IOptions<AuthorizationOptions> options)
     {
         FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
+    }
+
+    private DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
+
+    public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+    {
+        return Task.FromResult<AuthorizationPolicy?>(null);
+    }
+
+    public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+    {
+        return FallbackPolicyProvider.GetDefaultPolicyAsync();
     }
 
     public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
@@ -32,13 +32,14 @@ public class IamAccountController : Controller
     }
 
     [HttpPost("sign-up-admin")]
-    [Authorize(policy: TinyCrmPermissions.Users.CreateAdmin)]
+    [Authorize(TinyCrmPermissions.Users.CreateAdmin)]
     public async Task<IActionResult> SignUpAdminAsync(SignUpDto signUpDto)
     {
         if (signUpDto.Password != signUpDto.ConfirmPassword)
             return BadRequest(new { Message = "Password and ConfirmPassword do not match" });
         var user = await _userService.SignUpAdminAsync(signUpDto);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created User Admin: {JsonSerializer.Serialize(user)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Created User Admin: {JsonSerializer.Serialize(user)}");
         return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
@@ -46,7 +47,8 @@ public class IamAccountController : Controller
     public async Task<IActionResult> SignInAsync(SignInDto signInDto)
     {
         var result = await _userService.SignInAsync(signInDto);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Signed In User: {JsonSerializer.Serialize(result)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Signed In User: {JsonSerializer.Serialize(result)}");
         return Ok(new { Token = result });
     }
 
@@ -65,7 +67,8 @@ public class IamAccountController : Controller
     public async Task<IActionResult> GetProfilesAsync([FromQuery] ProfileUserSearchDto search)
     {
         var users = await _userService.GetProfilesAsync(search);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Users: {JsonSerializer.Serialize(users)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Retrieved Users: {JsonSerializer.Serialize(users)}");
         return Ok(users);
     }
 
@@ -74,7 +77,8 @@ public class IamAccountController : Controller
     public async Task<IActionResult> UpdateProfileAsync(string id, [FromBody] ProfileUserUpdateDto updateDto)
     {
         var userProfileDto = await _userService.UpdateProfileAsync(id, updateDto, User);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated User: {JsonSerializer.Serialize(userProfileDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Updated User: {JsonSerializer.Serialize(userProfileDto)}");
         return Ok(userProfileDto);
     }
 

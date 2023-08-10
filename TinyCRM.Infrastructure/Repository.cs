@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using TinyCRM.Domain.Entities.Base;
 using TinyCRM.Domain.Helper.Specification.Base;
 using TinyCRM.Domain.Interfaces;
@@ -12,19 +12,16 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
     private readonly DbFactory _dbFactory;
     private DbSet<TEntity>? _dbSet;
 
-    protected DbSet<TEntity> DbSet => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
-
     protected Repository(DbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }
 
+    protected DbSet<TEntity> DbSet => _dbSet ??= _dbFactory.DbContext.Set<TEntity>();
+
     public async Task AddAsync(TEntity entity)
     {
-        if (entity is IAuditEntity auditEntity)
-        {
-            auditEntity.CreatedDate = DateTime.UtcNow;
-        }
+        if (entity is IAuditEntity auditEntity) auditEntity.CreatedDate = DateTime.UtcNow;
         await DbSet.AddAsync(entity);
     }
 
@@ -40,10 +37,7 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
 
     public virtual void Update(TEntity entity)
     {
-        if (entity is IAuditEntity auditEntity)
-        {
-            auditEntity.UpdatedDate = DateTime.UtcNow;
-        }
+        if (entity is IAuditEntity auditEntity) auditEntity.UpdatedDate = DateTime.UtcNow;
         DbSet.Update(entity);
     }
 
@@ -75,6 +69,21 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
         return await query.ToListAsync();
     }
 
+    public virtual Task<bool> AnyAsync(TKey id)
+    {
+        return DbSet.AnyAsync();
+    }
+
+    public Task<bool> AnyAsync()
+    {
+        return DbSet.AnyAsync();
+    }
+
+    public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)
+    {
+        return DbSet.CountAsync(expression);
+    }
+
     private static IQueryable<TEntity> Filter(IQueryable<TEntity> query, ISpecification<TEntity> specification)
     {
         query = query.Where(specification.ToExpression());
@@ -93,21 +102,6 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
     private static IQueryable<TEntity> Sorting(IQueryable<TEntity> query, string? sorting)
     {
         return string.IsNullOrWhiteSpace(sorting) ? query : query.OrderBy(sorting);
-    }
-
-    public virtual Task<bool> AnyAsync(TKey id)
-    {
-        return DbSet.AnyAsync();
-    }
-
-    public Task<bool> AnyAsync()
-    {
-        return DbSet.AnyAsync();
-    }
-
-    public Task<int> CountAsync(Expression<Func<TEntity, bool>> expression)
-    {
-        return DbSet.CountAsync(expression);
     }
 
     protected virtual Expression<Func<TEntity, bool>> ExpressionForGet(TKey id)

@@ -11,12 +11,13 @@ namespace TinyCRM.Application.Service;
 
 public class ContactService : IContactService
 {
-    private readonly IContactRepository _contactRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IContactRepository _contactRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ContactService(IContactRepository contactRepository, IMapper mapper, IUnitOfWork unitOfWork, IAccountRepository accountRepository)
+    public ContactService(IContactRepository contactRepository, IMapper mapper, IUnitOfWork unitOfWork,
+        IAccountRepository accountRepository)
     {
         _contactRepository = contactRepository;
         _mapper = mapper;
@@ -33,14 +34,6 @@ public class ContactService : IContactService
         await _contactRepository.AddAsync(contact);
         await _unitOfWork.SaveChangeAsync();
         return _mapper.Map<ContactDto>(contact);
-    }
-
-    private async Task CheckValidateAccount(Guid accountId)
-    {
-        if (!await _accountRepository.AnyAsync(accountId))
-        {
-            throw new EntityNotFoundException($"Account with Id[{accountId} is not found");
-        }
     }
 
     public async Task DeleteContactAsync(Guid id)
@@ -87,25 +80,6 @@ public class ContactService : IContactService
         return _mapper.Map<ContactDto>(existingContact);
     }
 
-    private async Task CheckValidate(string email, string phone, Guid guid = default)
-    {
-        if (await _contactRepository.IsEmailExistAsync(email, guid))
-        {
-            throw new InvalidUpdateException($"Email[{email}] is already exist");
-        }
-
-        if (await _contactRepository.IsPhoneExistAsync(phone, guid))
-        {
-            throw new InvalidUpdateException($"Phone[{phone}] is already exist");
-        }
-    }
-
-    private async Task<Contact> FindContactAsync(Guid id)
-    {
-        return await _contactRepository.GetAsync(id)
-               ?? throw new EntityNotFoundException($"Contact with Id[{id}] is not found");
-    }
-
     public async Task<List<ContactDto>> GetContactsAsync(Guid accountId, ContactSearchDto search)
     {
         await CheckValidateAccount(accountId);
@@ -126,5 +100,26 @@ public class ContactService : IContactService
             .GetContactsByAccountIdAsync(contactQueryParameters);
 
         return _mapper.Map<List<ContactDto>>(contacts);
+    }
+
+    private async Task CheckValidateAccount(Guid accountId)
+    {
+        if (!await _accountRepository.AnyAsync(accountId))
+            throw new EntityNotFoundException($"Account with Id[{accountId} is not found");
+    }
+
+    private async Task CheckValidate(string email, string phone, Guid guid = default)
+    {
+        if (await _contactRepository.IsEmailExistAsync(email, guid))
+            throw new InvalidUpdateException($"Email[{email}] is already exist");
+
+        if (await _contactRepository.IsPhoneExistAsync(phone, guid))
+            throw new InvalidUpdateException($"Phone[{phone}] is already exist");
+    }
+
+    private async Task<Contact> FindContactAsync(Guid id)
+    {
+        return await _contactRepository.GetAsync(id)
+               ?? throw new EntityNotFoundException($"Contact with Id[{id}] is not found");
     }
 }

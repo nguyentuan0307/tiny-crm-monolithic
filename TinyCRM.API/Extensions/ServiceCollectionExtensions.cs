@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 using TinyCRM.API.Authorization;
 using TinyCRM.Application.Models;
 using TinyCRM.Application.Service;
@@ -33,15 +33,16 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<AppDataContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("Default"), b => b.MigrationsAssembly("TinyCRM.API"));
+                options.UseSqlServer(configuration.GetConnectionString("Default"),
+                    b => b.MigrationsAssembly("TinyCRM.API"));
             }
         );
 
         services.AddScoped<DataContributor>();
         services.AddScoped<PermissionContributor>();
 
-        services.AddScoped<Func<AppDataContext>>((provider) => () => provider.GetService<AppDataContext>()
-                                                                     ?? throw new InvalidOperationException());
+        services.AddScoped<Func<AppDataContext>>(provider => () => provider.GetService<AppDataContext>()
+                                                                   ?? throw new InvalidOperationException());
         services.AddScoped<DbFactory>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -93,7 +94,8 @@ public static class ServiceCollectionExtensions
                 Scheme = JwtBearerDefaults.AuthenticationScheme
             });
 
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
                 {
                     new OpenApiSecurityScheme
                     {
@@ -183,9 +185,6 @@ public static class ServiceCollectionExtensions
     {
         using var scope = services.BuildServiceProvider().CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDataContext>();
-        if ((await context.Database.GetPendingMigrationsAsync()).Any())
-        {
-            await context.Database.MigrateAsync();
-        }
+        if ((await context.Database.GetPendingMigrationsAsync()).Any()) await context.Database.MigrateAsync();
     }
 }

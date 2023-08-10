@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.Product;
 using TinyCRM.Application.Service.IServices;
@@ -24,7 +24,8 @@ public class ProductController : Controller
     public async Task<IActionResult> GetProductsAsync([FromQuery] ProductSearchDto search)
     {
         var productDtOs = await _productService.GetProductsAsync(search);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Products: {JsonSerializer.Serialize(productDtOs)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Retrieved Products: {JsonSerializer.Serialize(productDtOs)}");
         return Ok(productDtOs);
     }
 
@@ -34,7 +35,8 @@ public class ProductController : Controller
     public async Task<IActionResult> GetProductAsync(Guid id)
     {
         var productDto = await _productService.GetProductAsync(id);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Product: {JsonSerializer.Serialize(productDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Retrieved Product: {JsonSerializer.Serialize(productDto)}");
         return Ok(productDto);
     }
 
@@ -43,7 +45,8 @@ public class ProductController : Controller
     public async Task<IActionResult> CreateProductAsync([FromBody] ProductCreateDto productDto)
     {
         var productNewDto = await _productService.CreateProductAsync(productDto);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created Product: {JsonSerializer.Serialize(productNewDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Created Product: {JsonSerializer.Serialize(productNewDto)}");
         return CreatedAtAction(nameof(GetProductAsync), new { id = productNewDto.Id }, productNewDto);
     }
 
@@ -52,7 +55,8 @@ public class ProductController : Controller
     public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] ProductUpdateDto productDto)
     {
         var productUpdateDto = await _productService.UpdateProductAsync(id, productDto);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated Product: {JsonSerializer.Serialize(productUpdateDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Updated Product: {JsonSerializer.Serialize(productUpdateDto)}");
         return Ok(productUpdateDto);
     }
 

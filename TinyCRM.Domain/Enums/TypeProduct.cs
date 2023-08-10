@@ -3,5 +3,5 @@
 public enum TypeProduct
 {
     Service,
-    Physical,
+    Physical
 }

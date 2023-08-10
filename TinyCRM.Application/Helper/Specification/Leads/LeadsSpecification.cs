@@ -18,10 +18,8 @@ public class LeadsByFilterSpecification : Specification<Lead>, ISpecification<Le
         Expression<Func<Lead, bool>> expression = p => true;
         if (_keyWord == null) return expression;
         if (!string.IsNullOrEmpty(_keyWord))
-        {
             expression = p => p.Title.Contains(_keyWord)
                               || p.Account.Name.Contains(_keyWord);
-        }
 
         return expression;
     }

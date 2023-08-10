@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using TinyCRM.Application.Helper.Common;
+using TinyCRM.Domain.Const;
 using TinyCRM.Infrastructure.Identity.Role;
-using ConstRole = TinyCRM.Domain.Const.ConstRole;
 
 namespace TinyCRM.Infrastructure.SeedData;
 
@@ -39,16 +39,12 @@ public class PermissionContributor
         var permissionsToAdd = hashSetValuePermissions.Except(hashSetValuePermissionsSuperAdmin);
 
         foreach (var permissionToAdd in permissionsToAdd)
-        {
             await _roleManager.AddClaimAsync(superAdmin, new Claim("Permission", permissionToAdd));
-        }
 
         var permissionsToRemove = hashSetValuePermissionsSuperAdmin.Except(hashSetValuePermissions);
 
         foreach (var permissionToRemove in permissionsToRemove)
-        {
             await _roleManager.RemoveClaimAsync(superAdmin, new Claim("Permission", permissionToRemove));
-        }
     }
 
     private async Task SeedUserPermissionsAsync(ApplicationRole user)
@@ -59,18 +55,13 @@ public class PermissionContributor
         {
             var userClaims = await _roleManager.GetClaimsAsync(user);
             foreach (var claim in userClaims)
-            {
                 if (!permissionsClaims.Contains(claim))
-                {
                     await _roleManager.RemoveClaimAsync(user, claim);
-                }
-            }
         }
 
-        foreach (var claim in permissionsClaims.Where(claim => claim.Value.Contains("Read") && !claim.Value.Contains("Roles")))
-        {
+        foreach (var claim in permissionsClaims.Where(claim =>
+                     claim.Value.Contains("Read") && !claim.Value.Contains("Roles")))
             await _roleManager.AddClaimAsync(user, claim);
-        }
     }
 
     private async Task SeedAdminPermissionsAsync(ApplicationRole admin)
@@ -81,18 +72,13 @@ public class PermissionContributor
         {
             var adminClaims = await _roleManager.GetClaimsAsync(admin);
             foreach (var claim in adminClaims)
-            {
                 if (!permissionsClaims.Contains(claim))
-                {
                     await _roleManager.RemoveClaimAsync(admin, claim);
-                }
-            }
         }
 
-        foreach (var claim in permissionsClaims.Where(claim => !claim.Value.Contains("Roles") && !claim.Value.Contains("CreateAdmin")))
-        {
+        foreach (var claim in permissionsClaims.Where(claim =>
+                     !claim.Value.Contains("Roles") && !claim.Value.Contains("CreateAdmin")))
             await _roleManager.AddClaimAsync(admin, claim);
-        }
     }
 
     private async Task SeedRolesAsync()
@@ -102,10 +88,7 @@ public class PermissionContributor
         foreach (var role in roles)
         {
             var roleExist = await _roleManager.RoleExistsAsync(role);
-            if (!roleExist)
-            {
-                await _roleManager.CreateAsync(new ApplicationRole(role));
-            }
+            if (!roleExist) await _roleManager.CreateAsync(new ApplicationRole(role));
         }
     }
 }

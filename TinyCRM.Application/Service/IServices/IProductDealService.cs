@@ -12,5 +12,6 @@ public interface IProductDealService
 
     public Task<List<ProductDealDto>> GetProductDealsAsync(Guid dealId, ProductDealSearchDto search);
 
-    public Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDto productDealDto);
+    public Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId,
+        ProductDealUpdateDto productDealDto);
 }

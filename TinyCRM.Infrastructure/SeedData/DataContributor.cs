@@ -1,7 +1,6 @@
 ﻿using Bogus;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Serilog;
 using TinyCRM.Domain.Const;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Entities.Contacts;
@@ -19,19 +18,18 @@ namespace TinyCRM.Infrastructure.SeedData;
 
 public class DataContributor
 {
-    private readonly IContactRepository _contactRepository;
-    private readonly IAccountRepository _accountRepository;
-    private readonly IProductRepository _productRepository;
-    private readonly ILeadRepository _leadRepository;
-    private readonly IDealRepository _dealRepository;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<DataContributor> _logger;
-
     private static IEnumerable<Account> _accounts = null!;
     private static IEnumerable<Product> _products = null!;
     private static IEnumerable<Lead> _leads = null!;
+    private readonly IAccountRepository _accountRepository;
+    private readonly IContactRepository _contactRepository;
+    private readonly IDealRepository _dealRepository;
+    private readonly ILeadRepository _leadRepository;
+    private readonly ILogger<DataContributor> _logger;
+    private readonly IProductRepository _productRepository;
+    private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public DataContributor(
         IContactRepository contactRepository,
@@ -60,11 +58,11 @@ public class DataContributor
         try
         {
             if (
-                !(await _leadRepository.AnyAsync()) &&
-                !(await _dealRepository.AnyAsync()) &&
-                !(await _accountRepository.AnyAsync()) &&
-                !(await _contactRepository.AnyAsync()) &&
-                !(await _productRepository.AnyAsync())
+                !await _leadRepository.AnyAsync() &&
+                !await _dealRepository.AnyAsync() &&
+                !await _accountRepository.AnyAsync() &&
+                !await _contactRepository.AnyAsync() &&
+                !await _productRepository.AnyAsync()
             )
             {
                 LoggerService.LogInformation("Begin seeding data...");
@@ -86,7 +84,7 @@ public class DataContributor
                 await _roleManager.CreateAsync(new ApplicationRole(ConstRole.Admin));
                 await _roleManager.CreateAsync(new ApplicationRole(ConstRole.User));
 
-                var user = new ApplicationUser()
+                var user = new ApplicationUser
                 {
                     UserName = "superadmin@gmail.com",
                     Email = "superadmin@gmail.com",
@@ -120,8 +118,7 @@ public class DataContributor
         var accounts = new List<Account>();
 
         for (var i = 1; i <= 10; i++)
-        {
-            accounts.Add(new Account()
+            accounts.Add(new Account
             {
                 Name = $"Account {i}",
                 Email = $"account{i}@gmail.com",
@@ -129,7 +126,6 @@ public class DataContributor
                 Phone = i.ToString(),
                 TotalSales = 0
             });
-        }
 
         await _accountRepository.AddRangeAsync(accounts);
         return accounts;
@@ -141,15 +137,13 @@ public class DataContributor
         var random = new Random();
 
         for (var i = 1; i <= 10; i++)
-        {
-            contacts.Add(new Contact()
+            contacts.Add(new Contact
             {
                 Name = $"Contact {i}",
                 Email = $"contact{i}@gmail.com",
                 Phone = i.ToString(),
                 Account = _accounts.ElementAt(random.Next(0, 9))
             });
-        }
 
         await _contactRepository.AddRangeAsync(contacts);
     }
@@ -160,8 +154,7 @@ public class DataContributor
         var random = new Random();
 
         for (var i = 1; i <= 10; i++)
-        {
-            products.Add(new Product()
+            products.Add(new Product
             {
                 Code = $"P-{i}",
                 Name = $"Product {i}",
@@ -169,7 +162,6 @@ public class DataContributor
                 Status = random.Next(2) == 1,
                 TypeProduct = random.Next(2) == 1 ? TypeProduct.Service : TypeProduct.Physical
             });
-        }
 
         await _productRepository.AddRangeAsync(products);
         return products;
@@ -181,8 +173,7 @@ public class DataContributor
         var random = new Random();
 
         for (var i = 1; i <= 20; i++)
-        {
-            leads.Add(new Lead()
+            leads.Add(new Lead
             {
                 Title = $"Lead {i}",
                 Description = $"Lead {i}",
@@ -191,7 +182,6 @@ public class DataContributor
                 Account = _accounts.ElementAt(random.Next(0, 9)),
                 EstimatedRevenue = random.Next(5000)
             });
-        }
 
         await _leadRepository.AddRangeAsync(leads);
 
@@ -209,17 +199,15 @@ public class DataContributor
             var productDeals = new List<ProductDeal>();
 
             for (var j = 1; j <= 5; j++)
-            {
-                productDeals.Add(new ProductDeal()
+                productDeals.Add(new ProductDeal
                 {
                     Price = random.Next(1, 100000),
                     Product = _products.ElementAt(random.Next(0, 9)),
-                    Quantity = random.Next(1, 10),
+                    Quantity = random.Next(1, 10)
                 });
-            }
 
             if (leadQualifieds == null) continue;
-            deals.Add(new Deal()
+            deals.Add(new Deal
             {
                 Title = $"Deal {i}",
                 Description = $"Deal {i}",

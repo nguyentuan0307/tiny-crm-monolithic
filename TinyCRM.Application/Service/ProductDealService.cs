@@ -14,9 +14,9 @@ namespace TinyCRM.Application.Service;
 public class ProductDealService : IProductDealService
 {
     private readonly IDealRepository _dealRepository;
-    private readonly IProductRepository _productRepository;
-    private readonly IProductDealRepository _productDealRepository;
     private readonly IMapper _mapper;
+    private readonly IProductDealRepository _productDealRepository;
+    private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ProductDealService(IDealRepository dealRepository, IProductRepository productRepository,
@@ -49,24 +49,6 @@ public class ProductDealService : IProductDealService
         return _mapper.Map<ProductDealDto>(productDeal);
     }
 
-    private static void UpdateRelateCreate(Deal deal, ProductDeal productDeal)
-    {
-        deal.ActualRevenue += productDeal.TotalAmount;
-        deal.Lead.Account.TotalSales += productDeal.TotalAmount;
-    }
-
-    private async Task<Deal> FindDealAsync(Guid dealId, string? includeTables = default)
-    {
-        return await _dealRepository.GetAsync(dealId, includeTables) ??
-               throw new EntityNotFoundException($"Deal with Id[{dealId}] is not found");
-    }
-
-    private async Task IsExistProduct(Guid productId)
-    {
-        if (!await _productRepository.AnyAsync(productId))
-            throw new EntityNotFoundException($"Product with Id[{productId}] is not found");
-    }
-
     public async Task DeleteProductDealAsync(Guid dealId, Guid productDealId)
     {
         var deal = await FindDealAsync(dealId);
@@ -82,18 +64,6 @@ public class ProductDealService : IProductDealService
         _productDealRepository.Remove(productDeal);
         UpdateRelateDelete(deal, productDeal);
         await _unitOfWork.SaveChangeAsync();
-    }
-
-    private static void UpdateRelateDelete(Deal deal, ProductDeal productDeal)
-    {
-        deal.ActualRevenue -= productDeal.TotalAmount;
-        deal.Lead.Account.TotalSales -= productDeal.TotalAmount;
-    }
-
-    private async Task<ProductDeal> FindProductDealAsync(Guid productDealId, string? includeTables = default)
-    {
-        return await _productDealRepository.GetAsync(productDealId, includeTables) ??
-               throw new EntityNotFoundException($"ProductDeal with Id[{productDealId}] is not found");
     }
 
     public async Task<ProductDealDto> GetProductDealAsync(Guid dealId, Guid productDealId)
@@ -122,7 +92,8 @@ public class ProductDealService : IProductDealService
         return _mapper.Map<List<ProductDealDto>>(productDeals);
     }
 
-    public async Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId, ProductDealUpdateDto productDealDto)
+    public async Task<ProductDealDto> UpdateProductDealAsync(Guid dealId, Guid productDealId,
+        ProductDealUpdateDto productDealDto)
     {
         var productDeal = await FindProductDealAsync(productDealId);
         var totalAmountOld = productDeal.TotalAmount;
@@ -140,6 +111,36 @@ public class ProductDealService : IProductDealService
         UpdateRelateUpdate(deal, totalAmountOld, productDeal.TotalAmount);
         await _unitOfWork.SaveChangeAsync();
         return _mapper.Map<ProductDealDto>(productDeal);
+    }
+
+    private static void UpdateRelateCreate(Deal deal, ProductDeal productDeal)
+    {
+        deal.ActualRevenue += productDeal.TotalAmount;
+        deal.Lead.Account.TotalSales += productDeal.TotalAmount;
+    }
+
+    private async Task<Deal> FindDealAsync(Guid dealId, string? includeTables = default)
+    {
+        return await _dealRepository.GetAsync(dealId, includeTables) ??
+               throw new EntityNotFoundException($"Deal with Id[{dealId}] is not found");
+    }
+
+    private async Task IsExistProduct(Guid productId)
+    {
+        if (!await _productRepository.AnyAsync(productId))
+            throw new EntityNotFoundException($"Product with Id[{productId}] is not found");
+    }
+
+    private static void UpdateRelateDelete(Deal deal, ProductDeal productDeal)
+    {
+        deal.ActualRevenue -= productDeal.TotalAmount;
+        deal.Lead.Account.TotalSales -= productDeal.TotalAmount;
+    }
+
+    private async Task<ProductDeal> FindProductDealAsync(Guid productDealId, string? includeTables = default)
+    {
+        return await _productDealRepository.GetAsync(productDealId, includeTables) ??
+               throw new EntityNotFoundException($"ProductDeal with Id[{productDealId}] is not found");
     }
 
     private static void UpdateRelateUpdate(Deal deal, decimal totalAmountOld, decimal totalAmountNew)

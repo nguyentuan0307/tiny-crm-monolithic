@@ -5,5 +5,5 @@ public enum EnumProductFilterSort
     Id,
     Code,
     Name,
-    Price,
+    Price
 }

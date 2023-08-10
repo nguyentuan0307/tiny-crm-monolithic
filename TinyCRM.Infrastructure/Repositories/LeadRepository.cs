@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using TinyCRM.Application.Helper.Specification.Leads;
 using TinyCRM.Domain.Entities.Leads;
 using TinyCRM.Domain.Helper.Model;
@@ -13,11 +13,6 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
     {
     }
 
-    protected override Expression<Func<Lead, bool>> ExpressionForGet(Guid id)
-    {
-        return p => p.Id == id;
-    }
-
     public override Task<bool> AnyAsync(Guid id)
     {
         return DbSet.AnyAsync(p => p.Id == id);
@@ -26,22 +21,23 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
     public async Task<List<Lead>> GetLeadsAsync(LeadQueryParameters leadQueryParameters)
     {
         var specification = new LeadsByFilterSpecification(leadQueryParameters.KeyWord);
-        return await ListAsync(specification: specification,
-            includeTables: leadQueryParameters.IncludeTables,
-            sorting: leadQueryParameters.Sorting,
-            pageIndex: leadQueryParameters.PageIndex,
-            pageSize: leadQueryParameters.PageSize);
+        return await ListAsync(specification,
+            leadQueryParameters.IncludeTables,
+            leadQueryParameters.Sorting,
+            leadQueryParameters.PageIndex,
+            leadQueryParameters.PageSize);
     }
 
     public async Task<List<Lead>> GetLeadsByAccountIdAsync(LeadQueryParameters leadQueryParameters)
     {
         var leadsByAccountIdSpecification = new LeadsByAccountIdSpecification(leadQueryParameters.AccountId!.Value);
-        var specification = leadsByAccountIdSpecification.And(new LeadsByFilterSpecification(leadQueryParameters.KeyWord));
-        return await ListAsync(specification: specification,
-            includeTables: leadQueryParameters.IncludeTables,
-            sorting: leadQueryParameters.Sorting,
-            pageIndex: leadQueryParameters.PageIndex,
-            pageSize: leadQueryParameters.PageSize);
+        var specification =
+            leadsByAccountIdSpecification.And(new LeadsByFilterSpecification(leadQueryParameters.KeyWord));
+        return await ListAsync(specification,
+            leadQueryParameters.IncludeTables,
+            leadQueryParameters.Sorting,
+            leadQueryParameters.PageIndex,
+            leadQueryParameters.PageSize);
     }
 
     public async Task<List<LeadStatisticDto>> GetLeadStatisticsAsync()
@@ -51,5 +47,10 @@ public class LeadRepository : Repository<Lead, Guid>, ILeadRepository
             StatusLead = x.StatusLead,
             EstimatedRevenue = x.EstimatedRevenue
         }).ToListAsync();
+    }
+
+    protected override Expression<Func<Lead, bool>> ExpressionForGet(Guid id)
+    {
+        return p => p.Id == id;
     }
 }

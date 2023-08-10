@@ -11,7 +11,8 @@ public class ContactCreateDto
     public string Email { get; set; } = null!;
 
     [Required(ErrorMessage = "Phone Number Required!")]
-    [RegularExpression(@"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$", ErrorMessage = "Entered phone format is not valid.")]
+    [RegularExpression(@"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$",
+        ErrorMessage = "Entered phone format is not valid.")]
     public string Phone { get; set; } = null!;
 
     [Required(ErrorMessage = "Account is required")]

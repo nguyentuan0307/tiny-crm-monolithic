@@ -10,8 +10,8 @@ namespace TinyCRM.Application.Service;
 
 public class ProductService : IProductService
 {
-    private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
+    private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ProductService(IProductRepository productRepository, IMapper mapper, IUnitOfWork unitOfWork)
@@ -31,25 +31,11 @@ public class ProductService : IProductService
         return _mapper.Map<ProductDto>(product);
     }
 
-    private async Task CheckValidate(string code, Guid id = default)
-    {
-        if (await _productRepository.ProductCodeIsExistAsync(code, id))
-        {
-            throw new InvalidUpdateException($"Product Code[{code}] is exist");
-        }
-    }
-
     public async Task DeleteProductAsync(Guid id)
     {
         var product = await FindProductAsync(id);
         _productRepository.Remove(product);
         await _unitOfWork.SaveChangeAsync();
-    }
-
-    private async Task<Product> FindProductAsync(Guid id)
-    {
-        return await _productRepository.GetAsync(id)
-               ?? throw new EntityNotFoundException($"Product with Id[{id}]is not found");
     }
 
     public async Task<ProductDto> GetProductAsync(Guid id)
@@ -68,7 +54,7 @@ public class ProductService : IProductService
             Sorting = search.ConvertSort(),
             PageIndex = search.PageIndex,
             PageSize = search.PageSize,
-            IncludeTables = includeTables,
+            IncludeTables = includeTables
         };
 
         var products = await _productRepository.GetProductsAsync(productQueryParameter);
@@ -87,5 +73,17 @@ public class ProductService : IProductService
         _productRepository.Update(existingProduct);
         await _unitOfWork.SaveChangeAsync();
         return _mapper.Map<ProductDto>(existingProduct);
+    }
+
+    private async Task CheckValidate(string code, Guid id = default)
+    {
+        if (await _productRepository.ProductCodeIsExistAsync(code, id))
+            throw new InvalidUpdateException($"Product Code[{code}] is exist");
+    }
+
+    private async Task<Product> FindProductAsync(Guid id)
+    {
+        return await _productRepository.GetAsync(id)
+               ?? throw new EntityNotFoundException($"Product with Id[{id}]is not found");
     }
 }

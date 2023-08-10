@@ -8,6 +8,7 @@ public static class TinyCrmPermissions
     {
         private const string Default = GroupName + ".Roles";
         public const string Read = Default + ".Read";
+
         public const string Edit = Default + ".Edit";
         //public const string Delete = Default + ".Delete";
     }

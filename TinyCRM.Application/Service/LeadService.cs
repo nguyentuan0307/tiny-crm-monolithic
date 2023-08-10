@@ -14,13 +14,14 @@ namespace TinyCRM.Application.Service;
 
 public class LeadService : ILeadService
 {
-    private readonly ILeadRepository _leadRepository;
-    private readonly IDealRepository _dealRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IDealRepository _dealRepository;
+    private readonly ILeadRepository _leadRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public LeadService(ILeadRepository leadRepository, IMapper mapper, IUnitOfWork unitOfWork, IDealRepository dealRepository, IAccountRepository accountRepository)
+    public LeadService(ILeadRepository leadRepository, IMapper mapper, IUnitOfWork unitOfWork,
+        IDealRepository dealRepository, IAccountRepository accountRepository)
     {
         _leadRepository = leadRepository;
         _mapper = mapper;
@@ -41,14 +42,6 @@ public class LeadService : ILeadService
         return _mapper.Map<LeadDto>(lead);
     }
 
-    private async Task CheckValidateAccount(Guid accountId)
-    {
-        if (!await _accountRepository.AnyAsync(accountId))
-        {
-            throw new EntityNotFoundException($"Account with Id[{accountId} is not found");
-        }
-    }
-
     public async Task DeleteLeadAsync(Guid id)
     {
         var lead = await FindLeadAsync(id);
@@ -61,9 +54,7 @@ public class LeadService : ILeadService
         var existingLead = await FindLeadAsync(id);
 
         if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
-        {
             throw new InvalidUpdateException($"Lead[{existingLead.Title}] is disqualified or qualified");
-        }
 
         _mapper.Map(disqualifyDto, existingLead);
         _leadRepository.Update(existingLead);
@@ -85,7 +76,7 @@ public class LeadService : ILeadService
             Sorting = search.ConvertSort(),
             PageIndex = search.PageIndex,
             PageSize = search.PageSize,
-            IncludeTables = includeTables,
+            IncludeTables = includeTables
         };
         var leads = await _leadRepository.GetLeadsAsync(leadQueryParameters);
 
@@ -111,22 +102,6 @@ public class LeadService : ILeadService
         return _mapper.Map<DealDto>(deal);
     }
 
-    private async Task<Lead> GetSatisfiedLead(Guid id)
-    {
-        var existingLead = await FindLeadAsync(id);
-        if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
-        {
-            throw new InvalidUpdateException($"Lead[{existingLead.Title}] is disqualified or qualified");
-        }
-
-        if (_dealRepository.IsExistingLead(existingLead.Id))
-        {
-            throw new InvalidUpdateException($"Lead[{existingLead.Title}] already exists Deal");
-        }
-
-        return existingLead;
-    }
-
     public async Task<LeadDto> UpdateLeadAsync(Guid id, LeadUpdateDto leadDto)
     {
         var existingLead = await FindLeadAsync(id);
@@ -141,28 +116,11 @@ public class LeadService : ILeadService
         return _mapper.Map<LeadDto>(existingLead);
     }
 
-    private static void CheckValidateStatusLead(StatusLead status)
-    {
-        if (status is StatusLead.Disqualified or StatusLead.Qualified)
-        {
-            throw new InvalidUpdateException("Couldn't Update StatusLead to disqualified or qualified");
-        }
-    }
-
-    private async Task<Lead> FindLeadAsync(Guid id)
-    {
-        return await _leadRepository.GetAsync(id)
-               ?? throw new EntityNotFoundException($"Lead with Id[{id}] is not found");
-    }
-
     public async Task<LeadStatisticDto> GetStatisticLeadAsync()
     {
         var statisticLeads = await _leadRepository.GetLeadStatisticsAsync();
 
-        if (statisticLeads.Count == 0)
-        {
-            return new LeadStatisticDto();
-        }
+        if (statisticLeads.Count == 0) return new LeadStatisticDto();
 
         var leadStatisticDto = new LeadStatisticDto
         {
@@ -191,5 +149,35 @@ public class LeadService : ILeadService
         };
         var leads = await _leadRepository.GetLeadsByAccountIdAsync(leadQueryParameters);
         return _mapper.Map<List<LeadDto>>(leads);
+    }
+
+    private async Task CheckValidateAccount(Guid accountId)
+    {
+        if (!await _accountRepository.AnyAsync(accountId))
+            throw new EntityNotFoundException($"Account with Id[{accountId} is not found");
+    }
+
+    private async Task<Lead> GetSatisfiedLead(Guid id)
+    {
+        var existingLead = await FindLeadAsync(id);
+        if (existingLead.StatusLead is StatusLead.Disqualified or StatusLead.Qualified)
+            throw new InvalidUpdateException($"Lead[{existingLead.Title}] is disqualified or qualified");
+
+        if (_dealRepository.IsExistingLead(existingLead.Id))
+            throw new InvalidUpdateException($"Lead[{existingLead.Title}] already exists Deal");
+
+        return existingLead;
+    }
+
+    private static void CheckValidateStatusLead(StatusLead status)
+    {
+        if (status is StatusLead.Disqualified or StatusLead.Qualified)
+            throw new InvalidUpdateException("Couldn't Update StatusLead to disqualified or qualified");
+    }
+
+    private async Task<Lead> FindLeadAsync(Guid id)
+    {
+        return await _leadRepository.GetAsync(id)
+               ?? throw new EntityNotFoundException($"Lead with Id[{id}] is not found");
     }
 }

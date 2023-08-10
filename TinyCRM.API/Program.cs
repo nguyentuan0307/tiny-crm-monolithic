@@ -25,10 +25,7 @@ builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(TinyCrmAutoMapper)));
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(InfraAutoMapper)));
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+    .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
 builder.Services.AddSwagger();
 

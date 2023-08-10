@@ -84,13 +84,9 @@ public class AccountService : IAccountService
     private async Task CheckValidate(string email, string phone, Guid guid = default)
     {
         if (await _accountRepository.EmailIsExitsAsync(email, guid))
-        {
             throw new InvalidUpdateException($"Email[{email}] is already exist");
-        }
 
         if (await _accountRepository.PhoneIsExistAsync(phone, guid))
-        {
             throw new InvalidUpdateException($"Phone[{phone}] is already exist");
-        }
     }
 }

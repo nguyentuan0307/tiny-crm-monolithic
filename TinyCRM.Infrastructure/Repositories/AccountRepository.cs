@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using TinyCRM.Application.Helper.Specification.Accounts;
 using TinyCRM.Domain.Entities.Accounts;
 using TinyCRM.Domain.Helper.QueryParameters;
@@ -16,17 +16,12 @@ public class AccountRepository : Repository<Account, Guid>, IAccountRepository
     {
         var specification = new AccountsSpecification(accountQueryParameters.KeyWord);
 
-        return await ListAsync(specification: specification,
-            includeTables: accountQueryParameters.IncludeTables,
-            sorting: accountQueryParameters.Sorting,
-            pageIndex: accountQueryParameters.PageIndex,
-            pageSize: accountQueryParameters.PageSize
+        return await ListAsync(specification,
+            accountQueryParameters.IncludeTables,
+            accountQueryParameters.Sorting,
+            accountQueryParameters.PageIndex,
+            accountQueryParameters.PageSize
         );
-    }
-
-    protected override Expression<Func<Account, bool>> ExpressionForGet(Guid id)
-    {
-        return p => p.Id == id;
     }
 
     public override Task<bool> AnyAsync(Guid id)
@@ -42,5 +37,10 @@ public class AccountRepository : Repository<Account, Guid>, IAccountRepository
     public Task<bool> PhoneIsExistAsync(string phone, Guid id)
     {
         return DbSet.AnyAsync(p => p.Phone == phone && p.Id != id);
+    }
+
+    protected override Expression<Func<Account, bool>> ExpressionForGet(Guid id)
+    {
+        return p => p.Id == id;
     }
 }

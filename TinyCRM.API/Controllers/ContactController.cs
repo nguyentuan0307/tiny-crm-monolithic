@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using TinyCRM.Application.Models.Contact;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Service.IServices;
@@ -24,7 +24,8 @@ public class ContactController : Controller
     public async Task<IActionResult> GetContactsAsync([FromQuery] ContactSearchDto search)
     {
         var contactDtOs = await _contactService.GetContactsAsync(search);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
         return Ok(contactDtOs);
     }
 
@@ -34,7 +35,8 @@ public class ContactController : Controller
     public async Task<IActionResult> GetContactAsync(Guid id)
     {
         var contactDto = await _contactService.GetContactAsync(id);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contact: {JsonSerializer.Serialize(contactDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Retrieved Contact: {JsonSerializer.Serialize(contactDto)}");
         return Ok(contactDto);
     }
 
@@ -43,7 +45,8 @@ public class ContactController : Controller
     public async Task<IActionResult> CreateContactAsync([FromBody] ContactCreateDto contactDto)
     {
         var contactNewDto = await _contactService.CreateContactAsync(contactDto);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Created Contact: {JsonSerializer.Serialize(contactNewDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Created Contact: {JsonSerializer.Serialize(contactNewDto)}");
         return CreatedAtAction(nameof(GetContactAsync), new { id = contactNewDto.Id }, contactNewDto);
     }
 
@@ -52,7 +55,8 @@ public class ContactController : Controller
     public async Task<IActionResult> UpdateContactAsync(Guid id, [FromBody] ContactUpdateDto contactDto)
     {
         var contactUpdateDto = await _contactService.UpdateContactAsync(id, contactDto);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Updated Contact: {JsonSerializer.Serialize(contactUpdateDto)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Updated Contact: {JsonSerializer.Serialize(contactUpdateDto)}");
         return Ok(contactUpdateDto);
     }
 
@@ -70,7 +74,8 @@ public class ContactController : Controller
     public async Task<IActionResult> GetContactsAsync(Guid accountId, [FromQuery] ContactSearchDto search)
     {
         var contactDtOs = await _contactService.GetContactsAsync(accountId, search);
-        LoggerService.LogInformation($"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
+        LoggerService.LogInformation(
+            $"[{DateTime.Now}]Successfully Retrieved Contacts: {JsonSerializer.Serialize(contactDtOs)}");
         return Ok(contactDtOs);
     }
 }

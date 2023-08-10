@@ -3,5 +3,5 @@
 public enum EnumDealFilterSort
 {
     Id,
-    Title,
+    Title
 }

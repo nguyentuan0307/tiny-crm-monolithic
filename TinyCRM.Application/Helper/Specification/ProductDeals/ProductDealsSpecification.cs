@@ -18,9 +18,7 @@ public class ProductDealsByFilterSpecification : Specification<ProductDeal>, ISp
         Expression<Func<ProductDeal, bool>> expression = p => true;
         if (_keyWord == null) return expression;
         if (!string.IsNullOrEmpty(_keyWord))
-        {
             expression = p => p.Product.Code.Contains(_keyWord) || p.Product.Name.Contains(_keyWord);
-        }
 
         return expression;
     }

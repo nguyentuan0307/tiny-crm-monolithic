@@ -12,12 +12,13 @@ namespace TinyCRM.Application.Service;
 
 public class DealService : IDealService
 {
-    private readonly IDealRepository _dealRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IDealRepository _dealRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DealService(IDealRepository dealRepository, IMapper mapper, IUnitOfWork unitOfWork, IAccountRepository accountRepository)
+    public DealService(IDealRepository dealRepository, IMapper mapper, IUnitOfWork unitOfWork,
+        IAccountRepository accountRepository)
     {
         _dealRepository = dealRepository;
         _accountRepository = accountRepository;
@@ -30,12 +31,6 @@ public class DealService : IDealService
         var deal = await FindDealAsync(id);
         _dealRepository.Remove(deal);
         await _unitOfWork.SaveChangeAsync();
-    }
-
-    private async Task<Deal> FindDealAsync(Guid id, string? includeTables = default)
-    {
-        return await _dealRepository.GetAsync(id, includeTables)
-               ?? throw new EntityNotFoundException($"Deal with Id[{id}]is not found");
     }
 
     public async Task<DealDto> GetDealAsync(Guid id)
@@ -69,9 +64,7 @@ public class DealService : IDealService
         var existingDeal = await FindDealAsync(id);
 
         if (existingDeal.StatusDeal is StatusDeal.Won or StatusDeal.Lost)
-        {
             throw new InvalidUpdateException($"Deal[{existingDeal.Title}] is Win/Lose Status");
-        }
 
         existingDeal.ActualRevenue = existingDeal.ProductDeals.Sum(p => p.TotalAmount);
         _mapper.Map(dealDto, existingDeal);
@@ -85,10 +78,7 @@ public class DealService : IDealService
     {
         var statistic = await _dealRepository.GetDealStatisticsAsync();
 
-        if (statistic.Count == 0)
-        {
-            return new DealStatisticDto();
-        }
+        if (statistic.Count == 0) return new DealStatisticDto();
 
         var dealStatisticDto = new DealStatisticDto
         {
@@ -99,14 +89,6 @@ public class DealService : IDealService
             AvgRevenue = statistic.Average(x => x.ActualRevenue)
         };
         return dealStatisticDto;
-    }
-
-    private async Task CheckValidateAccount(Guid accountId)
-    {
-        if (!await _accountRepository.AnyAsync(accountId))
-        {
-            throw new EntityNotFoundException($"Account with Id[{accountId} is not found");
-        }
     }
 
     public async Task<List<DealDto>> GetDealsAsync(Guid accountId, DealSearchDto search)
@@ -127,5 +109,17 @@ public class DealService : IDealService
         var dealAccounts = await _dealRepository.GetDealsByAccountIdAsync(dealQueryParameters);
 
         return _mapper.Map<List<DealDto>>(dealAccounts);
+    }
+
+    private async Task<Deal> FindDealAsync(Guid id, string? includeTables = default)
+    {
+        return await _dealRepository.GetAsync(id, includeTables)
+               ?? throw new EntityNotFoundException($"Deal with Id[{id}]is not found");
+    }
+
+    private async Task CheckValidateAccount(Guid accountId)
+    {
+        if (!await _accountRepository.AnyAsync(accountId))
+            throw new EntityNotFoundException($"Account with Id[{accountId} is not found");
     }
 }

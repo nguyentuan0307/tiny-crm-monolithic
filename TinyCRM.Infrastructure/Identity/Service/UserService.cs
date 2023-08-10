@@ -1,10 +1,10 @@
-﻿using AutoMapper;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using TinyCRM.Application.Models;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
@@ -20,13 +20,13 @@ namespace TinyCRM.Infrastructure.Identity.Service;
 
 public class UserService : IUserService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IMapper _mapper;
     private readonly JwtSettings _jwtSettings;
-    private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
+    private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
     public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
         IMapper mapper, IOptions<JwtSettings> jwtOptions, RoleManager<ApplicationRole> roleManager,
@@ -43,68 +43,64 @@ public class UserService : IUserService
 
     public async Task<UserProfileDto> SignUpAsync(SignUpDto signUpDto)
     {
-        _unitOfWork.BeginTransaction();
         if (!await _roleManager.RoleExistsAsync(ConstRole.User))
-        {
             await _roleManager.CreateAsync(new ApplicationRole(ConstRole.User));
-        }
+
         var user = _mapper.Map<ApplicationUser>(signUpDto);
-
-        var result = await _userManager.CreateAsync(user, signUpDto.Password);
-        if (!result.Succeeded)
-        {
-            _unitOfWork.Rollback();
-            throw new InvalidUpdateException(result.Errors.First().Description);
-        }
-
+        _unitOfWork.BeginTransaction();
         try
         {
+            var result = await _userManager.CreateAsync(user, signUpDto.Password);
+            if (!result.Succeeded)
+                throw new InvalidUpdateException(result.Errors.First().Description);
+
             await _userManager.AddToRoleAsync(user, ConstRole.User);
             _unitOfWork.Commit();
         }
         catch
         {
             _unitOfWork.Rollback();
-            throw new InvalidUpdateException("Adding role to user failed.");
+            throw;
         }
+
         return _mapper.Map<UserProfileDto>(user);
     }
 
     public async Task<UserProfileDto> SignUpAdminAsync(SignUpDto signUpDto)
     {
-        _unitOfWork.BeginTransaction();
         if (!await _roleManager.RoleExistsAsync(ConstRole.Admin))
-        {
             await _roleManager.CreateAsync(new ApplicationRole(ConstRole.Admin));
-        }
 
         var user = _mapper.Map<ApplicationUser>(signUpDto);
-        var result = await _userManager.CreateAsync(user, signUpDto.Password);
-        if (!result.Succeeded)
-        {
-            _unitOfWork.Rollback();
-            throw new InvalidUpdateException(result.Errors.First().Description);
-        }
+        _unitOfWork.BeginTransaction();
         try
         {
-            await _userManager.AddToRoleAsync(user, ConstRole.User);
+            var resultCreateUser = await _userManager.CreateAsync(user, signUpDto.Password);
+            if (!resultCreateUser.Succeeded)
+                throw new InvalidUpdateException(resultCreateUser.Errors.First().Description);
+
+            var resultAddRole = await _userManager.AddToRoleAsync(user, ConstRole.Admin);
+            if (!resultAddRole.Succeeded)
+                throw new InvalidUpdateException(resultAddRole.Errors.First().Description);
+
             _unitOfWork.Commit();
         }
         catch
         {
             _unitOfWork.Rollback();
-            throw new InvalidUpdateException("Adding role to user failed.");
+            throw;
         }
+
         return _mapper.Map<UserProfileDto>(user);
     }
 
-    public async Task<UserProfileDto> UpdateProfileAsync(string id, ProfileUserUpdateDto updateDto, ClaimsPrincipal user)
+    public async Task<UserProfileDto> UpdateProfileAsync(string id, ProfileUserUpdateDto updateDto,
+        ClaimsPrincipal user)
     {
         if (!CanUpdateUser(user, id))
             throw new InvalidUpdateException("No permission to update this user.");
 
-        var userUpdate = await _userManager.FindByIdAsync(id)
-                         ?? throw new EntityNotFoundException($"User with Id[{id}] not found");
+        var userUpdate = await FindUserById(id);
 
         _mapper.Map(updateDto, userUpdate);
         await _userManager.UpdateAsync(userUpdate);
@@ -115,8 +111,7 @@ public class UserService : IUserService
     {
         if (!CanUpdateUser(user, id))
             throw new InvalidUpdateException("No permission to update this user.");
-        var userUpdate = await _userManager.FindByIdAsync(id)
-                         ?? throw new EntityNotFoundException($"User with Id[{id}] not found");
+        var userUpdate = await FindUserById(id);
 
         var result = await _userManager.ChangePasswordAsync(userUpdate, changePasswordDto.CurrentPassword,
             changePasswordDto.NewPassword);
@@ -133,68 +128,31 @@ public class UserService : IUserService
             throw new InvalidUpdateException("Cannot delete admin user.");
 
         var deleteResult = await _userManager.DeleteAsync(appUser);
-        if (!deleteResult.Succeeded)
-        {
-            throw new InvalidUpdateException(deleteResult.Errors.First().Description);
-        }
+        if (!deleteResult.Succeeded) throw new InvalidUpdateException(deleteResult.Errors.First().Description);
     }
 
     public async Task UpdateRoleAsync(string id, string[] roleIds)
     {
-        var appUser = await _userManager.FindByIdAsync(id)
-                      ?? throw new EntityNotFoundException($"User with id [{id}] not found");
-
-        var existingRoles = await _userManager.GetRolesAsync(appUser);
-        var rolesToAdd = roleIds.Except(existingRoles);
-        var rolesToRemove = existingRoles.Except(roleIds);
-
-        _unitOfWork.BeginTransaction();
-
         try
         {
-            foreach (var roleName in rolesToRemove)
-            {
-                var removeRoleResult = await _userManager.RemoveFromRoleAsync(appUser, roleName);
-                if (removeRoleResult.Succeeded) continue;
-                _unitOfWork.Rollback();
-                throw new InvalidUpdateException(removeRoleResult.Errors.First().Description);
-            }
+            var appUser = await FindUserById(id);
 
-            foreach (var roleId in rolesToAdd)
-            {
-                var appRole = await _roleManager.FindByIdAsync(roleId)
-                              ?? throw new EntityNotFoundException($"Role with id [{roleId}] not found");
-                if (appRole.Name == ConstRole.SuperAdmin)
-                {
-                    _unitOfWork.Rollback();
-                    throw new InvalidUpdateException("Cannot add SuperAdmin role to user.");
-                }
-                var updateRoleResult = await _userManager.AddToRoleAsync(appUser, appRole.Name!);
-                if (updateRoleResult.Succeeded) continue;
-                _unitOfWork.Rollback();
-                throw new InvalidUpdateException(updateRoleResult.Errors.First().Description);
-            }
+            var existingRoles = await _userManager.GetRolesAsync(appUser);
+            var rolesToAdd = roleIds.Except(existingRoles).ToList();
+            var rolesToRemove = existingRoles.Except(roleIds).ToList();
+
+            _unitOfWork.BeginTransaction();
+
+            await RemoveRolesUser(appUser, rolesToRemove);
+            await AddRolesUser(appUser, rolesToAdd);
 
             _unitOfWork.Commit();
         }
         catch
         {
             _unitOfWork.Rollback();
-            throw new InvalidUpdateException("Updating user roles failed.");
+            throw;
         }
-    }
-
-    private static bool CanUpdateUser(ClaimsPrincipal user, string userIdToUpdate)
-    {
-        var claims = user.Claims.ToList();
-
-        var loggedInUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-        var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: ConstRole.Admin or ConstRole.SuperAdmin });
-
-        var isSelf = loggedInUserId == userIdToUpdate;
-
-        return isAdmin || isSelf;
     }
 
     public async Task<string> SignInAsync(SignInDto signInDto)
@@ -203,10 +161,7 @@ public class UserService : IUserService
                    ?? throw new EntityNotFoundException($"User with Email[{signInDto.Email}] not found");
 
         var result = await _signInManager.PasswordSignInAsync(user, signInDto.Password, false, true);
-        if (!result.Succeeded)
-        {
-            throw new InvalidPasswordException("Invalid password");
-        }
+        if (!result.Succeeded) throw new InvalidPasswordException("Invalid password");
 
         var roles = await _userManager.GetRolesAsync(user);
 
@@ -216,8 +171,7 @@ public class UserService : IUserService
 
     public async Task<UserProfileDto> GetProfileAsync(string id)
     {
-        var user = await _userManager.FindByIdAsync(id)
-                   ?? throw new EntityNotFoundException($"User with Id[{id}] not found");
+        var user = await FindUserById(id);
         var profile = _mapper.Map<UserProfileDto>(user);
         return profile;
     }
@@ -236,6 +190,60 @@ public class UserService : IUserService
         return _mapper.Map<List<UserProfileDto>>(users);
     }
 
+    private async Task<ApplicationUser> FindUserById(string id)
+    {
+        var appUser = await _userManager.FindByIdAsync(id)
+                      ?? throw new EntityNotFoundException($"User with id [{id}] not found");
+        return appUser;
+    }
+
+    private async Task<ApplicationRole> FindRoleById(string id)
+    {
+        var appRole = await _roleManager.FindByIdAsync(id)
+                      ?? throw new EntityNotFoundException($"Role with Id[{id}] not found");
+        return appRole;
+    }
+    
+    private async Task RemoveRolesUser(ApplicationUser appUser, IEnumerable<string> rolesToRemove)
+    {
+        var removeRolesResult = await _userManager.RemoveFromRolesAsync(appUser, rolesToRemove);
+        if (!removeRolesResult.Succeeded)
+            throw new InvalidUpdateException(removeRolesResult.Errors.First().Description);
+    }
+
+    private async Task AddRolesUser(ApplicationUser appUser, IEnumerable<string> rolesToAdd)
+    {
+        foreach (var roleId in rolesToAdd)
+        {
+            var appRole = await FindRoleById(roleId);
+            
+            ValidateUpdateRolesUser(appRole);
+            
+            var updateRoleResult = await _userManager.AddToRoleAsync(appUser, appRole.Name!);
+            if (!updateRoleResult.Succeeded)
+                throw new InvalidUpdateException(updateRoleResult.Errors.First().Description);
+        }
+    }
+
+    private static void ValidateUpdateRolesUser(ApplicationRole appRole)
+    {
+        if (appRole.Name == ConstRole.SuperAdmin)
+            throw new InvalidUpdateException("Cannot add SuperAdmin role to user.");
+    }
+    
+    private static bool CanUpdateUser(ClaimsPrincipal user, string userIdToUpdate)
+    {
+        var claims = user.Claims.ToList();
+
+        var loggedInUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: ConstRole.Admin or ConstRole.SuperAdmin });
+
+        var isSelf = loggedInUserId == userIdToUpdate;
+
+        return isAdmin || isSelf;
+    }
+
     private async Task<string> GenerateToken(string id, string email, IList<string> roles)
     {
         var authClaims = await GenerateAuthClaims(id, email, roles);
@@ -249,8 +257,8 @@ public class UserService : IUserService
         var authClaims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, id),
-            new(ClaimTypes.Email,email),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.Email, email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
         authClaims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
@@ -261,6 +269,7 @@ public class UserService : IUserService
             var permissions = await GetPermissionsForRoleAsync(role);
             authClaims.AddRange(permissions.Select(permission => new Claim("Permission", permission)));
         }
+
         return authClaims;
     }
 
@@ -276,11 +285,11 @@ public class UserService : IUserService
         return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
     }
 
-    private JwtSecurityToken GenerateJwtToken(List<Claim> authClaims, SecurityKey authKey)
+    private JwtSecurityToken GenerateJwtToken(IEnumerable<Claim> authClaims, SecurityKey authKey)
     {
         return new JwtSecurityToken(
-            issuer: _jwtSettings.ValidIssuer,
-            audience: _jwtSettings.ValidAudience,
+            _jwtSettings.ValidIssuer,
+            _jwtSettings.ValidAudience,
             expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryInMinutes),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256)

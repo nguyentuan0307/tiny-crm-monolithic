@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace TinyCRM.Infrastructure.Identity.Role
+namespace TinyCRM.Infrastructure.Identity.Role;
+
+public class ApplicationRole : IdentityRole
 {
-    public class ApplicationRole : IdentityRole
+    public ApplicationRole()
     {
-        public ApplicationRole()
-        { }
-
-        public ApplicationRole(string role) : base(roleName: role)
-        { }
-
-        public ICollection<IdentityRoleClaim<string>>? Claims { get; set; }
     }
+
+    public ApplicationRole(string role) : base(role)
+    {
+    }
+
+    public ICollection<IdentityRoleClaim<string>>? Claims { get; set; }
 }

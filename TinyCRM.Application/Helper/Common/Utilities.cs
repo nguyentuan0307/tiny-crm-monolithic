@@ -9,7 +9,8 @@ public static class Utilities
     public static IEnumerable<string?> GetPermissionNames()
     {
         var permissionNames = typeof(TinyCrmPermissions).GetNestedTypes(BindingFlags.Public)
-            .SelectMany(nestedType => nestedType.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .SelectMany(nestedType => nestedType
+                .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                 .Where(field => field.FieldType == typeof(string) && field is { IsLiteral: true, IsInitOnly: false })
                 .Select(field => field.GetValue(null) as string))
             .ToList();

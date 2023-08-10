@@ -16,13 +16,9 @@ public class UnitOfWork : IUnitOfWork
     public void BeginTransaction()
     {
         if (_transaction == null)
-        {
             _transaction = _dbFactory.DbContext.Database.BeginTransaction();
-        }
         else
-        {
             throw new InvalidOperationException("Transaction already started.");
-        }
     }
 
     public void Rollback()
@@ -56,12 +52,7 @@ public class UnitOfWork : IUnitOfWork
     public async Task<int> SaveChangeAsync()
     {
         if (_transaction != null)
-        {
             return await _dbFactory.DbContext.SaveChangesAsync();
-        }
-        else
-        {
-            throw new InvalidOperationException("Transaction not started. Call BeginTransaction() before saving changes.");
-        }
+        throw new InvalidOperationException("Transaction not started. Call BeginTransaction() before saving changes.");
     }
 }

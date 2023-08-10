@@ -18,10 +18,8 @@ public class UsersByFilterSpecification : Specification<ApplicationUser>, ISpeci
         Expression<Func<ApplicationUser, bool>> expression = p => true;
         if (_keyWord == null) return expression;
         if (!string.IsNullOrEmpty(_keyWord))
-        {
             expression = p => p.Name.Contains(_keyWord)
                               || p.Email!.Contains(_keyWord);
-        }
 
         return expression;
     }

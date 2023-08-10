@@ -18,10 +18,8 @@ public class ProductsByFilterSpecification : Specification<Product>, ISpecificat
         Expression<Func<Product, bool>> expression = p => true;
         if (_keyWord == null) return expression;
         if (!string.IsNullOrEmpty(_keyWord))
-        {
             expression = p => p.Name.Contains(_keyWord)
                               || p.Code.Contains(_keyWord);
-        }
 
         return expression;
     }
