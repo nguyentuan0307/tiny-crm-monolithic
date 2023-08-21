@@ -5,7 +5,7 @@ using TinyCRM.Application.Models.Deal;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.ProductDeal;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Infrastructure.Logger;
+using TinyCRM.Infrastructure.Serilog;
 
 namespace TinyCRM.API.Controllers;
 

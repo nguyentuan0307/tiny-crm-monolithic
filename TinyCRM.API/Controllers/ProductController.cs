@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.Product;
 using TinyCRM.Application.Service.IServices;
-using TinyCRM.Infrastructure.Logger;
+using TinyCRM.Infrastructure.Serilog;
 
 namespace TinyCRM.API.Controllers;
 

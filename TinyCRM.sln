@@ -7,11 +7,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyCRM.API", "TinyCRM.API\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyCRM.Domain", "TinyCRM.Domain\TinyCRM.Domain.csproj", "{A9C5D9A1-1234-5678-9B43-ABCD12345678}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyCRM.Infrastructure", "TinyCRM.Infrastructure\TinyCRM.Infrastructure.csproj", "{B1E87424-5678-4321-8765-9876543210AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyCRM.Infrastructure.EntityFramework", "TinyCRM.Infrastructure.EntityFramework\TinyCRM.Infrastructure.EntityFramework.csproj", "{B1E87424-5678-4321-8765-9876543210AB}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{E6F8B382-7E39-4C98-8AC5-8A01B9D6675B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyCRM.Application", "TinyCRM.Application\TinyCRM.Application.csproj", "{99BAA404-43F8-4937-B8F8-24EDDC6CEA82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyCRM.Infrastructure.Identity", "TinyCRM.Infrastructure.Identity\TinyCRM.Infrastructure.Identity.csproj", "{CFD56915-A0B3-4E8D-9C91-2992CE0F6918}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyCRM.Infrastructure.Serilog", "TinyCRM.Infrastructure.Serilog\TinyCRM.Infrastructure.Serilog.csproj", "{96186C38-683E-431B-8E1D-C843A179688D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{99BAA404-43F8-4937-B8F8-24EDDC6CEA82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99BAA404-43F8-4937-B8F8-24EDDC6CEA82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99BAA404-43F8-4937-B8F8-24EDDC6CEA82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFD56915-A0B3-4E8D-9C91-2992CE0F6918}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD56915-A0B3-4E8D-9C91-2992CE0F6918}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD56915-A0B3-4E8D-9C91-2992CE0F6918}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD56915-A0B3-4E8D-9C91-2992CE0F6918}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96186C38-683E-431B-8E1D-C843A179688D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96186C38-683E-431B-8E1D-C843A179688D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96186C38-683E-431B-8E1D-C843A179688D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96186C38-683E-431B-8E1D-C843A179688D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

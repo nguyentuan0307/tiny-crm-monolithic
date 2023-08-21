@@ -16,7 +16,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TinyCRM.Application\TinyCRM.Application.csproj"/>
-        <ProjectReference Include="..\TinyCRM.Infrastructure\TinyCRM.Infrastructure.csproj"/>
+        <ProjectReference Include="..\TinyCRM.Infrastructure.Serilog\TinyCRM.Infrastructure.Serilog.csproj" />
+        <ProjectReference Include="..\TinyCRM.Infrastructure.EntityFramework\TinyCRM.Infrastructure.EntityFramework.csproj" />
     </ItemGroup>
 
 </Project>

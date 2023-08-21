@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using TinyCRM.API.Authorization;
+using TinyCRM.Application.Identity;
 using TinyCRM.Application.Models;
 using TinyCRM.Application.Service;
 using TinyCRM.Application.Service.IServices;
@@ -69,7 +70,10 @@ public static class ServiceCollectionExtensions
             .AddScoped<IDealService, DealService>()
             .AddScoped<IProductDealService, ProductDealService>()
             .AddScoped<IUserService, UserService>()
-            .AddScoped<IRoleService, RoleService>();
+            .AddScoped<IRoleService, RoleService>()
+            .AddScoped<IAuthManager,AuthManagerService>()
+            .AddScoped<IUserManager,UserManagerService>()
+            .AddScoped<IRoleManager,RoleManagerService>();
     }
 
     public static IServiceCollection AddSwagger(this IServiceCollection services)

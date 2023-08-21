@@ -1,21 +1,20 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using TinyCRM.Application.Helper.Common;
+using TinyCRM.Application.Identity;
 using TinyCRM.Application.Models.Permissions;
-using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Const;
 using TinyCRM.Domain.Exceptions;
 using TinyCRM.Infrastructure.Identity.Role;
 
 namespace TinyCRM.Infrastructure.Identity.Service;
 
-public class RoleService : IRoleService
+public class RoleManagerService : IRoleManager
 {
     private readonly IMapper _mapper;
     private readonly RoleManager<ApplicationRole> _roleManager;
 
-    public RoleService(RoleManager<ApplicationRole> roleManager, IMapper mapper)
+    public RoleManagerService(RoleManager<ApplicationRole> roleManager, IMapper mapper)
     {
         _roleManager = roleManager;
         _mapper = mapper;
@@ -41,12 +40,7 @@ public class RoleService : IRoleService
 
         if (appRole.Name == ConstRole.SuperAdmin)
             throw new InvalidUpdateException("Cannot update super admin role");
-
-        role.Permissions = role.Permissions.Distinct().ToList();
-        var invalidPermissions = Utilities.ListInvalidPermissions(role.Permissions);
-        if (invalidPermissions.Any())
-            throw new InvalidUpdateException($"Invalid permissions[{string.Join(", ", invalidPermissions)}]");
-
+        
         _mapper.Map(role, appRole);
         var result = await _roleManager.UpdateAsync(appRole);
 

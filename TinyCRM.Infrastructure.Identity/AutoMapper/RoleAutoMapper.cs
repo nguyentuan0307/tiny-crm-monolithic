@@ -2,7 +2,7 @@
 using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Infrastructure.Identity.Role;
 
-namespace TinyCRM.Infrastructure.Helper.AutoMapper;
+namespace TinyCRM.Infrastructure.Identity.AutoMapper;
 
 public class RoleAutoMapper : InfraAutoMapper
 {
@@ -10,7 +10,7 @@ public class RoleAutoMapper : InfraAutoMapper
     {
         CreateMap<RoleUpdateDto, ApplicationRole>()
             .ForMember(r => r.Claims,
-                opt => opt.MapFrom(dto => dto.Permissions!.Select(p => new IdentityRoleClaim<string>
+                opt => opt.MapFrom(dto => dto.Permissions.Select(p => new IdentityRoleClaim<string>
                     { ClaimType = "Permission", ClaimValue = p })));
 
         CreateMap<ApplicationRole, RoleDto>()

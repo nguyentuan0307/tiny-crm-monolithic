@@ -5,7 +5,7 @@ using TinyCRM.Application.Models.Permissions;
 using TinyCRM.Application.Models.User;
 using TinyCRM.Application.Service.IServices;
 using TinyCRM.Domain.Const;
-using TinyCRM.Infrastructure.Logger;
+using TinyCRM.Infrastructure.Serilog;
 
 namespace TinyCRM.API.Controllers;
 
@@ -43,14 +43,6 @@ public class IamAccountController : Controller
         return CreatedAtAction(nameof(GetProfileAsync), new { id = user.Id }, user);
     }
 
-    [HttpPost("sign-in")]
-    public async Task<IActionResult> SignInAsync(SignInDto signInDto)
-    {
-        var result = await _userService.SignInAsync(signInDto);
-        LoggerService.LogInformation(
-            $"[{DateTime.Now}]Successfully Signed In User: {JsonSerializer.Serialize(result)}");
-        return Ok(new { Token = result });
-    }
 
     [HttpGet("{id}")]
     [ActionName(nameof(GetProfileAsync))]

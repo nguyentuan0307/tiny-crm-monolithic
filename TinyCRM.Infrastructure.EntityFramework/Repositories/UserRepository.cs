@@ -1,8 +1,9 @@
 ﻿using TinyCRM.Domain.Helper.QueryParameters;
+using TinyCRM.Infrastructure.Identity.Repository.User;
 using TinyCRM.Infrastructure.Identity.Specification;
 using TinyCRM.Infrastructure.Identity.Users;
 
-namespace TinyCRM.Infrastructure.Identity.Repository.User;
+namespace TinyCRM.Infrastructure.Repositories;
 
 public class UserRepository : Repository<ApplicationUser, string>, IUserRepository
 {

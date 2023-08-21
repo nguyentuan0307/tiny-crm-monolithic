@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace TinyCRM.Infrastructure.Logger;
+namespace TinyCRM.Infrastructure.Serilog;
 
 public static class LoggerService
 {

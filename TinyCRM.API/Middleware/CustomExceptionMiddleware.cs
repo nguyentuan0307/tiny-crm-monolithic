@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using TinyCRM.Application.Models;
 using TinyCRM.Domain.Exceptions;
-using TinyCRM.Infrastructure.Logger;
+using TinyCRM.Infrastructure.Serilog;
 
 namespace TinyCRM.API.Middleware;
 
@@ -24,7 +24,7 @@ public static class CustomExceptionMiddleware
 
                 var message = env.IsDevelopment()
                     ? ex?.Message
-                    : $"An error occurred from the system. Please try again";
+                    : "An error occurred from the system. Please try again";
                 context.Response.StatusCode = statusCode;
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsJsonAsync(new ExceptionResponse

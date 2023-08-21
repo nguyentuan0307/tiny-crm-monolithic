@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 using TinyCRM.API.Extensions;
 using TinyCRM.API.Middleware;
 using TinyCRM.Application.Helper.AutoMapper;
-using TinyCRM.Infrastructure.Helper.AutoMapper;
-using TinyCRM.Infrastructure.Logger;
+using TinyCRM.Infrastructure.Identity.AutoMapper;
+using TinyCRM.Infrastructure.Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
