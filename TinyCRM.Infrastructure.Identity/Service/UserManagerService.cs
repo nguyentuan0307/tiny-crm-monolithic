@@ -11,13 +11,13 @@ using TinyCRM.Infrastructure.Identity.Users;
 
 namespace TinyCRM.Infrastructure.Identity.Service;
 
-public class UserManagerService:IUserManager
+public class UserManagerService : IUserManager
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IUserRepository _userRepository;
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IMapper _mapper;
+    private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
     public UserManagerService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager,
         IUserRepository userRepository, IMapper mapper, SignInManager<ApplicationUser> signInManager)
@@ -28,6 +28,7 @@ public class UserManagerService:IUserManager
         _mapper = mapper;
         _signInManager = signInManager;
     }
+
     public async Task<List<UserProfileDto>> GetUsersAsync(UserQueryParameters queryParameters)
     {
         var users = await _userRepository.GetUsersAsync(queryParameters);
@@ -54,10 +55,7 @@ public class UserManagerService:IUserManager
     {
         var user = await FindUserById(id);
         var role = await _roleManager.FindByNameAsync(name);
-        if (role == null)
-        {
-            throw new EntityNotFoundException($"Role with name [{name}] not found");
-        }
+        if (role == null) throw new EntityNotFoundException($"Role with name [{name}] not found");
 
         var result = await _userManager.AddToRoleAsync(user, name);
         if (!result.Succeeded)
@@ -66,7 +64,7 @@ public class UserManagerService:IUserManager
             throw new InvalidUpdateException(error.Description);
         }
     }
-    
+
     public async Task<UserProfileDto> UpdateUserAsync(string id, ProfileUserUpdateDto updateDto)
     {
         var userUpdate = await FindUserById(id);
@@ -80,7 +78,7 @@ public class UserManagerService:IUserManager
     {
         var appUser = await FindUserById(id);
         var deleteResult = await _userManager.DeleteAsync(appUser);
-        if (!deleteResult.Succeeded) 
+        if (!deleteResult.Succeeded)
             throw new InvalidUpdateException(deleteResult.Errors.First().Description);
     }
 
@@ -93,7 +91,7 @@ public class UserManagerService:IUserManager
         if (!result.Succeeded)
             throw new InvalidUpdateException(result.Errors.First().Description);
     }
-    
+
 
     public async Task RemoveRolesUserAsync(string id, IEnumerable<string> rolesToRemove)
     {
@@ -102,16 +100,16 @@ public class UserManagerService:IUserManager
         if (!removeRolesResult.Succeeded)
             throw new InvalidUpdateException(removeRolesResult.Errors.First().Description);
     }
-    
+
     public async Task AddRolesUserAsync(string id, IEnumerable<string> rolesToAdd)
     {
         var appUser = await FindUserById(id);
         foreach (var roleId in rolesToAdd)
         {
             var appRole = await FindRoleById(roleId);
-            
+
             ValidateUpdateRolesUser(appRole);
-            
+
             var updateRoleResult = await _userManager.AddToRoleAsync(appUser, appRole.Name!);
             if (!updateRoleResult.Succeeded)
                 throw new InvalidUpdateException(updateRoleResult.Errors.First().Description);
@@ -123,20 +121,20 @@ public class UserManagerService:IUserManager
         var user = await FindUserById(id);
         return await _userManager.GetRolesAsync(user);
     }
-    
+
     private async Task<ApplicationRole> FindRoleById(string id)
     {
         var appRole = await _roleManager.FindByIdAsync(id)
                       ?? throw new EntityNotFoundException($"Role with Id[{id}] not found");
         return appRole;
     }
-    
+
     private static void ValidateUpdateRolesUser(ApplicationRole appRole)
     {
         if (appRole.Name == ConstRole.SuperAdmin)
             throw new InvalidUpdateException("Cannot add SuperAdmin role to user.");
     }
-    
+
     private async Task<ApplicationUser> FindUserById(string id)
     {
         var appUser = await _userManager.FindByIdAsync(id)

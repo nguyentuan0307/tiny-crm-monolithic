@@ -11,8 +11,8 @@ namespace TinyCRM.Application.Service;
 
 public class UserService : IUserService
 {
-    private readonly IUserManager _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserManager _userManager;
 
     public UserService(IUserManager userManager,
         IUnitOfWork unitOfWork)
@@ -37,7 +37,7 @@ public class UserService : IUserService
             throw;
         }
     }
-    
+
 
     public async Task<UserProfileDto> GetProfileAsync(string id)
     {
@@ -83,19 +83,6 @@ public class UserService : IUserService
         return await _userManager.UpdateUserAsync(id, updateDto);
     }
 
-    private static bool CanUpdateUser(ClaimsPrincipal user, string userIdToUpdate)
-    {
-        var claims = user.Claims.ToList();
-
-        var loggedInUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-        var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: ConstRole.Admin or ConstRole.SuperAdmin });
-
-        var isSelf = loggedInUserId == userIdToUpdate;
-
-        return isAdmin || isSelf;
-    }
-
     public async Task ChangePasswordAsync(string id, UserChangePasswordDto changePasswordDto, ClaimsPrincipal user)
     {
         if (!CanUpdateUser(user, id))
@@ -130,5 +117,18 @@ public class UserService : IUserService
             _unitOfWork.Rollback();
             throw;
         }
+    }
+
+    private static bool CanUpdateUser(ClaimsPrincipal user, string userIdToUpdate)
+    {
+        var claims = user.Claims.ToList();
+
+        var loggedInUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        var isAdmin = claims.Any(c => c is { Type: ClaimTypes.Role, Value: ConstRole.Admin or ConstRole.SuperAdmin });
+
+        var isSelf = loggedInUserId == userIdToUpdate;
+
+        return isAdmin || isSelf;
     }
 }

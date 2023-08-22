@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyCRM.Infrastructure.Iden
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyCRM.Infrastructure.Serilog", "TinyCRM.Infrastructure.Serilog\TinyCRM.Infrastructure.Serilog.csproj", "{96186C38-683E-431B-8E1D-C843A179688D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyCRM.Infrastructure.RedisCache", "TinyCRM.Infrastructure.RedisCache\TinyCRM.Infrastructure.RedisCache.csproj", "{93AB51E2-10C6-4879-AED6-CE46FC64DDA6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{96186C38-683E-431B-8E1D-C843A179688D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96186C38-683E-431B-8E1D-C843A179688D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96186C38-683E-431B-8E1D-C843A179688D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93AB51E2-10C6-4879-AED6-CE46FC64DDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93AB51E2-10C6-4879-AED6-CE46FC64DDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93AB51E2-10C6-4879-AED6-CE46FC64DDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93AB51E2-10C6-4879-AED6-CE46FC64DDA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

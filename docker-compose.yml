@@ -11,7 +11,11 @@ services:
       dockerfile: TinyCRM.API/Dockerfile
     environment:
       - ASPNETCORE_URLS=http://+:5000;https://+:5001
+      - TinyCRM_RedisConnection=tinycrm.redis
       - ConnectionStrings__Default=Server=tinycrm.db,1433;Database=TinyCrm;User Id=sa;Password=Admin123;TrustServerCertificate=True;
+    depends_on:
+      - tinycrm.db
+      - tinycrm.redis
   tinycrm.db:
     image: mcr.microsoft.com/mssql/server:latest
     environment:
@@ -22,5 +26,9 @@ services:
     volumes:
       - crmdata:/var/opt/mssql
     user: root
+  tinycrm.redis:
+    image: redis
+    ports:
+      - "6379:6379"
 volumes:
   crmdata:

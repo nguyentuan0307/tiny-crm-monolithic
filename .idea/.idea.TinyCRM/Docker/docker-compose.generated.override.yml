@@ -1,0 +1,23 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.4"
+services:
+  tinycrm.api:
+    build:
+      context: "D:\\Intern\\Enlab\\.NET\\tuan.nguyen.intern2023"
+      dockerfile: "TinyCRM.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net7.0/TinyCRM.API.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      NUGET_PACKAGES: "C:\\Users\\vieta\\.nuget\\packages"
+      NUGET_FALLBACK_PACKAGES: "C:\\Users\\vieta\\.nuget\\packages"
+    image: "tinycrmapi:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\vieta\\.nuget\\packages:/root/.nuget/fallbackpackages"
+    - "D:\\Intern\\Enlab\\.NET\\tuan.nguyen.intern2023\\TinyCRM.API:/app:rw"
+    - "D:\\Intern\\Enlab\\.NET\\tuan.nguyen.intern2023:/src:rw"
+    working_dir: "/app"

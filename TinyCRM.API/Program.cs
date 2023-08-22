@@ -10,19 +10,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 LoggerService.ConfigureLogger(builder.Configuration);
 
-builder.Services.AddAuthentication(builder.Configuration);
-builder.Services.AddAuthorizations();
-
 builder.Services.ConfigureOptions(builder.Configuration);
 
-builder.Services.AddDatabase(builder.Configuration);
-await builder.Services.ApplyMigrateAsync();
-
-builder.Services.AddRepositories();
-builder.Services.AddServices();
-
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(TinyCrmAutoMapper)));
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(InfraAutoMapper)));
+builder.Services.AddDatabase(builder.Configuration)
+    .AddRepositories()
+    .AddServices()
+    .AddAuthentication(builder.Configuration)
+    .AddAuthorizations()
+    .AddAutoMapper(Assembly.GetAssembly(typeof(TinyCrmAutoMapper)))
+    .AddAutoMapper(Assembly.GetAssembly(typeof(InfraAutoMapper)))
+    .AddRedisCache(builder.Configuration);
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });

@@ -16,8 +16,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TinyCRM.Application\TinyCRM.Application.csproj"/>
-        <ProjectReference Include="..\TinyCRM.Infrastructure.Serilog\TinyCRM.Infrastructure.Serilog.csproj" />
-        <ProjectReference Include="..\TinyCRM.Infrastructure.EntityFramework\TinyCRM.Infrastructure.EntityFramework.csproj" />
+        <ProjectReference Include="..\TinyCRM.Infrastructure.RedisCache\TinyCRM.Infrastructure.RedisCache.csproj"/>
+        <ProjectReference Include="..\TinyCRM.Infrastructure.Serilog\TinyCRM.Infrastructure.Serilog.csproj"/>
+        <ProjectReference Include="..\TinyCRM.Infrastructure.EntityFramework\TinyCRM.Infrastructure.EntityFramework.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ namespace TinyCRM.Application.Service.IServices;
 public interface IUserService
 {
     Task<UserProfileDto> SignUpAsync(SignUpDto signUpDto);
-    
+
     Task<UserProfileDto> GetProfileAsync(string id);
 
     Task<List<UserProfileDto>> GetProfilesAsync(ProfileUserSearchDto search);

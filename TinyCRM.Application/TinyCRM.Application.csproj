@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.21.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.21.0"/>
         <ProjectReference Include="..\TinyCRM.Domain\TinyCRM.Domain.csproj"/>
     </ItemGroup>
 

@@ -9,4 +9,6 @@ public interface IRoleManager
     Task<RoleDto> GetRoleAsync(Guid id);
 
     Task<RoleDto> UpdateAsync(Guid id, RoleUpdateDto role);
+    Task<IEnumerable<string>> GetRolesForUserAsync(string userId);
+    Task<List<string>> GetPermissionsForRoleAsync(string role);
 }

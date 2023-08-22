@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using TinyCRM.API.Authorization;
+using TinyCRM.Application.Cache;
+using TinyCRM.Application.Cache.Interface;
 using TinyCRM.Application.Identity;
 using TinyCRM.Application.Models;
 using TinyCRM.Application.Service;
@@ -23,6 +26,7 @@ using TinyCRM.Infrastructure.Identity.Repository.User;
 using TinyCRM.Infrastructure.Identity.Role;
 using TinyCRM.Infrastructure.Identity.Service;
 using TinyCRM.Infrastructure.Identity.Users;
+using TinyCRM.Infrastructure.RedisCache;
 using TinyCRM.Infrastructure.Repositories;
 using TinyCRM.Infrastructure.SeedData;
 
@@ -71,9 +75,10 @@ public static class ServiceCollectionExtensions
             .AddScoped<IProductDealService, ProductDealService>()
             .AddScoped<IUserService, UserService>()
             .AddScoped<IRoleService, RoleService>()
-            .AddScoped<IAuthManager,AuthManagerService>()
-            .AddScoped<IUserManager,UserManagerService>()
-            .AddScoped<IRoleManager,RoleManagerService>();
+            .AddScoped<IAuthService, AuthService>()
+            .AddScoped<IAuthManager, AuthManagerService>()
+            .AddScoped<IUserManager, UserManagerService>()
+            .AddScoped<IRoleManager, RoleManagerService>();
     }
 
     public static IServiceCollection AddSwagger(this IServiceCollection services)
@@ -118,6 +123,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
+        var jwtSetting = GetJwtSetting(configuration);
+        services.AddSingleton(jwtSetting);
+
         services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 // Password settings.
@@ -154,10 +162,10 @@ public static class ServiceCollectionExtensions
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidAudience = configuration["JWT:ValidAudience"],
-                ValidIssuer = configuration["JWT:ValidIssuer"],
+                ValidAudience = jwtSetting.ValidAudience,
+                ValidIssuer = jwtSetting.ValidIssuer,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                    configuration["JWT:SecretKey"] ?? string.Empty))
+                    jwtSetting.SecretKey))
             };
         });
         return services;
@@ -190,5 +198,40 @@ public static class ServiceCollectionExtensions
         using var scope = services.BuildServiceProvider().CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDataContext>();
         if ((await context.Database.GetPendingMigrationsAsync()).Any()) await context.Database.MigrateAsync();
+    }
+
+    public static IServiceCollection AddRedisCache(this IServiceCollection services, IConfiguration configuration)
+    {
+        var multiplexer = ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis") ?? string.Empty);
+
+        services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+        services.AddTransient<ICacheService, RedisCacheService>();
+        services.AddTransient<IPermissionCacheManager, PermissionCacheManager>();
+
+        return services;
+    }
+
+    private static JwtSettings GetJwtSetting(IConfiguration configuration)
+    {
+        var jwtSetting = configuration.BindAndGetConfig<JwtSettings>("JWT");
+        jwtSetting.SecretKey = GetRequiredConfigFromEnvironmentVariable("TinyCRM_SecretKey");
+        return jwtSetting;
+    }
+
+    private static T BindAndGetConfig<T>(this IConfiguration configuration, string sectionName)
+    {
+        var config = configuration.GetSection(sectionName).Get<T>();
+        configuration.Bind(config);
+        if (config == null) throw new Exception($"{sectionName} configuration is not provided.");
+
+        return config;
+    }
+
+    private static string GetRequiredConfigFromEnvironmentVariable(string environmentVariable)
+    {
+        var value = Environment.GetEnvironmentVariable(environmentVariable);
+        if (value == null) throw new Exception($"Environment variable {environmentVariable} is not provided.");
+
+        return value;
     }
 }
